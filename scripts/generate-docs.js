@@ -4,7 +4,14 @@ const path = require("path");
 function generateAPIDocumentation() {
   console.log("📚 生成 API 文档...\n");
 
+  // 读取 package.json 中的版本号
+  const packageJson = JSON.parse(fs.readFileSync(path.join(__dirname, '../package.json'), 'utf8'));
+  const version = packageJson.version;
+  console.log(`📦 当前版本: ${version}\n`);
+
   const apiDocs = `# API 文档
+
+**版本 ${version}** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ## LibRaw 类
 
@@ -173,6 +180,8 @@ processRAWFile('/path/to/image.nef')
 
   // Generate usage examples
   const examples = `# 使用示例
+
+**版本 ${version}** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ## 基础 RAW 文件处理
 
@@ -431,6 +440,8 @@ app.post('/analyze-raw', upload.single('rawFile'), async (req, res) => {
 
   // Generate supported formats documentation
   const formats = `# 支持的 RAW 格式
+
+**版本 ${version}** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ## 概述
 

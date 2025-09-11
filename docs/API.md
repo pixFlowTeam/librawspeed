@@ -1,5 +1,7 @@
 # API 文档
 
+**版本 1.0.18** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
+
 ## LibRaw 类
 
 用于处理 RAW 图像文件的主类。
