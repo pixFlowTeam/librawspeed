@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -13,6 +13,8 @@
     "cross-compile:darwin-arm64": "node scripts/cross-compile.js darwin arm64",
     "cross-compile:linux-x64": "node scripts/cross-compile.js linux x64",
     "cross-compile:linux-arm64": "node scripts/cross-compile.js linux arm64",
+    "cross-compile:verify": "node scripts/verify-cross-compile.js",
+    "cross-compile:summary": "node scripts/verify-cross-compile.js --summary",
     "rebuild": "npm run clean && npm run build",
     "test": "node test/index.js",
     "test:all": "node test/index.js full",
@@ -46,6 +48,10 @@
     "version:check": "node -e \"console.log('Package:', require('./package.json').version); console.log('Node:', process.version);\"",
     "publish:check": "npm run test && npm run docs:generate",
     "publish:dry": "npm publish --dry-run",
+    "publish:npm": "npm publish",
+    "publish:public": "npm publish --access public",
+    "publish:beta": "npm publish --tag beta",
+    "publish:alpha": "npm publish --tag alpha",
     "release": "bumpp",
     "release:patch": "bumpp patch",
     "release:minor": "bumpp minor",
@@ -65,14 +71,46 @@
     "node": ">=14.0.0"
   },
   "gypfile": true,
+  "binary": {
+    "napi_versions": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "napi": {
+    "name": "libraw_addon",
+    "triples": {
+      "defaults": true,
+      "additional": [
+        "x64-apple-darwin",
+        "arm64-apple-darwin",
+        "x64-pc-windows-msvc",
+        "x64-unknown-linux-gnu",
+        "arm64-unknown-linux-gnu"
+      ]
+    }
+  },
   "files": [
     "lib/**/*",
     "src/**/*",
     "deps/**/*",
+    "types/**/*",
+    "docs/**/*",
+    "examples/**/*",
+    "scripts/**/*",
     "binding.gyp",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "IMPLEMENTATION_SUMMARY.md",
+    "UPGRADE.md",
+    "PUBLICATION.md"
   ],
   "os": [
     "win32",
