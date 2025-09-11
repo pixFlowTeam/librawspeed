@@ -9,7 +9,8 @@ const steps = [
   { name: '运行测试', command: 'npm run test' },
   { name: '交叉编译', command: 'npm run cross-compile:all' },
   { name: '验证产物', command: 'npm run cross-compile:verify' },
-  { name: '生成文档', command: 'npm run docs:generate' }
+  { name: '生成文档', command: 'npm run docs:generate' },
+  { name: '发布到 npm', command: 'npm publish --access public' }
 ];
 
 try {
