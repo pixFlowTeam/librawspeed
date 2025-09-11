@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "Mac",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "${workspaceFolder}/node_modules/node-addon-api",
+        "${workspaceFolder}/node_modules/node-addon-api/src",
+        "${workspaceFolder}/deps/LibRaw-Source/LibRaw-0.21.4/include",
+        "${workspaceFolder}/deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-arm64/include",
+        "${workspaceFolder}/deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-x64/include",
+        "/usr/local/include",
+        "/opt/homebrew/include",
+        "/usr/local/include/node",
+        "/opt/homebrew/include/node"
+      ],
+      "defines": [],
+      "macFrameworkPath": [
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+      ],
+      "compilerPath": "/usr/bin/clang++",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "macos-clang-arm64"
+    }
+  ],
+  "version": 4
+}
