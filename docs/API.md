@@ -1,6 +1,6 @@
 # API 文档
 
-**版本 1.0.24** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
+**版本 1.0.27** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ## LibRaw 类
 
