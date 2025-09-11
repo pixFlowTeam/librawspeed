@@ -97,14 +97,14 @@ interface LibRawImageSize {
 
 ## 支持的格式
 
-| Format | Extension | Manufacturer | Description |
-|--------|-----------|--------------|-------------|
-| NEF    | .nef      | Nikon        | Nikon Electronic Format |
-| CR2/CR3| .cr2/.cr3 | Canon        | Canon RAW version 2/3 |
-| ARW    | .arw      | Sony         | Sony Alpha RAW |
-| RAF    | .raf      | Fujifilm     | Fuji RAW Format |
-| RW2    | .rw2      | Panasonic    | Panasonic RAW version 2 |
-| DNG    | .dng      | Adobe/Various| Digital Negative (Adobe) |
+| 格式 | 扩展名 | 制造商 | 描述 |
+|------|--------|--------|------|
+| NEF  | .nef   | Nikon  | Nikon 电子格式 |
+| CR2/CR3| .cr2/.cr3 | Canon | Canon RAW 版本 2/3 |
+| ARW  | .arw   | Sony   | Sony Alpha RAW |
+| RAF  | .raf   | Fujifilm | Fuji RAW 格式 |
+| RW2  | .rw2   | Panasonic | Panasonic RAW 版本 2 |
+| DNG  | .dng   | Adobe/各种 | 数字负片 (Adobe) |
 
 ## 错误处理
 
@@ -141,21 +141,21 @@ async function processRAWFile(filepath) {
     // 显示信息
     console.log(`相机: ${metadata.make} ${metadata.model}`);
     console.log(`分辨率: ${size.width}x${size.height}`);
-    console.log(`Settings: ISO ${metadata.iso}, f/${metadata.aperture}, 1/${Math.round(1/metadata.shutterSpeed)}s`);
+    console.log(`设置: ISO ${metadata.iso}, f/${metadata.aperture}, 1/${Math.round(1/metadata.shutterSpeed)}s`);
     
     return { metadata, size };
     
   } catch (error) {
-    console.error('Error processing file:', error.message);
+    console.error('处理文件时出错:', error.message);
     throw error;
   } finally {
-    // Always cleanup
+    // 始终清理资源
     await processor.close();
   }
 }
 
-// Usage
+// 使用方法
 processRAWFile('/path/to/image.nef')
-  .then(result => console.log('Processing complete'))
-  .catch(error => console.error('Failed:', error));
+  .then(result => console.log('处理完成'))
+  .catch(error => console.error('失败:', error));
 ```

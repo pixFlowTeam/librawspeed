@@ -2,17 +2,17 @@
 
 此文件中记录了此项目的所有重要更改。
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.5/)，
+格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.8/)，
 此项目遵循 [语义化版本控制](https://semver.org/spec/v2.0.0.html)。
 
 # 更新日志
 
 此文件中记录了此项目的所有重要更改。
 
-格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.5/)，
+格式基于 [Keep a Changelog](https://keepachangelog.com/en/1.0.8/)，
 此项目遵循 [语义化版本控制](https://semver.org/spec/v2.0.0.html)。
 
-## [1.0.5] - 2025-08-30
+## [1.0.8] - 2025-08-30
 
 ### 🎉 主要功能发布 - 缓冲区创建 API
 
@@ -413,7 +413,7 @@ const buffer = result.buffer; // 立即可用
 
 ---
 
-## [1.0.5-alpha.2] - 2025-08-24
+## [1.0.8-alpha.2] - 2025-08-24
 
 ### 🎉 主要功能发布 - RAW 到 JPEG 转换
 

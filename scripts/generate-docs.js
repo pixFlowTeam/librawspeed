@@ -103,14 +103,14 @@ interface LibRawImageSize {
 
 ## 支持的格式
 
-| Format | Extension | Manufacturer | Description |
-|--------|-----------|--------------|-------------|
-| NEF    | .nef      | Nikon        | Nikon Electronic Format |
-| CR2/CR3| .cr2/.cr3 | Canon        | Canon RAW version 2/3 |
-| ARW    | .arw      | Sony         | Sony Alpha RAW |
-| RAF    | .raf      | Fujifilm     | Fuji RAW Format |
-| RW2    | .rw2      | Panasonic    | Panasonic RAW version 2 |
-| DNG    | .dng      | Adobe/Various| Digital Negative (Adobe) |
+| 格式 | 扩展名 | 制造商 | 描述 |
+|------|--------|--------|------|
+| NEF  | .nef   | Nikon  | Nikon 电子格式 |
+| CR2/CR3| .cr2/.cr3 | Canon | Canon RAW 版本 2/3 |
+| ARW  | .arw   | Sony   | Sony Alpha RAW |
+| RAF  | .raf   | Fujifilm | Fuji RAW 格式 |
+| RW2  | .rw2   | Panasonic | Panasonic RAW 版本 2 |
+| DNG  | .dng   | Adobe/各种 | 数字负片 (Adobe) |
 
 ## 错误处理
 
@@ -147,23 +147,23 @@ async function processRAWFile(filepath) {
     // 显示信息
     console.log(\`相机: \${metadata.make} \${metadata.model}\`);
     console.log(\`分辨率: \${size.width}x\${size.height}\`);
-    console.log(\`Settings: ISO \${metadata.iso}, f/\${metadata.aperture}, 1/\${Math.round(1/metadata.shutterSpeed)}s\`);
+    console.log(\`设置: ISO \${metadata.iso}, f/\${metadata.aperture}, 1/\${Math.round(1/metadata.shutterSpeed)}s\`);
     
     return { metadata, size };
     
   } catch (error) {
-    console.error('Error processing file:', error.message);
+    console.error('处理文件时出错:', error.message);
     throw error;
   } finally {
-    // Always cleanup
+    // 始终清理资源
     await processor.close();
   }
 }
 
-// Usage
+// 使用方法
 processRAWFile('/path/to/image.nef')
-  .then(result => console.log('Processing complete'))
-  .catch(error => console.error('Failed:', error));
+  .then(result => console.log('处理完成'))
+  .catch(error => console.error('失败:', error));
 \`\`\`
 `;
 
@@ -172,9 +172,9 @@ processRAWFile('/path/to/image.nef')
   console.log("✅ Generated API.md");
 
   // Generate usage examples
-  const examples = `# Usage Examples
+  const examples = `# 使用示例
 
-## Basic RAW File Processing
+## 基础 RAW 文件处理
 
 \`\`\`javascript
 const LibRaw = require('librawspeed');
@@ -188,7 +188,7 @@ async function basicExample() {
     const size = await processor.getImageSize();
     
     console.log(\`📷 \${metadata.make} \${metadata.model}\`);
-    console.log(\`📐 \${size.width}x\${size.height} pixels\`);
+    console.log(\`📐 \${size.width}x\${size.height} 像素\`);
     console.log(\`⚙️  ISO \${metadata.iso}, f/\${metadata.aperture}\`);
     
   } finally {
@@ -197,7 +197,7 @@ async function basicExample() {
 }
 \`\`\`
 
-## Batch Processing Multiple Files
+## 批量处理多个文件
 
 \`\`\`javascript
 const fs = require('fs');
@@ -225,7 +225,7 @@ async function batchProcess(directory) {
       });
       
     } catch (error) {
-      console.error(\`Failed to process \${file}: \${error.message}\`);
+      console.error(\`处理 \${file} 失败: \${error.message}\`);
     } finally {
       await processor.close();
     }
@@ -235,7 +235,7 @@ async function batchProcess(directory) {
 }
 \`\`\`
 
-## Photo Gallery Metadata Extraction
+## 照片画廊元数据提取
 
 \`\`\`javascript
 async function extractGalleryMetadata(photoPath) {
@@ -247,13 +247,13 @@ async function extractGalleryMetadata(photoPath) {
     const size = await processor.getImageSize();
     
     return {
-      // Basic info
+      // 基本信息
       camera: {
         make: metadata.make,
         model: metadata.model
       },
       
-      // Technical settings
+      // 技术设置
       settings: {
         iso: metadata.iso,
         aperture: metadata.aperture,
@@ -261,7 +261,7 @@ async function extractGalleryMetadata(photoPath) {
         focalLength: metadata.focalLength
       },
       
-      // Image specs
+      // 图像规格
       image: {
         width: size.width,
         height: size.height,
@@ -269,7 +269,7 @@ async function extractGalleryMetadata(photoPath) {
         aspectRatio: (size.width / size.height).toFixed(2)
       },
       
-      // Capture info
+      // 拍摄信息
       capture: {
         timestamp: metadata.timestamp,
         date: new Date(metadata.timestamp * 1000).toISOString(),
@@ -284,7 +284,7 @@ async function extractGalleryMetadata(photoPath) {
 }
 \`\`\`
 
-## Performance Monitoring
+## 性能监控
 
 \`\`\`javascript
 async function monitoredProcessing(filepath) {
@@ -292,26 +292,26 @@ async function monitoredProcessing(filepath) {
   const startTime = Date.now();
   
   try {
-    console.time('Total Processing');
+    console.time('总处理时间');
     
-    console.time('File Loading');
+    console.time('文件加载');
     await processor.loadFile(filepath);
-    console.timeEnd('File Loading');
+    console.timeEnd('文件加载');
     
-    console.time('Metadata Extraction');
+    console.time('元数据提取');
     const metadata = await processor.getMetadata();
-    console.timeEnd('Metadata Extraction');
+    console.timeEnd('元数据提取');
     
-    console.time('Size Detection');
+    console.time('尺寸检测');
     const size = await processor.getImageSize();
-    console.timeEnd('Size Detection');
+    console.timeEnd('尺寸检测');
     
-    console.timeEnd('Total Processing');
+    console.timeEnd('总处理时间');
     
     const fileStats = require('fs').statSync(filepath);
     const throughput = fileStats.size / (Date.now() - startTime) * 1000 / 1024 / 1024;
     
-    console.log(\`📊 Throughput: \${throughput.toFixed(2)} MB/s\`);
+    console.log(\`📊 吞吐量: \${throughput.toFixed(2)} MB/s\`);
     
     return { metadata, size };
     
@@ -321,30 +321,30 @@ async function monitoredProcessing(filepath) {
 }
 \`\`\`
 
-## Error Handling Best Practices
+## 错误处理最佳实践
 
 \`\`\`javascript
 async function robustProcessing(filepath) {
   const processor = new LibRaw();
   
   try {
-    // Validate file exists
+    // 验证文件存在
     if (!require('fs').existsSync(filepath)) {
-      throw new Error(\`File not found: \${filepath}\`);
+      throw new Error(\`文件未找到: \${filepath}\`);
     }
     
-    // Check file extension
+    // 检查文件扩展名
     const ext = require('path').extname(filepath).toLowerCase();
     const supported = ['.nef', '.cr2', '.cr3', '.arw', '.raf', '.rw2', '.dng'];
     if (!supported.includes(ext)) {
-      throw new Error(\`Unsupported format: \${ext}\`);
+      throw new Error(\`不支持的格式: \${ext}\`);
     }
     
     await processor.loadFile(filepath);
     
-    // Extract with timeout
+    // 带超时的提取
     const timeout = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Processing timeout')), 30000)
+      setTimeout(() => reject(new Error('处理超时')), 30000)
     );
     
     const processing = Promise.all([
@@ -357,19 +357,19 @@ async function robustProcessing(filepath) {
     return { metadata, size, success: true };
     
   } catch (error) {
-    console.error(\`Processing error for \${filepath}:\`, error.message);
+    console.error(\`处理 \${filepath} 时出错:\`, error.message);
     return { error: error.message, success: false };
   } finally {
     try {
       await processor.close();
     } catch (closeError) {
-      console.warn('Warning: Failed to close processor:', closeError.message);
+      console.warn('警告: 关闭处理器失败:', closeError.message);
     }
   }
 }
 \`\`\`
 
-## Integration with Express.js
+## 与 Express.js 集成
 
 \`\`\`javascript
 const express = require('express');
@@ -381,7 +381,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.post('/analyze-raw', upload.single('rawFile'), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: 'No file uploaded' });
+    return res.status(400).json({ error: '未上传文件' });
   }
   
   const processor = new LibRaw();
@@ -413,7 +413,7 @@ app.post('/analyze-raw', upload.single('rawFile'), async (req, res) => {
     });
   } finally {
     await processor.close();
-    // Clean up uploaded file
+    // 清理上传的文件
     require('fs').unlinkSync(req.file.path);
   }
 });
@@ -430,43 +430,43 @@ app.post('/analyze-raw', upload.single('rawFile'), async (req, res) => {
   console.log("✅ Generated EXAMPLES.md");
 
   // Generate supported formats documentation
-  const formats = `# Supported RAW Formats
+  const formats = `# 支持的 RAW 格式
 
-## Overview
+## 概述
 
-This library supports 100+ RAW image formats through LibRaw. Below are the most common formats:
+本库通过 LibRaw 支持 100+ 种 RAW 图像格式。以下是最常见的格式：
 
-## Major Camera Manufacturers
+## 主要相机制造商
 
 ### Canon
-- **CR2** - Canon RAW version 2 (older models)
-- **CR3** - Canon RAW version 3 (newer models like EOS R, EOS M50)
-- **CRW** - Canon RAW (very old models)
+- **CR2** - Canon RAW 版本 2（较老型号）
+- **CR3** - Canon RAW 版本 3（较新型号如 EOS R, EOS M50）
+- **CRW** - Canon RAW（很老的型号）
 
 ### Nikon  
-- **NEF** - Nikon Electronic Format (all Nikon DSLRs and mirrorless)
+- **NEF** - Nikon 电子格式（所有 Nikon DSLR 和无反相机）
 
 ### Sony
-- **ARW** - Sony Alpha RAW (α series cameras)
-- **SR2** - Sony RAW version 2 (some older models)
-- **SRF** - Sony RAW Format (very old models)
+- **ARW** - Sony Alpha RAW（α 系列相机）
+- **SR2** - Sony RAW 版本 2（部分较老型号）
+- **SRF** - Sony RAW 格式（很老的型号）
 
 ### Fujifilm
-- **RAF** - Fuji RAW Format (X-series and GFX cameras)
+- **RAF** - Fuji RAW 格式（X 系列和 GFX 相机）
 
 ### Panasonic/Lumix
-- **RW2** - Panasonic RAW version 2 (GH, G, FZ series)
-- **RAW** - Panasonic RAW (older models)
+- **RW2** - Panasonic RAW 版本 2（GH, G, FZ 系列）
+- **RAW** - Panasonic RAW（较老型号）
 
 ### Olympus
-- **ORF** - Olympus RAW Format (OM-D, PEN series)
+- **ORF** - Olympus RAW 格式（OM-D, PEN 系列）
 
 ### Leica
-- **DNG** - Digital Negative (Adobe standard, used by Leica)
-- **RWL** - Leica RAW (some models)
+- **DNG** - 数字负片（Adobe 标准，Leica 使用）
+- **RWL** - Leica RAW（部分型号）
 
-### Other Manufacturers
-- **DNG** - Adobe Digital Negative (universal format)
+### 其他制造商
+- **DNG** - Adobe 数字负片（通用格式）
 - **3FR** - Hasselblad RAW
 - **ARI** - ARRI Alexa RAW
 - **BAY** - Casio RAW
@@ -487,7 +487,7 @@ This library supports 100+ RAW image formats through LibRaw. Below are the most 
 - **MOS** - Leaf RAW
 - **MRW** - Minolta RAW
 - **NAK** - Nintendo RAW
-- **NRW** - Nikon RAW (small format)
+- **NRW** - Nikon RAW（小格式）
 - **PEF** - Pentax RAW
 - **PXN** - Logitech RAW
 - **QTK** - Apple QuickTake RAW
@@ -502,59 +502,59 @@ This library supports 100+ RAW image formats through LibRaw. Below are the most 
 - **STI** - Sinar RAW
 - **X3F** - Sigma RAW (Foveon)
 
-## Format Capabilities
+## 格式功能
 
-| Feature | Support Level |
-|---------|---------------|
-| Metadata Extraction | ✅ Full support for all formats |
-| Image Dimensions | ✅ Full support |
-| Camera Settings | ✅ ISO, Aperture, Shutter, Focal Length |
-| Timestamp | ✅ Capture date/time |
-| Color Profile Info | ✅ Color space and filter data |
-| Thumbnail Extraction | ⚠️ Not yet implemented |
-| Full Image Decode | ⚠️ Not yet implemented |
+| 功能 | 支持级别 |
+|------|----------|
+| 元数据提取 | ✅ 所有格式完全支持 |
+| 图像尺寸 | ✅ 完全支持 |
+| 相机设置 | ✅ ISO、光圈、快门、焦距 |
+| 时间戳 | ✅ 拍摄日期/时间 |
+| 色彩配置文件信息 | ✅ 色彩空间和滤镜数据 |
+| 缩略图提取 | ⚠️ 尚未实现 |
+| 完整图像解码 | ⚠️ 尚未实现 |
 
-## Compatibility Notes
+## 兼容性说明
 
 ### Windows
-- Requires Visual Studio Build Tools
-- Full support for all formats
-- Performance optimized builds
+- 需要 Visual Studio Build Tools
+- 所有格式完全支持
+- 性能优化构建
 
 ### macOS  
-- Requires Xcode Command Line Tools
-- Full support for all formats
-- Native ARM64 support on Apple Silicon
+- 需要 Xcode Command Line Tools
+- 所有格式完全支持
+- Apple Silicon 原生 ARM64 支持
 
 ### Linux
-- Requires build-essential package
-- Full support for all formats
-- Tested on Ubuntu, CentOS, Alpine
+- 需要 build-essential 包
+- 所有格式完全支持
+- 在 Ubuntu、CentOS、Alpine 上测试
 
-## Testing Coverage
+## 测试覆盖
 
-Our test suite covers these sample formats:
-- ✅ Canon CR3 (Canon cameras)
-- ✅ Nikon NEF (Nikon D5600, etc.)
-- ✅ Fujifilm RAF (X-series cameras)
-- ✅ Adobe DNG (Leica, smartphones)
-- ✅ Panasonic RW2 (Lumix cameras)
-- ✅ Sony ARW (Alpha cameras)
+我们的测试套件涵盖这些示例格式：
+- ✅ Canon CR3（Canon 相机）
+- ✅ Nikon NEF（Nikon D5600 等）
+- ✅ Fujifilm RAF（X 系列相机）
+- ✅ Adobe DNG（Leica、智能手机）
+- ✅ Panasonic RW2（Lumix 相机）
+- ✅ Sony ARW（Alpha 相机）
 
-## Performance Characteristics
+## 性能特征
 
-| Format | Typical Size | Processing Speed | Notes |
-|--------|-------------|------------------|-------|
-| NEF | 15-45 MB | Fast | Well optimized |
-| CR3 | 25-65 MB | Fast | Efficient format |
-| ARW | 20-60 MB | Fast | Good compression |
-| RAF | 30-80 MB | Medium | Larger files |
-| RW2 | 15-40 MB | Fast | Compact format |
-| DNG | 20-100 MB | Medium | Varies by source |
+| 格式 | 典型大小 | 处理速度 | 备注 |
+|------|----------|----------|------|
+| NEF | 15-45 MB | 快速 | 优化良好 |
+| CR3 | 25-65 MB | 快速 | 高效格式 |
+| ARW | 20-60 MB | 快速 | 压缩良好 |
+| RAF | 30-80 MB | 中等 | 文件较大 |
+| RW2 | 15-40 MB | 快速 | 紧凑格式 |
+| DNG | 20-100 MB | 中等 | 因来源而异 |
 
 ## 添加新格式支持
 
-LibRaw 定期添加对新相机的支持。要更新:
+LibRaw 定期添加对新相机的支持。要更新：
 
 1. 下载更新的 LibRaw 版本
 2. 替换 \`deps/\` 中的库文件
