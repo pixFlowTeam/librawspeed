@@ -47,12 +47,6 @@
     "extract:thumbnails": "node scripts/extract-thumbnails.js",
     "convert:jpeg": "node scripts/batch-jpeg-conversion.js",
     "version:check": "node -e \"console.log('Package:', require('./package.json').version); console.log('Node:', process.version);\"",
-    "publish:check": "npm run test && npm run docs:generate",
-    "publish:dry": "npm publish --dry-run",
-    "publish:npm": "npm publish",
-    "publish:public": "npm publish --access public",
-    "publish:beta": "npm publish --tag beta",
-    "publish:alpha": "npm publish --tag alpha",
     "release": "bumpp --execute \"node scripts/release.js\" && npm publish",
     "release:dry": "bumpp --dry-run"
   },
