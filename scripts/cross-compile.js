@@ -69,7 +69,7 @@ class CrossCompiler {
   }
 
   log(message) {
-    console.log(`[Cross Compiler] ${message}`);
+    console.log(`[交叉编译器] ${message}`);
   }
 
   // 检查工具链是否可用
@@ -95,7 +95,7 @@ class CrossCompiler {
 
   // 设置交叉编译环境
   setCrossCompileEnv(toolchain) {
-    this.log("Setting cross-compile environment...");
+    this.log("设置交叉编译环境...");
     
     for (const [key, value] of Object.entries(toolchain)) {
       process.env[key] = value;
@@ -105,7 +105,7 @@ class CrossCompiler {
 
   // 交叉编译 LibRaw
   async crossCompile(targetPlatform, targetArch = null) {
-    this.log(`Cross-compiling for ${targetPlatform}${targetArch ? ` (${targetArch})` : ''}...`);
+    this.log(`为 ${targetPlatform}${targetArch ? ` (${targetArch})` : ''} 进行交叉编译...`);
     
     // 获取目标配置
     let target;
@@ -114,12 +114,12 @@ class CrossCompiler {
     } else if (this.targets[targetPlatform] && this.targets[targetPlatform].host) {
       target = this.targets[targetPlatform];
     } else {
-      throw new Error(`Unsupported target: ${targetPlatform}${targetArch ? ` (${targetArch})` : ''}`);
+      throw new Error(`不支持的目标: ${targetPlatform}${targetArch ? ` (${targetArch})` : ''}`);
     }
 
     // 检查工具链
     if (!this.checkToolchain(target.toolchain)) {
-      throw new Error(`Cross-compile toolchain not available for ${targetPlatform}`);
+      throw new Error(`${targetPlatform} 的交叉编译工具链不可用`);
     }
 
     // 设置环境
@@ -151,7 +151,7 @@ class CrossCompiler {
     ];
 
     const configureCmd = `./configure ${configureArgs.join(' ')}`;
-    this.log(`Running: ${configureCmd}`);
+    this.log(`运行: ${configureCmd}`);
     
     execSync(configureCmd, {
       cwd: this.librawSourceDir,
@@ -160,7 +160,7 @@ class CrossCompiler {
 
     // 编译
     const makeCmd = `make -j${os.cpus().length}`;
-    this.log(`Running: ${makeCmd}`);
+    this.log(`运行: ${makeCmd}`);
     
     execSync(makeCmd, {
       cwd: this.librawSourceDir,
@@ -169,20 +169,20 @@ class CrossCompiler {
 
     // 安装
     const installCmd = 'make install';
-    this.log(`Running: ${installCmd}`);
+    this.log(`运行: ${installCmd}`);
     
     execSync(installCmd, {
       cwd: this.librawSourceDir,
       stdio: 'inherit'
     });
 
-    this.log(`✅ Cross-compilation completed for ${targetPlatform}${targetArch ? ` (${targetArch})` : ''}`);
+    this.log(`✅ ${targetPlatform}${targetArch ? ` (${targetArch})` : ''} 交叉编译完成`);
     this.log(`Build output: ${platformBuildDir}`);
   }
 
   // 列出支持的目标平台
   listTargets() {
-    this.log("Supported cross-compile targets:");
+    this.log("支持的交叉编译目标:");
     
     for (const [platform, config] of Object.entries(this.targets)) {
       if (config.host) {
@@ -203,8 +203,8 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   
   if (args.length === 0 || args[0] === '--help') {
-    console.log("Usage: node cross-compile.js <target-platform> [target-arch]");
-    console.log("Examples:");
+    console.log("用法: node cross-compile.js <目标平台> [目标架构]");
+    console.log("示例:");
     console.log("  node cross-compile.js win32");
     console.log("  node cross-compile.js darwin arm64");
     console.log("  node cross-compile.js linux x64");
@@ -215,7 +215,7 @@ if (require.main === module) {
     const targetArch = args[1] || null;
     
     compiler.crossCompile(targetPlatform, targetArch).catch(error => {
-      console.error("Cross-compilation failed:", error.message);
+      console.error("交叉编译失败:", error.message);
       process.exit(1);
     });
   }

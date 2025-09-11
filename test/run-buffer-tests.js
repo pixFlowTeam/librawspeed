@@ -2,16 +2,16 @@ const path = require("path");
 const fs = require("fs");
 
 /**
- * Test runner for all buffer creation tests
- * Runs comprehensive tests for the new buffer API methods
+ * 所有缓冲区创建测试的测试运行器
+ * 运行新缓冲区 API 方法的综合测试
  */
 
-// Import test modules
+// 导入测试模块
 const { runAllBufferCreationTests } = require("./buffer-creation.test.js");
 const { runEdgeCaseTests } = require("./buffer-edge-cases.test.js");
 const { quickBufferTest } = require("./quick-buffer-verification.js");
 
-// Color codes for console output
+// 控制台输出的颜色代码
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
@@ -28,7 +28,7 @@ function colorize(text, color) {
 }
 
 /**
- * Check if test environment is ready
+ * 检查测试环境是否就绪
  */
 function checkTestEnvironment() {
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
@@ -85,88 +85,88 @@ function checkTestEnvironment() {
 }
 
 /**
- * Run quick verification test
+ * 运行快速验证测试
  */
 async function runQuickTest() {
-  console.log(colorize("\n🚀 Running Quick Verification Test", "bright"));
+  console.log(colorize("\n🚀 运行快速验证测试", "bright"));
   console.log("=".repeat(60));
 
   try {
     await quickBufferTest();
-    console.log(colorize("✅ Quick test completed successfully", "green"));
+    console.log(colorize("✅ 快速测试成功完成", "green"));
     return true;
   } catch (error) {
-    console.log(colorize(`❌ Quick test failed: ${error.message}`, "red"));
+    console.log(colorize(`❌ 快速测试失败: ${error.message}`, "red"));
     return false;
   }
 }
 
 /**
- * Run comprehensive tests
+ * 运行综合测试
  */
 async function runComprehensiveTests() {
-  console.log(colorize("\n🧪 Running Comprehensive Buffer Tests", "bright"));
+  console.log(colorize("\n🧪 运行综合缓冲区测试", "bright"));
   console.log("=".repeat(60));
 
   try {
     const success = await runAllBufferCreationTests();
     if (success) {
       console.log(
-        colorize("✅ Comprehensive tests completed successfully", "green")
+        colorize("✅ 综合测试成功完成", "green")
       );
     } else {
-      console.log(colorize("⚠️ Some comprehensive tests failed", "yellow"));
+      console.log(colorize("⚠️ 部分综合测试失败", "yellow"));
     }
     return success;
   } catch (error) {
     console.log(
-      colorize(`❌ Comprehensive tests crashed: ${error.message}`, "red")
+      colorize(`❌ 综合测试崩溃: ${error.message}`, "red")
     );
     return false;
   }
 }
 
 /**
- * Run edge case tests
+ * 运行边界情况测试
  */
 async function runEdgeCases() {
-  console.log(colorize("\n🔥 Running Edge Case Tests", "bright"));
+  console.log(colorize("\n🔥 运行边界情况测试", "bright"));
   console.log("=".repeat(60));
 
   try {
     const success = await runEdgeCaseTests();
     if (success) {
       console.log(
-        colorize("✅ Edge case tests completed successfully", "green")
+        colorize("✅ 边界情况测试成功完成", "green")
       );
     } else {
-      console.log(colorize("⚠️ Some edge case tests failed", "yellow"));
+      console.log(colorize("⚠️ 部分边界情况测试失败", "yellow"));
     }
     return success;
   } catch (error) {
     console.log(
-      colorize(`❌ Edge case tests crashed: ${error.message}`, "red")
+      colorize(`❌ 边界情况测试崩溃: ${error.message}`, "red")
     );
     return false;
   }
 }
 
 /**
- * Main test runner
+ * 主测试运行器
  */
 async function runAllTests(options = {}) {
   const startTime = Date.now();
 
-  console.log(colorize("🧪 LibRaw Buffer API Test Suite", "bright"));
+  console.log(colorize("🧪 LibRaw 缓冲区 API 测试套件", "bright"));
   console.log(colorize("=====================================", "bright"));
   console.log(
-    colorize(`📅 Started at: ${new Date().toLocaleString()}`, "cyan")
+    colorize(`📅 开始时间: ${new Date().toLocaleString()}`, "cyan")
   );
 
-  // Check environment
+  // 检查环境
   if (!checkTestEnvironment()) {
     console.log(
-      colorize("\n❌ Test environment check failed. Aborting tests.", "red")
+      colorize("\n❌ 测试环境检查失败。中止测试。", "red")
     );
     return false;
   }
@@ -177,17 +177,17 @@ async function runAllTests(options = {}) {
     edgeCase: false,
   };
 
-  // Run tests based on options
+  // 根据选项运行测试
   if (options.quick !== false) {
     results.quick = await runQuickTest();
 
-    // If quick test fails, don't run others unless forced
+    // 如果快速测试失败，除非强制运行，否则不运行其他测试
     if (!results.quick && !options.force) {
       console.log(
-        colorize("\n⚠️ Quick test failed. Skipping remaining tests.", "yellow")
+        colorize("\n⚠️ 快速测试失败。跳过剩余测试。", "yellow")
       );
       console.log(
-        colorize("   Use --force to run all tests anyway.", "yellow")
+        colorize("   使用 --force 强制运行所有测试。", "yellow")
       );
       return false;
     }
@@ -201,11 +201,11 @@ async function runAllTests(options = {}) {
     results.edgeCase = await runEdgeCases();
   }
 
-  // Summary
+  // 总结
   const endTime = Date.now();
   const totalTime = endTime - startTime;
 
-  console.log(colorize("\n📊 Test Suite Summary", "bright"));
+  console.log(colorize("\n📊 测试套件总结", "bright"));
   console.log("=".repeat(60));
 
   const testResults = Object.entries(results).filter(
@@ -215,13 +215,13 @@ async function runAllTests(options = {}) {
   const totalTests = testResults.length;
 
   testResults.forEach(([testName, passed]) => {
-    const status = passed ? "✅ PASSED" : "❌ FAILED";
+    const status = passed ? "✅ 通过" : "❌ 失败";
     const color = passed ? "green" : "red";
     console.log(
       colorize(
         `${status} ${
           testName.charAt(0).toUpperCase() + testName.slice(1)
-        } Tests`,
+        } 测试`,
         color
       )
     );
@@ -230,37 +230,37 @@ async function runAllTests(options = {}) {
   console.log("");
   console.log(
     colorize(
-      `Tests passed: ${passedTests}/${totalTests}`,
+      `测试通过: ${passedTests}/${totalTests}`,
       passedTests === totalTests ? "green" : "yellow"
     )
   );
   console.log(
-    colorize(`Total time: ${(totalTime / 1000).toFixed(1)}s`, "cyan")
+    colorize(`总时间: ${(totalTime / 1000).toFixed(1)}s`, "cyan")
   );
 
   const overallSuccess = passedTests === totalTests;
 
   if (overallSuccess) {
     console.log(
-      colorize("\n🎉 All buffer API tests passed successfully!", "green")
+      colorize("\n🎉 所有缓冲区 API 测试成功通过！", "green")
     );
     console.log(
       colorize(
-        "   Your buffer creation methods are working correctly.",
+        "   您的缓冲区创建方法工作正常。",
         "green"
       )
     );
   } else {
     console.log(
       colorize(
-        `\n⚠️ ${totalTests - passedTests} test suite(s) had issues.`,
+        `\n⚠️ ${totalTests - passedTests} 个测试套件有问题。`,
         "yellow"
       )
     );
-    console.log(colorize("   Check the output above for details.", "yellow"));
+    console.log(colorize("   请查看上面的输出了解详情。", "yellow"));
   }
 
-  // Show output directories
+  // 显示输出目录
   const outputDirs = [
     "test/buffer-output",
     "test/quick-test-output",
@@ -269,7 +269,7 @@ async function runAllTests(options = {}) {
 
   const existingDirs = outputDirs.filter((dir) => fs.existsSync(dir));
   if (existingDirs.length > 0) {
-    console.log(colorize("\n📁 Test output files saved to:", "cyan"));
+    console.log(colorize("\n📁 测试输出文件已保存到:", "cyan"));
     existingDirs.forEach((dir) => {
       console.log(colorize(`   ${dir}`, "cyan"));
     });
@@ -279,7 +279,7 @@ async function runAllTests(options = {}) {
 }
 
 /**
- * Parse command line arguments
+ * 解析命令行参数
  */
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -312,26 +312,26 @@ function parseArgs() {
         break;
       case "--help":
       case "-h":
-        console.log(colorize("LibRaw Buffer API Test Runner", "bright"));
+        console.log(colorize("LibRaw 缓冲区 API 测试运行器", "bright"));
         console.log("");
-        console.log("Usage: node run-buffer-tests.js [options]");
+        console.log("用法: node run-buffer-tests.js [选项]");
         console.log("");
-        console.log("Options:");
-        console.log("  --quick-only      Run only quick verification test");
-        console.log("  --comprehensive-only  Run only comprehensive tests");
-        console.log("  --edge-only       Run only edge case tests");
-        console.log("  --no-quick        Skip quick verification test");
+        console.log("选项:");
+        console.log("  --quick-only      仅运行快速验证测试");
+        console.log("  --comprehensive-only  仅运行综合测试");
+        console.log("  --edge-only       仅运行边界情况测试");
+        console.log("  --no-quick        跳过快速验证测试");
         console.log(
-          "  --force           Continue running tests even if quick test fails"
+          "  --force           即使快速测试失败也继续运行测试"
         );
-        console.log("  --help, -h        Show this help message");
+        console.log("  --help, -h        显示此帮助信息");
         console.log("");
-        console.log("By default, all tests are run in sequence.");
+        console.log("默认情况下，所有测试按顺序运行。");
         process.exit(0);
         break;
       default:
-        console.log(colorize(`Unknown option: ${arg}`, "red"));
-        console.log(colorize("Use --help for usage information", "yellow"));
+        console.log(colorize(`未知选项: ${arg}`, "red"));
+        console.log(colorize("使用 --help 查看用法信息", "yellow"));
         process.exit(1);
     }
   }
@@ -339,7 +339,7 @@ function parseArgs() {
   return options;
 }
 
-// Main execution
+// 主执行
 if (require.main === module) {
   const options = parseArgs();
 
@@ -348,7 +348,7 @@ if (require.main === module) {
       process.exit(success ? 0 : 1);
     })
     .catch((error) => {
-      console.error(colorize(`Test runner crashed: ${error.message}`, "red"));
+      console.error(colorize(`测试运行器崩溃: ${error.message}`, "red"));
       console.error(error.stack);
       process.exit(1);
     });

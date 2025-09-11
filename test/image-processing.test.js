@@ -1,6 +1,6 @@
 /**
- * Image Processing Test Suite
- * Tests image conversion, thumbnail extraction, and advanced processing features
+ * 图像处理测试套件
+ * 测试图像转换、缩略图提取和高级处理功能
  */
 
 const LibRaw = require("../lib/index");
@@ -35,7 +35,7 @@ class ImageProcessingTests {
   findTestFiles() {
     const sampleDir = path.join(__dirname, "..", "raw-samples-repo");
     if (!fs.existsSync(sampleDir)) {
-      this.log("Sample images directory not found", "warning");
+      this.log("未找到示例图像目录", "warning");
       return [];
     }
 
@@ -55,15 +55,15 @@ class ImageProcessingTests {
         rawExtensions.some((ext) => file.toLowerCase().endsWith(ext))
       )
       .map((file) => path.join(sampleDir, file))
-      .slice(0, 3); // Limit to 3 files for testing
+      .slice(0, 3); // 限制为 3 个文件进行测试
   }
 
   async testThumbnailExtraction() {
-    console.log("\n🖼️  Testing Thumbnail Extraction");
+    console.log("\n🖼️  测试缩略图提取");
     console.log("================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for thumbnail extraction", "warning");
+      this.log("没有可用于缩略图提取的测试文件", "warning");
       return false;
     }
 
@@ -76,47 +76,47 @@ class ImageProcessingTests {
 
       try {
         totalTests++;
-        this.log(`Testing thumbnail extraction: ${fileName}`, "test");
+        this.log(`测试缩略图提取: ${fileName}`, "test");
 
-        // Load file
+        // 加载文件
         await processor.loadFile(testFile);
-        this.log(`  File loaded successfully`, "success");
+        this.log(`  文件加载成功`, "success");
 
-        // Check thumbnail status
+        // 检查缩略图状态
         const thumbOK = await processor.thumbOK();
-        this.log(`  Thumbnail status: ${thumbOK}`, "data");
+        this.log(`  缩略图状态: ${thumbOK}`, "data");
 
-        // Unpack thumbnail
+        // 解包缩略图
         const thumbnailUnpacked = await processor.unpackThumbnail();
         this.log(
-          `  Thumbnail unpacked: ${thumbnailUnpacked}`,
+          `  缩略图已解包: ${thumbnailUnpacked}`,
           thumbnailUnpacked ? "success" : "warning"
         );
 
         if (thumbnailUnpacked) {
-          // Create memory thumbnail
+          // 创建内存缩略图
           const memoryThumbnail = await processor.createMemoryThumbnail();
           if (memoryThumbnail && memoryThumbnail.data) {
             this.log(
-              `  Memory thumbnail created: ${memoryThumbnail.width}x${memoryThumbnail.height}, ${memoryThumbnail.dataSize} bytes`,
+              `  内存缩略图已创建: ${memoryThumbnail.width}x${memoryThumbnail.height}, ${memoryThumbnail.dataSize} 字节`,
               "success"
             );
 
-            // Verify thumbnail data
+            // 验证缩略图数据
             if (memoryThumbnail.data.length > 0) {
               this.log(
-                `  Thumbnail data verified: ${memoryThumbnail.data.length} bytes`,
+                `  缩略图数据已验证: ${memoryThumbnail.data.length} 字节`,
                 "success"
               );
 
-              // Test writing thumbnail to file
+              // 测试将缩略图写入文件
               const outputPath = path.join(
                 __dirname,
                 "output",
                 `thumb_${fileName}.jpg`
               );
 
-              // Ensure output directory exists
+              // 确保输出目录存在
               const outputDir = path.dirname(outputPath);
               if (!fs.existsSync(outputDir)) {
                 fs.mkdirSync(outputDir, { recursive: true });
@@ -128,34 +128,34 @@ class ImageProcessingTests {
                 if (fs.existsSync(outputPath)) {
                   const stats = fs.statSync(outputPath);
                   this.log(
-                    `  Thumbnail file written: ${outputPath} (${stats.size} bytes)`,
+                    `  缩略图文件已写入: ${outputPath} (${stats.size} 字节)`,
                     "success"
                   );
 
-                  // Clean up test file
+                  // 清理测试文件
                   fs.unlinkSync(outputPath);
                 } else {
-                  this.log(`  Thumbnail file not created`, "warning");
+                  this.log(`  缩略图文件未创建`, "warning");
                 }
               } catch (writeError) {
                 this.log(
-                  `  Thumbnail write failed: ${writeError.message}`,
+                  `  缩略图写入失败: ${writeError.message}`,
                   "warning"
                 );
               }
 
               passedTests++;
             } else {
-              this.log(`  Thumbnail data is empty`, "warning");
+              this.log(`  缩略图数据为空`, "warning");
             }
           } else {
-            this.log(`  Memory thumbnail creation failed`, "warning");
+            this.log(`  内存缩略图创建失败`, "warning");
           }
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  Thumbnail extraction failed: ${error.message}`, "error");
+        this.log(`  缩略图提取失败: ${error.message}`, "error");
         await processor.close();
       }
     }
@@ -168,7 +168,7 @@ class ImageProcessingTests {
     };
 
     this.log(
-      `Thumbnail extraction results: ${passedTests}/${totalTests} passed (${this.results.thumbnail.successRate}%)`,
+      `缩略图提取结果: ${passedTests}/${totalTests} 通过 (${this.results.thumbnail.successRate}%)`,
       passedTests === totalTests ? "success" : "warning"
     );
 
@@ -176,11 +176,11 @@ class ImageProcessingTests {
   }
 
   async testImageConversion() {
-    console.log("\n🔄 Testing Image Conversion");
+    console.log("\n🔄 测试图像转换");
     console.log("===========================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for image conversion", "warning");
+      this.log("没有可用于图像转换的测试文件", "warning");
       return false;
     }
 
@@ -193,56 +193,56 @@ class ImageProcessingTests {
 
       try {
         totalTests++;
-        this.log(`Testing image conversion: ${fileName}`, "test");
+        this.log(`测试图像转换: ${fileName}`, "test");
 
-        // Load file
+        // 加载文件
         await processor.loadFile(testFile);
-        this.log(`  File loaded successfully`, "success");
+        this.log(`  文件加载成功`, "success");
 
-        // Get metadata for reference
+        // 获取元数据作为参考
         const metadata = await processor.getMetadata();
         this.log(
-          `  Image dimensions: ${metadata.width}x${metadata.height}`,
+          `  图像尺寸: ${metadata.width}x${metadata.height}`,
           "data"
         );
 
-        // Test basic processing steps
-        this.log(`  Testing processing pipeline...`, "info");
+        // 测试基本处理步骤
+        this.log(`  测试处理管道...`, "info");
 
-        // Subtract black
+        // 减去黑色
         const blackSubtracted = await processor.subtractBlack();
         this.log(
-          `  Black subtraction: ${blackSubtracted ? "Success" : "Failed"}`,
+          `  黑色减法: ${blackSubtracted ? "成功" : "失败"}`,
           blackSubtracted ? "success" : "warning"
         );
 
-        // Raw to image conversion
+        // RAW 到图像转换
         const raw2ImageResult = await processor.raw2Image();
         this.log(
-          `  RAW to image conversion: ${
-            raw2ImageResult ? "Success" : "Failed"
+          `  RAW 到图像转换: ${
+            raw2ImageResult ? "成功" : "失败"
           }`,
           raw2ImageResult ? "success" : "warning"
         );
 
         if (raw2ImageResult) {
-          // Process image
+          // 处理图像
           const processResult = await processor.processImage();
           this.log(
-            `  Image processing: ${processResult ? "Success" : "Failed"}`,
+            `  图像处理: ${processResult ? "成功" : "失败"}`,
             processResult ? "success" : "warning"
           );
 
           if (processResult) {
-            // Create memory image
+            // 创建内存图像
             const memoryImage = await processor.createMemoryImage();
             if (memoryImage && memoryImage.data) {
               this.log(
-                `  Memory image created: ${memoryImage.width}x${memoryImage.height}, ${memoryImage.bits}-bit, ${memoryImage.dataSize} bytes`,
+                `  内存图像已创建: ${memoryImage.width}x${memoryImage.height}, ${memoryImage.bits}-位, ${memoryImage.dataSize} 字节`,
                 "success"
               );
 
-              // Calculate expected size
+              // 计算预期大小
               const expectedSize =
                 memoryImage.width *
                 memoryImage.height *
@@ -251,31 +251,31 @@ class ImageProcessingTests {
               const actualSize = memoryImage.data.length;
 
               if (Math.abs(actualSize - expectedSize) < expectedSize * 0.1) {
-                // Allow 10% variance for headers/padding
+                // 允许 10% 的头部/填充变化
                 this.log(
-                  `  Image data size validated: ${actualSize} bytes (expected ~${expectedSize})`,
+                  `  图像数据大小已验证: ${actualSize} 字节 (预期 ~${expectedSize})`,
                   "success"
                 );
               } else {
                 this.log(
-                  `  Image data size mismatch: ${actualSize} bytes (expected ${expectedSize})`,
+                  `  图像数据大小不匹配: ${actualSize} 字节 (预期 ${expectedSize})`,
                   "warning"
                 );
               }
 
-              // Test different output formats
+              // 测试不同的输出格式
               await this.testOutputFormats(processor, fileName);
 
               passedTests++;
             } else {
-              this.log(`  Memory image creation failed`, "error");
+              this.log(`  内存图像创建失败`, "error");
             }
           }
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  Image conversion failed: ${error.message}`, "error");
+        this.log(`  图像转换失败: ${error.message}`, "error");
         await processor.close();
       }
     }
@@ -288,7 +288,7 @@ class ImageProcessingTests {
     };
 
     this.log(
-      `Image conversion results: ${passedTests}/${totalTests} passed (${this.results.conversion.successRate}%)`,
+      `图像转换结果: ${passedTests}/${totalTests} 通过 (${this.results.conversion.successRate}%)`,
       passedTests === totalTests ? "success" : "warning"
     );
 
@@ -296,7 +296,7 @@ class ImageProcessingTests {
   }
 
   async testOutputFormats(processor, fileName) {
-    this.log(`  Testing output formats...`, "info");
+    this.log(`  测试输出格式...`, "info");
 
     const outputDir = path.join(__dirname, "output");
     if (!fs.existsSync(outputDir)) {
@@ -319,31 +319,31 @@ class ImageProcessingTests {
 
         if (fs.existsSync(outputPath)) {
           const stats = fs.statSync(outputPath);
-          this.log(
-            `    ${format.name} file written: ${stats.size} bytes`,
-            "success"
-          );
-
-          // Clean up test file
-          fs.unlinkSync(outputPath);
-        } else {
-          this.log(`    ${format.name} file not created`, "warning");
-        }
-      } catch (error) {
         this.log(
-          `    ${format.name} write failed: ${error.message}`,
-          "warning"
+          `    ${format.name} 文件已写入: ${stats.size} 字节`,
+          "success"
         );
+
+        // 清理测试文件
+        fs.unlinkSync(outputPath);
+      } else {
+        this.log(`    ${format.name} 文件未创建`, "warning");
       }
+    } catch (error) {
+      this.log(
+        `    ${format.name} 写入失败: ${error.message}`,
+        "warning"
+      );
+    }
     }
   }
 
   async testAdvancedProcessing() {
-    console.log("\n⚙️ Testing Advanced Processing Features");
+    console.log("\n⚙️ 测试高级处理功能");
     console.log("======================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for advanced processing", "warning");
+      this.log("没有可用于高级处理的测试文件", "warning");
       return false;
     }
 
@@ -352,60 +352,60 @@ class ImageProcessingTests {
 
     try {
       this.log(
-        `Testing advanced processing with: ${path.basename(testFile)}`,
+        `测试高级处理: ${path.basename(testFile)}`,
         "test"
       );
 
       await processor.loadFile(testFile);
-      this.log(`File loaded successfully`, "success");
+      this.log(`文件加载成功`, "success");
 
-      // Test unpack operation
+      // 测试解包操作
       const unpacked = await processor.unpack();
       this.log(
-        `Low-level unpack: ${unpacked ? "Success" : "Failed"}`,
+        `低级解包: ${unpacked ? "成功" : "失败"}`,
         unpacked ? "success" : "warning"
       );
 
-      // Test extended raw2image
+      // 测试扩展 raw2image
       const raw2ImageEx = await processor.raw2ImageEx(true);
       this.log(
-        `Extended RAW to image: ${raw2ImageEx ? "Success" : "Failed"}`,
+        `扩展 RAW 到图像: ${raw2ImageEx ? "成功" : "失败"}`,
         raw2ImageEx ? "success" : "warning"
       );
 
-      // Test size adjustment
+      // 测试尺寸调整
       const sizesAdjusted = await processor.adjustSizesInfoOnly();
       this.log(
-        `Size adjustment: ${sizesAdjusted ? "Success" : "Failed"}`,
+        `尺寸调整: ${sizesAdjusted ? "成功" : "失败"}`,
         sizesAdjusted ? "success" : "warning"
       );
 
-      // Test memory format
+      // 测试内存格式
       const memFormat = await processor.getMemImageFormat();
       if (memFormat) {
         this.log(
-          `Memory format: ${memFormat.width}x${memFormat.height}, ${memFormat.colors} colors, ${memFormat.bps} bps`,
+          `内存格式: ${memFormat.width}x${memFormat.height}, ${memFormat.colors} 颜色, ${memFormat.bps} bps`,
           "data"
         );
       }
 
-      // Test color operations
+      // 测试颜色操作
       try {
         const colorAt = await processor.getColorAt(0, 0);
-        this.log(`Color at (0,0): ${colorAt}`, "data");
+        this.log(`(0,0) 处的颜色: ${colorAt}`, "data");
       } catch (error) {
-        this.log(`Color at position test failed: ${error.message}`, "warning");
+        this.log(`位置颜色测试失败: ${error.message}`, "warning");
       }
 
-      // Test floating point conversion
+      // 测试浮点数转换
       try {
         const floatConverted = await processor.convertFloatToInt();
         this.log(
-          `Float to int conversion: ${floatConverted ? "Success" : "Failed"}`,
+          `浮点数到整数转换: ${floatConverted ? "成功" : "失败"}`,
           floatConverted ? "success" : "warning"
         );
       } catch (error) {
-        this.log(`Float conversion failed: ${error.message}`, "warning");
+        this.log(`浮点数转换失败: ${error.message}`, "warning");
       }
 
       await processor.close();
@@ -413,7 +413,7 @@ class ImageProcessingTests {
       this.results.processing = { success: true };
       return true;
     } catch (error) {
-      this.log(`Advanced processing failed: ${error.message}`, "error");
+      this.log(`高级处理失败: ${error.message}`, "error");
       await processor.close();
       this.results.processing = { success: false, error: error.message };
       return false;
@@ -421,11 +421,11 @@ class ImageProcessingTests {
   }
 
   async testParameterConfiguration() {
-    console.log("\n🛠️  Testing Parameter Configuration");
+    console.log("\n🛠️  测试参数配置");
     console.log("==================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for parameter testing", "warning");
+      this.log("没有可用于参数测试的测试文件", "warning");
       return false;
     }
 
@@ -434,35 +434,35 @@ class ImageProcessingTests {
 
     try {
       await processor.loadFile(testFile);
-      this.log(`File loaded for parameter testing`, "success");
+      this.log(`文件已加载用于参数测试`, "success");
 
-      // Test different parameter configurations
+      // 测试不同的参数配置
       const parameterSets = [
         {
-          name: "Standard sRGB 8-bit",
+          name: "标准 sRGB 8位",
           params: {
             output_color: 1, // sRGB
-            output_bps: 8, // 8-bit
-            bright: 1.0, // Normal brightness
-            gamma: [2.2, 4.5], // Standard gamma
+            output_bps: 8, // 8位
+            bright: 1.0, // 正常亮度
+            gamma: [2.2, 4.5], // 标准 gamma
           },
         },
         {
-          name: "Adobe RGB 16-bit",
+          name: "Adobe RGB 16位",
           params: {
             output_color: 2, // Adobe RGB
-            output_bps: 16, // 16-bit
-            bright: 1.1, // Slightly brighter
+            output_bps: 16, // 16位
+            bright: 1.1, // 稍亮
             gamma: [1.8, 4.5], // Adobe gamma
           },
         },
         {
-          name: "High quality processing",
+          name: "高质量处理",
           params: {
             output_color: 1,
             output_bps: 16,
             bright: 1.0,
-            highlight: 1, // Highlight recovery
+            highlight: 1, // 高光恢复
             no_auto_bright: false,
           },
         },
@@ -472,21 +472,21 @@ class ImageProcessingTests {
 
       for (const config of parameterSets) {
         try {
-          this.log(`  Testing configuration: ${config.name}`, "test");
+          this.log(`  测试配置: ${config.name}`, "test");
 
-          // Set parameters
+          // 设置参数
           const paramsSet = await processor.setOutputParams(config.params);
           this.log(
-            `    Parameters set: ${paramsSet ? "Success" : "Failed"}`,
+            `    参数设置: ${paramsSet ? "成功" : "失败"}`,
             paramsSet ? "success" : "warning"
           );
 
           if (paramsSet) {
-            // Get parameters to verify
+            // 获取参数进行验证
             const currentParams = await processor.getOutputParams();
-            this.log(`    Parameters retrieved successfully`, "success");
+            this.log(`    参数获取成功`, "success");
 
-            // Process with these parameters
+            // 使用这些参数进行处理
             await processor.subtractBlack();
             await processor.raw2Image();
             const processed = await processor.processImage();
@@ -495,7 +495,7 @@ class ImageProcessingTests {
               const memImage = await processor.createMemoryImage();
               if (memImage) {
                 this.log(
-                  `    Processed image: ${memImage.width}x${memImage.height}, ${memImage.bits}-bit`,
+                  `    处理后的图像: ${memImage.width}x${memImage.height}, ${memImage.bits}-位`,
                   "success"
                 );
                 successfulConfigs++;
@@ -504,7 +504,7 @@ class ImageProcessingTests {
           }
         } catch (configError) {
           this.log(
-            `    Configuration failed: ${configError.message}`,
+            `    配置失败: ${configError.message}`,
             "warning"
           );
         }
@@ -521,7 +521,7 @@ class ImageProcessingTests {
       };
 
       this.log(
-        `Parameter configuration results: ${successfulConfigs}/${parameterSets.length} passed (${this.results.output.successRate}%)`,
+        `参数配置结果: ${successfulConfigs}/${parameterSets.length} 通过 (${this.results.output.successRate}%)`,
         successfulConfigs > 0 ? "success" : "warning"
       );
 
@@ -561,7 +561,7 @@ class ImageProcessingTests {
       const memFormat = await processor.getMemImageFormat();
       if (memFormat) {
         this.log(
-          `Memory format: ${memFormat.width}x${memFormat.height}, ${memFormat.colors} colors, ${memFormat.bps} bps`,
+          `内存格式: ${memFormat.width}x${memFormat.height}, ${memFormat.colors} 颜色, ${memFormat.bps} bps`,
           "data"
         );
 
@@ -623,15 +623,15 @@ class ImageProcessingTests {
   }
 
   printSummary() {
-    console.log("\n📊 Image Processing Test Summary");
+    console.log("\n📊 图像处理测试汇总");
     console.log("================================");
 
     const categories = [
-      { name: "Thumbnail Extraction", result: this.results.thumbnail },
-      { name: "Image Conversion", result: this.results.conversion },
-      { name: "Advanced Processing", result: this.results.processing },
-      { name: "Parameter Configuration", result: this.results.output },
-      { name: "Memory Operations", result: this.results.memory },
+      { name: "缩略图提取", result: this.results.thumbnail },
+      { name: "图像转换", result: this.results.conversion },
+      { name: "高级处理", result: this.results.processing },
+      { name: "参数配置", result: this.results.output },
+      { name: "内存操作", result: this.results.memory },
     ];
 
     let totalTests = 0;
@@ -649,7 +649,7 @@ class ImageProcessingTests {
         totalTests++;
         if (category.result.success) passedTests++;
         this.log(
-          `${category.name}: ${category.result.success ? "Passed" : "Failed"}`,
+          `${category.name}: ${category.result.success ? "通过" : "失败"}`,
           category.result.success ? "success" : "error"
         );
       }
@@ -658,7 +658,7 @@ class ImageProcessingTests {
     if (totalTests > 0) {
       const overallSuccessRate = ((passedTests / totalTests) * 100).toFixed(1);
       this.log(
-        `\nOverall Success Rate: ${passedTests}/${totalTests} (${overallSuccessRate}%)`,
+        `\n总体成功率: ${passedTests}/${totalTests} (${overallSuccessRate}%)`,
         passedTests === totalTests ? "success" : "warning"
       );
     }
@@ -677,17 +677,17 @@ class ImageProcessingTests {
     this.testFiles = this.findTestFiles();
 
     if (this.testFiles.length === 0) {
-      this.log("No RAW test files found in raw-samples-repo directory", "error");
+      this.log("在 raw-samples-repo 目录中未找到 RAW 测试文件", "error");
       this.log(
-        "Please add some RAW files (CR2, CR3, NEF, ARW, DNG, RAF, RW2) to test/",
+        "请添加一些 RAW 文件 (CR2, CR3, NEF, ARW, DNG, RAF, RW2) 到 test/ 目录",
         "info"
       );
       return false;
     }
 
-    this.log(`Found ${this.testFiles.length} test files`, "success");
+    this.log(`找到 ${this.testFiles.length} 个测试文件`, "success");
 
-    // Run all test categories
+    // 运行所有测试类别
     const results = [];
 
     results.push(await this.testThumbnailExtraction());
@@ -701,9 +701,9 @@ class ImageProcessingTests {
     const allPassed = results.every((result) => result);
 
     if (allPassed) {
-      console.log("\n🎉 All image processing tests completed successfully!");
+      console.log("\n🎉 所有图像处理测试成功完成！");
     } else {
-      console.log("\n⚠️  Some image processing tests failed or had warnings");
+      console.log("\n⚠️  一些图像处理测试失败或有警告");
     }
 
     return allPassed;
@@ -717,7 +717,7 @@ async function main() {
     const success = await tester.runAllTests();
     process.exit(success ? 0 : 1);
   } catch (error) {
-    console.error("❌ Test suite failed:", error.message);
+    console.error("❌ 测试套件失败:", error.message);
     console.error(error.stack);
     process.exit(1);
   }

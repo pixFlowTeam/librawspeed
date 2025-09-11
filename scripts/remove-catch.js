@@ -11,4 +11,4 @@ content = content.replace(/\s*\}\s*catch\s*\(\s*const\s+std::exception&\s+e\s*\)
 content = content.replace(/\s*\}\s*catch\s*\(\s*const\s+std::exception&\s+e\s*\)\s*\{\s*\n(\s+)\}\s*\n/g, '\n');
 
 fs.writeFileSync(filePath, content);
-console.log('Successfully removed catch statements from libraw_wrapper.cpp');
+console.log('成功从 libraw_wrapper.cpp 中移除 catch 语句');

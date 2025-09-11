@@ -1,30 +1,30 @@
-# LibRaw Test Suites Documentation
+# LibRaw 测试套件文档
 
-## Overview
+## 概述
 
-This document describes the comprehensive test suites for the LibRaw Node.js wrapper, specifically covering image conversion, thumbnail extraction, and format conversion capabilities.
+本文档描述了 LibRaw Node.js 包装器的综合测试套件，特别涵盖图像转换、缩略图提取和格式转换功能。
 
-## Test Suites
+## 测试套件
 
-### 1. Image Processing Test Suite (`image-processing.test.js`)
+### 1. 图像处理测试套件（`image-processing.test.js`）
 
-Tests comprehensive image conversion and processing workflows.
+测试综合图像转换和处理工作流。
 
-**Features Tested:**
+**测试功能：**
 
-- ✅ Thumbnail Extraction (unpackThumbnail, createMemoryThumbnail, writeThumbnail)
-- ✅ Image Conversion (raw2Image, processImage, createMemoryImage)
-- ✅ Advanced Processing (subtractBlack, adjustMaximum, memory operations)
-- ✅ Parameter Configuration (output params, color spaces, bit depths)
-- ✅ Memory Operations (buffer management, memory copying)
+- ✅ 缩略图提取（unpackThumbnail、createMemoryThumbnail、writeThumbnail）
+- ✅ 图像转换（raw2Image、processImage、createMemoryImage）
+- ✅ 高级处理（subtractBlack、adjustMaximum、内存操作）
+- ✅ 参数配置（输出参数、色彩空间、位深度）
+- ✅ 内存操作（缓冲区管理、内存复制）
 
-**Usage:**
+**使用方法：**
 
 ```bash
 npm run test:image-processing
 ```
 
-**Sample Output:**
+**示例输出：**
 
 ```
 🧪 LibRaw Image Processing Test Suite
@@ -54,20 +54,20 @@ Testing image conversion: sample.cr2
 
 Tests various output formats, color spaces, and quality settings.
 
-**Features Tested:**
+**测试功能：**
 
 - ✅ Output Formats (PPM, TIFF format validation)
 - ✅ Color Spaces (sRGB, Adobe RGB, Wide Gamut, ProPhoto, XYZ)
 - ✅ Bit Depths (8-bit, 16-bit with utilization analysis)
 - ✅ Quality Settings (Fast Preview, Standard, High Quality)
 
-**Usage:**
+**使用方法：**
 
 ```bash
 npm run test:format-conversion
 ```
 
-**Sample Output:**
+**示例输出：**
 
 ```
 🧪 LibRaw Format Conversion Test Suite
@@ -98,7 +98,7 @@ Testing color space: Adobe RGB
 
 Comprehensive testing of thumbnail operations and format analysis.
 
-**Features Tested:**
+**测试功能：**
 
 - ✅ Thumbnail Detection (thumbOK, getThumbnailList)
 - ✅ Extraction Methods (unpackThumbnail, createMemoryThumbnail)
@@ -106,13 +106,13 @@ Comprehensive testing of thumbnail operations and format analysis.
 - ✅ Performance Metrics (extraction speed, throughput)
 - ✅ Data Validation (header verification, size checks)
 
-**Usage:**
+**使用方法：**
 
 ```bash
 npm run test:thumbnail-extraction
 ```
 
-**Sample Output:**
+**示例输出：**
 
 ```
 🧪 LibRaw Thumbnail Extraction Test Suite

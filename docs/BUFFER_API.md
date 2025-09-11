@@ -1,57 +1,57 @@
-# Buffer/Stream API Documentation
+# 缓冲区/流 API 文档
 
-The LibRaw Node.js wrapper now supports modern buffer-based operations that return image data directly in memory instead of writing to files. This is perfect for web services, cloud applications, and real-time image processing pipelines.
+LibRaw Node.js 包装器现在支持现代基于缓冲区的操作，直接在内存中返回图像数据而不是写入文件。这非常适合 Web 服务、云应用程序和实时图像处理管道。
 
-## Overview
+## 概述
 
-The buffer API provides several key advantages:
+缓冲区 API 提供几个关键优势：
 
-- **🚀 Performance**: No filesystem I/O overhead
-- **🌐 Web-Ready**: Perfect for HTTP responses and API endpoints
-- **☁️ Cloud-Native**: Direct upload to cloud storage services
-- **🔄 Streamable**: Use with Node.js streams and pipelines
-- **💾 Memory Efficient**: Process without temporary files
-- **⚡ Real-time**: Ideal for serverless and lambda functions
+- **🚀 性能**：无文件系统 I/O 开销
+- **🌐 Web 就绪**：完美适用于 HTTP 响应和 API 端点
+- **☁️ 云原生**：直接上传到云存储服务
+- **🔄 可流式**：与 Node.js 流和管道一起使用
+- **💾 内存高效**：无需临时文件处理
+- **⚡ 实时**：非常适合无服务器和 lambda 函数
 
-## Available Methods
+## 可用方法
 
-### Core Buffer Methods
+### 核心缓冲区方法
 
 #### `createJPEGBuffer(options)`
 
-Creates a JPEG buffer with advanced compression options.
+创建具有高级压缩选项的 JPEG 缓冲区。
 
 ```javascript
 const result = await processor.createJPEGBuffer({
-  quality: 85, // 1-100, higher = better quality
-  width: 1920, // Resize to width (maintains aspect ratio)
-  height: 1080, // Resize to height
-  progressive: true, // Progressive JPEG for web
-  mozjpeg: true, // Use mozjpeg encoder for better compression
-  chromaSubsampling: "4:2:0", // '4:4:4', '4:2:2', or '4:2:0'
+  quality: 85, // 1-100，越高质量越好
+  width: 1920, // 调整到宽度（保持宽高比）
+  height: 1080, // 调整到高度
+  progressive: true, // 用于 Web 的渐进式 JPEG
+  mozjpeg: true, // 使用 mozjpeg 编码器获得更好的压缩
+  chromaSubsampling: "4:2:0", // '4:4:4', '4:2:2', 或 '4:2:0'
   colorSpace: "srgb", // 'srgb', 'rec2020', 'p3', 'cmyk'
-  fastMode: false, // Enable for speed over quality
-  effort: 4, // Encoding effort (1=fast, 9=slow)
+  fastMode: false, // 启用速度优先于质量
+  effort: 4, // 编码努力程度 (1=快, 9=慢)
 });
 ```
 
 #### `createPNGBuffer(options)`
 
-Creates a lossless PNG buffer.
+创建无损 PNG 缓冲区。
 
 ```javascript
 const result = await processor.createPNGBuffer({
   width: 1920,
   height: 1080,
-  compressionLevel: 6, // 0-9, higher = smaller file
-  progressive: false, // Progressive PNG
+  compressionLevel: 6, // 0-9，越高文件越小
+  progressive: false, // 渐进式 PNG
   colorSpace: "srgb",
 });
 ```
 
 #### `createWebPBuffer(options)`
 
-Creates a modern WebP buffer with excellent compression.
+创建具有出色压缩的现代 WebP 缓冲区。
 
 ```javascript
 const result = await processor.createWebPBuffer({
@@ -65,7 +65,7 @@ const result = await processor.createWebPBuffer({
 
 #### `createAVIFBuffer(options)`
 
-Creates a next-generation AVIF buffer with superior compression.
+创建具有卓越压缩的下一代 AVIF 缓冲区。
 
 ```javascript
 const result = await processor.createAVIFBuffer({
@@ -79,7 +79,7 @@ const result = await processor.createAVIFBuffer({
 
 #### `createTIFFBuffer(options)`
 
-Creates a high-quality TIFF buffer for professional workflows.
+创建用于专业工作流的高质量 TIFF 缓冲区。
 
 ```javascript
 const result = await processor.createTIFFBuffer({
@@ -93,7 +93,7 @@ const result = await processor.createTIFFBuffer({
 
 #### `createPPMBuffer()`
 
-Creates a raw PPM buffer for further processing.
+创建用于进一步处理的原始 PPM 缓冲区。
 
 ```javascript
 const result = await processor.createPPMBuffer();

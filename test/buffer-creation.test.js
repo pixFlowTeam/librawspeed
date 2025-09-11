@@ -3,31 +3,31 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Comprehensive tests for the new buffer creation methods
- * Tests all the new createXXXBuffer() methods added to the LibRaw API
+ * 新缓冲区创建方法的综合测试
+ * 测试添加到 LibRaw API 的所有新 createXXXBuffer() 方法
  */
 
-// Test configuration
+// 测试配置
 const TEST_CONFIG = {
-  timeout: 30000, // 30 seconds per test
+  timeout: 30000, // 每个测试 30 秒
   sampleImagesDir: path.join(__dirname, "..", "raw-samples-repo"),
   outputDir: path.join(__dirname, "buffer-output"),
-  minBufferSize: 1000, // Minimum expected buffer size in bytes
-  maxTestFileSize: 50 * 1024 * 1024, // 50MB max test file
+  minBufferSize: 1000, // 最小预期缓冲区大小（字节）
+  maxTestFileSize: 50 * 1024 * 1024, // 最大测试文件 50MB
 };
 
-// Ensure output directory exists
+// 确保输出目录存在
 if (!fs.existsSync(TEST_CONFIG.outputDir)) {
   fs.mkdirSync(TEST_CONFIG.outputDir, { recursive: true });
 }
 
 /**
- * Helper function to find a test RAW file
+ * 查找测试 RAW 文件的辅助函数
  */
 function findTestFile() {
   if (!fs.existsSync(TEST_CONFIG.sampleImagesDir)) {
     throw new Error(
-      `Sample images directory not found: ${TEST_CONFIG.sampleImagesDir}`
+      `示例图像目录未找到: ${TEST_CONFIG.sampleImagesDir}`
     );
   }
 
@@ -49,65 +49,65 @@ function findTestFile() {
       const fullPath = path.join(TEST_CONFIG.sampleImagesDir, file);
       const stats = fs.statSync(fullPath);
 
-      // Skip files that are too large for testing
+      // 跳过测试中过大的文件
       if (stats.size <= TEST_CONFIG.maxTestFileSize) {
         return fullPath;
       }
     }
   }
 
-  throw new Error("No suitable RAW test file found");
+  throw new Error("未找到合适的 RAW 测试文件");
 }
 
 /**
- * Helper function to validate buffer result structure
+ * 验证缓冲区结果结构的辅助函数
  */
 function validateBufferResult(result, formatName) {
   const errors = [];
 
-  // Check result structure
+  // 检查结果结构
   if (!result || typeof result !== "object") {
-    errors.push(`${formatName}: Result is not an object`);
+    errors.push(`${formatName}: 结果不是对象`);
     return errors;
   }
 
-  // Check success flag
+  // 检查成功标志
   if (result.success !== true) {
-    errors.push(`${formatName}: success flag is not true`);
+    errors.push(`${formatName}: 成功标志不为 true`);
   }
 
-  // Check buffer
+  // 检查缓冲区
   if (!Buffer.isBuffer(result.buffer)) {
-    errors.push(`${formatName}: buffer is not a Buffer instance`);
+    errors.push(`${formatName}: 缓冲区不是 Buffer 实例`);
   } else if (result.buffer.length < TEST_CONFIG.minBufferSize) {
     errors.push(
-      `${formatName}: buffer too small (${result.buffer.length} bytes)`
+      `${formatName}: 缓冲区太小 (${result.buffer.length} 字节)`
     );
   }
 
-  // Check metadata structure
+  // 检查元数据结构
   if (!result.metadata || typeof result.metadata !== "object") {
-    errors.push(`${formatName}: metadata is missing or not an object`);
+    errors.push(`${formatName}: 元数据缺失或不是对象`);
   } else {
     const meta = result.metadata;
 
-    // Check dimensions
+    // 检查尺寸
     if (
       !meta.outputDimensions ||
       !meta.outputDimensions.width ||
       !meta.outputDimensions.height
     ) {
-      errors.push(`${formatName}: outputDimensions missing or invalid`);
+      errors.push(`${formatName}: 输出尺寸缺失或无效`);
     }
 
-    // Check file size info
+    // 检查文件大小信息
     if (!meta.fileSize || typeof meta.fileSize.compressed !== "number") {
-      errors.push(`${formatName}: fileSize.compressed missing or invalid`);
+      errors.push(`${formatName}: 文件大小压缩信息缺失或无效`);
     }
 
-    // Check processing info
+    // 检查处理信息
     if (!meta.processing || !meta.processing.timeMs) {
-      errors.push(`${formatName}: processing time info missing`);
+      errors.push(`${formatName}: 处理时间信息缺失`);
     }
   }
 
@@ -115,7 +115,7 @@ function validateBufferResult(result, formatName) {
 }
 
 /**
- * Test createJPEGBuffer method
+ * 测试 createJPEGBuffer 方法
  */
 async function testCreateJPEGBuffer() {
   console.log("\n📸 Testing createJPEGBuffer()");
@@ -129,7 +129,7 @@ async function testCreateJPEGBuffer() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    // Test 1: Basic JPEG creation
+    // 测试 1：基本 JPEG 创建
     console.log("  • Basic JPEG creation...");
     const basicResult = await processor.createJPEGBuffer();
     const basicErrors = validateBufferResult(basicResult, "Basic JPEG");
@@ -145,7 +145,7 @@ async function testCreateJPEGBuffer() {
       console.log("    ❌ Failed validation");
     }
 
-    // Test 2: High quality JPEG
+    // 测试 2：高质量 JPEG
     console.log("  • High quality JPEG (quality: 95)...");
     const hqResult = await processor.createJPEGBuffer({ quality: 95 });
     const hqErrors = validateBufferResult(hqResult, "High Quality JPEG");
@@ -159,7 +159,7 @@ async function testCreateJPEGBuffer() {
       );
     }
 
-    // Test 3: Resized JPEG
+    // 测试 3：调整大小的 JPEG
     console.log("  • Resized JPEG (1920px wide)...");
     const resizedResult = await processor.createJPEGBuffer({
       quality: 85,
@@ -178,13 +178,13 @@ async function testCreateJPEGBuffer() {
         resizedResult.buffer
       );
 
-      // Verify resize worked
+      // 验证调整大小是否有效
       if (resizedResult.metadata.outputDimensions.width !== 1920) {
         errors.push("Resize did not produce expected width");
       }
     }
 
-    // Test 4: Progressive JPEG
+    // 测试 4：渐进式 JPEG
     console.log("  • Progressive JPEG...");
     const progressiveResult = await processor.createJPEGBuffer({
       quality: 85,
@@ -205,7 +205,7 @@ async function testCreateJPEGBuffer() {
       );
     }
 
-    // Test 5: Fast mode JPEG
+    // 测试 5：快速模式 JPEG
     console.log("  • Fast mode JPEG...");
     const fastResult = await processor.createJPEGBuffer({
       quality: 80,
@@ -227,7 +227,7 @@ async function testCreateJPEGBuffer() {
       );
     }
 
-    // Test 6: Edge case - very low quality
+    // 测试 6：边缘情况 - 极低质量
     console.log("  • Very low quality JPEG (quality: 1)...");
     try {
       const lowQualityResult = await processor.createJPEGBuffer({ quality: 1 });
@@ -246,7 +246,7 @@ async function testCreateJPEGBuffer() {
       console.log(`    ⚠️ Low quality failed: ${error.message}`);
     }
 
-    // Test 7: Edge case - very high quality
+    // 测试 7：边缘情况 - 极高质量
     console.log("  • Very high quality JPEG (quality: 100)...");
     try {
       const maxQualityResult = await processor.createJPEGBuffer({
@@ -291,7 +291,7 @@ async function testCreatePNGBuffer() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    // Test 1: Basic PNG creation
+    // 测试 1：基本 PNG 创建
     console.log("  • Basic PNG creation...");
     const basicResult = await processor.createPNGBuffer();
     const basicErrors = validateBufferResult(basicResult, "Basic PNG");
@@ -305,7 +305,7 @@ async function testCreatePNGBuffer() {
       );
     }
 
-    // Test 2: PNG with compression
+    // 测试 2：带压缩的 PNG
     console.log("  • PNG with max compression (level: 9)...");
     const compressedResult = await processor.createPNGBuffer({
       compressionLevel: 9,
@@ -325,7 +325,7 @@ async function testCreatePNGBuffer() {
       );
     }
 
-    // Test 3: Fast PNG (low compression)
+    // 测试 3：快速 PNG（低压缩）
     console.log("  • Fast PNG (compression: 0)...");
     const fastResult = await processor.createPNGBuffer({
       compressionLevel: 0,
@@ -366,7 +366,7 @@ async function testCreateWebPBuffer() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    // Test 1: Basic WebP creation
+    // 测试 1：基本 WebP 创建
     console.log("  • Basic WebP creation...");
     const basicResult = await processor.createWebPBuffer();
     const basicErrors = validateBufferResult(basicResult, "Basic WebP");
@@ -380,7 +380,7 @@ async function testCreateWebPBuffer() {
       );
     }
 
-    // Test 2: High quality WebP
+    // 测试 2：高质量 WebP
     console.log("  • High quality WebP (quality: 90)...");
     const hqResult = await processor.createWebPBuffer({
       quality: 90,
@@ -397,7 +397,7 @@ async function testCreateWebPBuffer() {
       );
     }
 
-    // Test 3: Lossless WebP
+    // 测试 3：无损 WebP
     console.log("  • Lossless WebP...");
     const losslessResult = await processor.createWebPBuffer({
       lossless: true,
@@ -417,7 +417,7 @@ async function testCreateWebPBuffer() {
       );
     }
 
-    // Test 4: Fast WebP (low effort)
+    // 测试 4：快速 WebP（低努力）
     console.log("  • Fast WebP (effort: 0)...");
     const fastResult = await processor.createWebPBuffer({
       quality: 75,
@@ -462,7 +462,7 @@ async function testCreateAVIFBuffer() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    // Test 1: Basic AVIF creation
+    // 测试 1：基本 AVIF 创建
     console.log("  • Basic AVIF creation...");
     const basicResult = await processor.createAVIFBuffer();
     const basicErrors = validateBufferResult(basicResult, "Basic AVIF");
@@ -476,7 +476,7 @@ async function testCreateAVIFBuffer() {
       );
     }
 
-    // Test 2: High quality AVIF
+    // 测试 2：高质量 AVIF
     console.log("  • High quality AVIF (quality: 80)...");
     const hqResult = await processor.createAVIFBuffer({
       quality: 80,
@@ -493,7 +493,7 @@ async function testCreateAVIFBuffer() {
       );
     }
 
-    // Test 3: Lossless AVIF
+    // 测试 3：无损 AVIF
     console.log("  • Lossless AVIF...");
     const losslessResult = await processor.createAVIFBuffer({
       lossless: true,
@@ -513,7 +513,7 @@ async function testCreateAVIFBuffer() {
       );
     }
 
-    // Test 4: Fast AVIF
+    // 测试 4：快速 AVIF
     console.log("  • Fast AVIF (effort: 2)...");
     const fastResult = await processor.createAVIFBuffer({
       quality: 45,
@@ -558,7 +558,7 @@ async function testCreateTIFFBuffer() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    // Test 1: Basic TIFF creation
+    // 测试 1：基本 TIFF 创建
     console.log("  • Basic TIFF creation...");
     const basicResult = await processor.createTIFFBuffer();
     const basicErrors = validateBufferResult(basicResult, "Basic TIFF");
@@ -572,7 +572,7 @@ async function testCreateTIFFBuffer() {
       );
     }
 
-    // Test 2: LZW compressed TIFF
+    // 测试 2：LZW 压缩 TIFF
     console.log("  • LZW compressed TIFF...");
     const lzwResult = await processor.createTIFFBuffer({
       compression: "lzw",
@@ -589,7 +589,7 @@ async function testCreateTIFFBuffer() {
       );
     }
 
-    // Test 3: Uncompressed TIFF
+    // 测试 3：未压缩 TIFF
     console.log("  • Uncompressed TIFF...");
     const uncompressedResult = await processor.createTIFFBuffer({
       compression: "none",

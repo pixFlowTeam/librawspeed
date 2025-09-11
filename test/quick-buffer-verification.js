@@ -3,14 +3,14 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Quick verification tests for buffer methods
- * Run this for fast validation during development
+ * 缓冲区方法的快速验证测试
+ * 在开发过程中运行此测试以进行快速验证
  */
 
 const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
 const outputDir = path.join(__dirname, "quick-test-output");
 
-// Ensure output directory exists
+// 确保输出目录存在
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
 }
@@ -34,18 +34,18 @@ function findTestFile() {
     }
   }
 
-  throw new Error("No RAW test file found");
+  throw new Error("未找到 RAW 测试文件");
 }
 
 async function quickBufferTest() {
-  console.log("🚀 Quick Buffer Creation Test");
+  console.log("🚀 快速缓冲区创建测试");
   console.log("=".repeat(40));
 
   const processor = new LibRaw();
   const testFile = findTestFile();
 
   try {
-    console.log(`📁 Loading: ${path.basename(testFile)}`);
+    console.log(`📁 加载中: ${path.basename(testFile)}`);
     await processor.loadFile(testFile);
     await processor.processImage();
 
@@ -95,22 +95,22 @@ async function quickBufferTest() {
             );
           }
         } else {
-          console.log(`❌ ${test.name}: Invalid result structure`);
+          console.log(`❌ ${test.name}: 无效的结果结构`);
         }
       } catch (error) {
         console.log(`❌ ${test.name}: ${error.message}`);
       }
     }
 
-    console.log(`\n📂 Output saved to: ${outputDir}`);
+    console.log(`\n📂 输出已保存到: ${outputDir}`);
   } catch (error) {
-    console.error("Test failed:", error.message);
+    console.error("测试失败:", error.message);
   } finally {
     await processor.close();
   }
 }
 
-// Run test if called directly
+// 如果直接调用则运行测试
 if (require.main === module) {
   quickBufferTest().catch(console.error);
 }

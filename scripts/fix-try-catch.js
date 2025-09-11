@@ -15,4 +15,4 @@ content = content.replace(/\s*\}\s*catch\s*\(\s*const\s+std::exception&\s+e\s*\)
 content = content.replace(/\s*\}\s*catch\s*\(\s*const\s+std::exception&\s+e\s*\)\s*\{\s*\n(\s+)\}\s*\n/g, '\n');
 
 fs.writeFileSync(filePath, content);
-console.log('Successfully fixed try-catch statements in libraw_wrapper.cpp');
+console.log('成功修复 libraw_wrapper.cpp 中的 try-catch 语句');

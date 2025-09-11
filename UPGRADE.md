@@ -1,55 +1,55 @@
-# LibRaw Upgrade Guide
+# LibRaw 升级指南
 
-## Upgrading from current to X.X.X
+## 从当前版本升级到 X.X.X
 
-### Automatic Upgrade (Recommended)
+### 自动升级（推荐）
 
-Run the upgrade script:
+运行升级脚本:
 ```bash
 npm run upgrade:libraw
 ```
 
-### Manual Upgrade Steps
+### 手动升级步骤
 
-#### 1. Download LibRaw X.X.X
+#### 1. 下载 LibRaw X.X.X
 
-Visit: https://www.libraw.org/download
+访问: https://www.libraw.org/download
 
-Download this file:
-- `LibRaw-X.X.X.tar.gz` (source code for all platforms)
+下载此文件:
+- `LibRaw-X.X.X.tar.gz` (所有平台的源代码)
 
-#### 2. Backup Current Installation
+#### 2. 备份当前安装
 
 ```bash
-# Backup current deps folder
+# 备份当前 deps 文件夹
 cp -r deps deps-backup-$(date +%Y%m%d)
 ```
 
-#### 3. Replace Library Files
+#### 3. 替换库文件
 
-**All Platforms:**
+**所有平台:**
 ```bash
-# Extract and compile from source
+# 从源代码提取和编译
 tar -xzf LibRaw-X.X.X.tar.gz
 cd LibRaw-X.X.X
 
-# Configure for the project
+# 为项目配置
 ./configure --prefix=../deps/LibRaw-Source/LibRaw-X.X.X --enable-shared --disable-static
 
-# Compile
+# 编译
 make -j$(nproc)
 
-# Install
+# 安装
 make install
 
-# Build the native addon
+# 构建原生插件
 cd ..
 npm run build
 ```
 
-#### 4. Update Build Configuration
+#### 4. 更新构建配置
 
-Check `binding.gyp` for version-specific changes:
+检查 `binding.gyp` 中的版本特定更改:
 
 ```json
 {
@@ -77,95 +77,95 @@ Check `binding.gyp` for version-specific changes:
 }
 ```
 
-#### 5. Rebuild Native Addon
+#### 5. 重新构建原生插件
 
 ```bash
 npm run clean
 npm run build
 ```
 
-#### 6. Test Compatibility
+#### 6. 测试兼容性
 
 ```bash
-# Run comprehensive tests
+# 运行综合测试
 npm test
 
-# Test with your sample images
+# 使用您的示例图像进行测试
 npm run test:formats
 
-# Performance regression check
+# 性能回归检查
 npm run test:performance
 ```
 
-#### 7. Update Documentation
+#### 7. 更新文档
 
 ```bash
-# Update supported formats list
+# 更新支持的格式列表
 npm run docs:generate
 
-# Update version info in package.json
-# Update CHANGELOG.md with new features
+# 更新 package.json 中的版本信息
+# 在 CHANGELOG.md 中更新新功能
 ```
 
-### Potential Breaking Changes
+### 潜在的破坏性更改
 
-#### API Changes
-Check LibRaw changelog for API modifications:
-- New metadata fields may be available
-- Some deprecated functions might be removed
-- New camera support added
+#### API 更改
+检查 LibRaw 更新日志中的 API 修改:
+- 可能有新的元数据字段
+- 一些已弃用的函数可能被移除
+- 添加了新相机支持
 
-#### Performance Changes
-- Processing speed may improve or change
-- Memory usage patterns might differ
-- New optimization flags available
+#### 性能更改
+- 处理速度可能提高或改变
+- 内存使用模式可能不同
+- 有新的优化标志可用
 
-#### Compatibility Changes
-- New camera models supported
-- Some older formats might be deprecated
-- Color profile handling improvements
+#### 兼容性更改
+- 支持新的相机型号
+- 一些较旧的格式可能被弃用
+- 颜色配置文件处理改进
 
-### Version-Specific Notes
+### 版本特定说明
 
 #### LibRaw X.X.X
-Check the official LibRaw changelog at:
+查看官方 LibRaw 更新日志:
 https://github.com/LibRaw/LibRaw/releases/tag/X.X.X
 
-Common improvements in newer versions:
-- Support for latest camera models
-- Performance optimizations
-- Bug fixes in metadata extraction
-- Enhanced color profile handling
-- Security updates
+新版本的常见改进:
+- 支持最新的相机型号
+- 性能优化
+- 元数据提取中的错误修复
+- 增强的颜色配置文件处理
+- 安全更新
 
-### Troubleshooting
+### 故障排除
 
-#### Build Errors
+#### 构建错误
 ```bash
-# Clear all build artifacts
+# 清除所有构建工件
 npm run clean
 rm -rf node_modules
 npm install
 npm run build
 ```
 
-#### Runtime Errors
+#### 运行时错误
 ```bash
-# Check library loading
+# 检查库加载
 node -e "console.log(require('./lib/index.js'))"
 
-# Verify DLL/SO dependencies
-# Windows: use Dependency Walker
+# 验证 DLL/SO 依赖项
+# Windows: 使用 Dependency Walker
 # Linux: ldd build/Release/libraw_wrapper.node
 # macOS: otool -L build/Release/libraw_wrapper.node
 ```
 
-#### Test Failures
+#### 测试失败
 ```bash
-# Test individual formats
+# 测试单个格式
 node test/test.js sample-images/test.nef
 
-# Check for new metadata fields
+# 检查新的元数据字段
 node -e "
 const LibRaw = require('./lib');
 const proc = new LibRaw();
@@ -177,40 +177,40 @@ proc.loadFile('sample.nef').then(() => {
 "
 ```
 
-### Rollback Procedure
+### 回滚程序
 
-If the upgrade fails:
+如果升级失败:
 
 ```bash
-# Restore backup
+# 恢复备份
 rm -rf deps
 mv deps-backup-YYYYMMDD deps
 
-# Rebuild with old version
+# 使用旧版本重新构建
 npm run clean
 npm run build
 npm test
 ```
 
-### Post-Upgrade Checklist
+### 升级后检查清单
 
-- [ ] All tests pass
-- [ ] Performance is acceptable
-- [ ] Sample images process correctly
-- [ ] New camera formats work (if any)
-- [ ] Documentation is updated
-- [ ] CHANGELOG.md reflects changes
-- [ ] Package version bumped appropriately
+- [ ] 所有测试通过
+- [ ] 性能可接受
+- [ ] 示例图像处理正确
+- [ ] 新相机格式工作（如果有）
+- [ ] 文档已更新
+- [ ] CHANGELOG.md 反映更改
+- [ ] 包版本适当提升
 
-### Publishing Updated Package
+### 发布更新的包
 
 ```bash
-# Update version
-npm version patch  # or minor/major based on changes
+# 更新版本
+npm version patch  # 或根据更改使用 minor/major
 
-# Test before publishing
+# 发布前测试
 npm run prepublishOnly
 
-# Publish to npm
+# 发布到 npm
 npm publish
 ```

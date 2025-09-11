@@ -4,7 +4,7 @@ const LibRaw = require("../lib/index.js");
 const fs = require("fs");
 
 async function testParallelBatch() {
-  console.log("🚀 Parallel Batch Processing Test");
+  console.log("🚀 并行批量处理测试");
   console.log("=================================\n");
 
   const batchFiles = [
@@ -15,13 +15,13 @@ async function testParallelBatch() {
 
   const outputDir = "examples/parallel-batch-test";
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  console.log(`📁 Processing ${batchFiles.length} RAW files in parallel...`);
-  console.log(`📂 Output directory: ${outputDir}\n`);
+  console.log(`📁 并行处理 ${batchFiles.length} 个 RAW 文件...`);
+  console.log(`📂 输出目录: ${outputDir}\n`);
 
   try {
     const startTime = Date.now();
@@ -33,29 +33,29 @@ async function testParallelBatch() {
         quality: 85,
         fastMode: true,
         effort: 1,
-        maxConcurrency: 3, // Process all files simultaneously
+        maxConcurrency: 3, // 同时处理所有文件
       }
     );
 
     const endTime = Date.now();
     const totalTime = endTime - startTime;
 
-    console.log("📊 Parallel Batch Results:");
+    console.log("📊 并行批量结果:");
     console.log("==========================");
-    console.log(`✅ Total files: ${result.totalFiles}`);
-    console.log(`✅ Successful: ${result.successCount}`);
-    console.log(`❌ Errors: ${result.errorCount}`);
-    console.log(`⚡ Total time: ${totalTime}ms`);
+    console.log(`✅ 总文件数: ${result.totalFiles}`);
+    console.log(`✅ 成功: ${result.successCount}`);
+    console.log(`❌ 错误: ${result.errorCount}`);
+    console.log(`⚡ 总时间: ${totalTime}ms`);
     console.log(
-      `📊 Average per file: ${(totalTime / result.successCount).toFixed(0)}ms`
+      `📊 每个文件平均: ${(totalTime / result.successCount).toFixed(0)}ms`
     );
     console.log(
-      `🎯 Throughput: ${(result.successCount / (totalTime / 1000)).toFixed(
+      `🎯 吞吐量: ${(result.successCount / (totalTime / 1000)).toFixed(
         2
-      )} files/second\n`
+      )} 文件/秒\n`
     );
 
-    console.log("📋 Individual Results:");
+    console.log("📋 个别结果:");
     result.results.forEach((fileResult, index) => {
       if (fileResult.success) {
         const fileName = require("path").basename(fileResult.inputPath);
@@ -73,21 +73,21 @@ async function testParallelBatch() {
     });
 
     if (result.errorCount > 0) {
-      console.log("\n❌ Errors encountered:");
+      console.log("\n❌ 遇到的错误:");
       result.errors.forEach((error) => {
         console.log(`   - ${error.inputPath}: ${error.error}`);
       });
     }
 
-    console.log(`\n🎉 Parallel processing completed!`);
+    console.log(`\n🎉 并行处理完成！`);
     console.log(
-      `💡 Speed comparison: ${(
+      `💡 速度比较: 比顺序处理快 ${(
         7907 /
         (totalTime / result.successCount)
-      ).toFixed(1)}x faster than sequential!`
+      ).toFixed(1)} 倍！`
     );
   } catch (error) {
-    console.error("❌ Batch processing failed:", error.message);
+    console.error("❌ 批量处理失败:", error.message);
     process.exit(1);
   }
 }

@@ -2,7 +2,7 @@ const LibRaw = require("../lib/index.js");
 const fs = require("fs");
 const path = require("path");
 
-// Import new comprehensive test suites
+// 导入新的综合测试套件
 const { ImageProcessingTests } = require("./image-processing.test");
 const { FormatConversionTests } = require("./format-conversion.test");
 const { ThumbnailExtractionTests } = require("./thumbnail-extraction.test");
@@ -11,7 +11,7 @@ async function comprehensiveTest() {
   console.log("🚀 LibRaw Comprehensive API Test");
   console.log("=".repeat(50));
 
-  // Static methods first
+  // 首先测试静态方法
   console.log("\n📊 Library Information:");
   console.log(`   Version: ${LibRaw.getVersion()}`);
   console.log(`   Capabilities: 0x${LibRaw.getCapabilities().toString(16)}`);
@@ -20,10 +20,10 @@ async function comprehensiveTest() {
   const cameras = LibRaw.getCameraList();
   console.log(`   Sample Cameras: ${cameras.slice(0, 5).join(", ")}...`);
 
-  // Find a sample image to test with
+  // 查找用于测试的示例图像
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
   if (!fs.existsSync(sampleImagesDir)) {
-    console.log("\n❌ No sample images directory found");
+    console.log("\n❌ 未找到示例图像目录");
     return;
   }
 
@@ -32,7 +32,7 @@ async function comprehensiveTest() {
     .filter((f) => f.toLowerCase().match(/\.(cr2|cr3|nef|arw|raf|rw2|dng)$/));
 
   if (sampleFiles.length === 0) {
-    console.log("\nℹ️ No RAW sample files found");
+    console.log("\nℹ️ 未找到 RAW 示例文件");
     return;
   }
 

@@ -20,14 +20,14 @@ class LibRawUpgrader {
         return match ? match[1] : null;
       }
     } catch (error) {
-      console.warn("Could not determine current LibRaw version");
+      console.warn("无法确定当前 LibRaw 版本");
     }
     return null;
   }
 
   async checkLatestVersion() {
     return new Promise((resolve, reject) => {
-      console.log("🔍 Checking for latest LibRaw version...");
+      console.log("🔍 检查最新 LibRaw 版本...");
 
       const options = {
         hostname: "www.libraw.org",
@@ -51,7 +51,7 @@ class LibRawUpgrader {
                 .sort((a, b) => this.compareVersions(b, a));
               resolve(versions[0]);
             } else {
-              reject(new Error("Could not find version information"));
+              reject(new Error("无法找到版本信息"));
             }
           } catch (error) {
             reject(error);
@@ -62,7 +62,7 @@ class LibRawUpgrader {
       req.on("error", reject);
       req.setTimeout(10000, () => {
         req.abort();
-        reject(new Error("Request timeout"));
+        reject(new Error("请求超时"));
       });
       req.end();
     });
@@ -83,58 +83,58 @@ class LibRawUpgrader {
   }
 
   generateUpgradeGuide(newVersion) {
-    const guide = `# LibRaw Upgrade Guide
+    const guide = `# LibRaw 升级指南
 
-## Upgrading from ${this.currentVersion || "current"} to ${newVersion}
+## 从 ${this.currentVersion || "当前"} 升级到 ${newVersion}
 
-### Automatic Upgrade (Recommended)
+### 自动升级（推荐）
 
-Run the upgrade script:
+运行升级脚本:
 \`\`\`bash
 npm run upgrade:libraw
 \`\`\`
 
-### Manual Upgrade Steps
+### 手动升级步骤
 
-#### 1. Download LibRaw ${newVersion}
+#### 1. 下载 LibRaw ${newVersion}
 
-Visit: https://www.libraw.org/download
+访问: https://www.libraw.org/download
 
-Download this file:
-- \`LibRaw-${newVersion}.tar.gz\` (source code for all platforms)
+下载此文件:
+- \`LibRaw-${newVersion}.tar.gz\` (所有平台的源代码)
 
-#### 2. Backup Current Installation
+#### 2. 备份当前安装
 
 \`\`\`bash
-# Backup current deps folder
+# 备份当前 deps 文件夹
 cp -r deps deps-backup-$(date +%Y%m%d)
 \`\`\`
 
-#### 3. Replace Library Files
+#### 3. 替换库文件
 
-**All Platforms:**
+**所有平台:**
 \`\`\`bash
-# Extract and compile from source
+# 从源代码提取和编译
 tar -xzf LibRaw-${newVersion}.tar.gz
 cd LibRaw-${newVersion}
 
-# Configure for the project
+# 为项目配置
 ./configure --prefix=../deps/LibRaw-Source/LibRaw-${newVersion} --enable-shared --disable-static
 
-# Compile
+# 编译
 make -j$(nproc)
 
-# Install
+# 安装
 make install
 
-# Build the native addon
+# 构建原生插件
 cd ..
 npm run build
 \`\`\`
 
-#### 4. Update Build Configuration
+#### 4. 更新构建配置
 
-Check \`binding.gyp\` for version-specific changes:
+检查 \`binding.gyp\` 中的版本特定更改:
 
 \`\`\`json
 {
@@ -162,87 +162,87 @@ Check \`binding.gyp\` for version-specific changes:
 }
 \`\`\`
 
-#### 5. Rebuild Native Addon
+#### 5. 重新构建原生插件
 
 \`\`\`bash
 npm run clean
 npm run build
 \`\`\`
 
-#### 6. Test Compatibility
+#### 6. 测试兼容性
 
 \`\`\`bash
-# Run comprehensive tests
+# 运行综合测试
 npm test
 
-# Test with your sample images
+# 使用您的示例图像进行测试
 npm run test:formats
 
-# Performance regression check
+# 性能回归检查
 npm run test:performance
 \`\`\`
 
-#### 7. Update Documentation
+#### 7. 更新文档
 
 \`\`\`bash
-# Update supported formats list
+# 更新支持的格式列表
 npm run docs:generate
 
-# Update version info in package.json
-# Update CHANGELOG.md with new features
+# 更新 package.json 中的版本信息
+# 在 CHANGELOG.md 中更新新功能
 \`\`\`
 
-### Potential Breaking Changes
+### 潜在的破坏性更改
 
-#### API Changes
-Check LibRaw changelog for API modifications:
-- New metadata fields may be available
-- Some deprecated functions might be removed
-- New camera support added
+#### API 更改
+检查 LibRaw 更新日志中的 API 修改:
+- 可能有新的元数据字段
+- 一些已弃用的函数可能被移除
+- 添加了新相机支持
 
-#### Performance Changes
-- Processing speed may improve or change
-- Memory usage patterns might differ
-- New optimization flags available
+#### 性能更改
+- 处理速度可能提高或改变
+- 内存使用模式可能不同
+- 有新的优化标志可用
 
-#### Compatibility Changes
-- New camera models supported
-- Some older formats might be deprecated
-- Color profile handling improvements
+#### 兼容性更改
+- 支持新的相机型号
+- 一些较旧的格式可能被弃用
+- 颜色配置文件处理改进
 
-### Version-Specific Notes
+### 版本特定说明
 
 #### LibRaw ${newVersion}
 ${this.getVersionNotes(newVersion)}
 
-### Troubleshooting
+### 故障排除
 
-#### Build Errors
+#### 构建错误
 \`\`\`bash
-# Clear all build artifacts
+# 清除所有构建工件
 npm run clean
 rm -rf node_modules
 npm install
 npm run build
 \`\`\`
 
-#### Runtime Errors
+#### 运行时错误
 \`\`\`bash
-# Check library loading
+# 检查库加载
 node -e "console.log(require('./lib/index.js'))"
 
-# Verify DLL/SO dependencies
-# Windows: use Dependency Walker
+# 验证 DLL/SO 依赖项
+# Windows: 使用 Dependency Walker
 # Linux: ldd build/Release/libraw_wrapper.node
 # macOS: otool -L build/Release/libraw_wrapper.node
 \`\`\`
 
-#### Test Failures
+#### 测试失败
 \`\`\`bash
-# Test individual formats
+# 测试单个格式
 node test/test.js sample-images/test.nef
 
-# Check for new metadata fields
+# 检查新的元数据字段
 node -e "
 const LibRaw = require('./lib');
 const proc = new LibRaw();
@@ -254,41 +254,41 @@ proc.loadFile('sample.nef').then(() => {
 "
 \`\`\`
 
-### Rollback Procedure
+### 回滚程序
 
-If the upgrade fails:
+如果升级失败:
 
 \`\`\`bash
-# Restore backup
+# 恢复备份
 rm -rf deps
 mv deps-backup-YYYYMMDD deps
 
-# Rebuild with old version
+# 使用旧版本重新构建
 npm run clean
 npm run build
 npm test
 \`\`\`
 
-### Post-Upgrade Checklist
+### 升级后检查清单
 
-- [ ] All tests pass
-- [ ] Performance is acceptable
-- [ ] Sample images process correctly
-- [ ] New camera formats work (if any)
-- [ ] Documentation is updated
-- [ ] CHANGELOG.md reflects changes
-- [ ] Package version bumped appropriately
+- [ ] 所有测试通过
+- [ ] 性能可接受
+- [ ] 示例图像处理正确
+- [ ] 新相机格式工作（如果有）
+- [ ] 文档已更新
+- [ ] CHANGELOG.md 反映更改
+- [ ] 包版本适当提升
 
-### Publishing Updated Package
+### 发布更新的包
 
 \`\`\`bash
-# Update version
-npm version patch  # or minor/major based on changes
+# 更新版本
+npm version patch  # 或根据更改使用 minor/major
 
-# Test before publishing
+# 发布前测试
 npm run prepublishOnly
 
-# Publish to npm
+# 发布到 npm
 npm publish
 \`\`\`
 `;
@@ -298,76 +298,76 @@ npm publish
 
   getVersionNotes(version) {
     // This would ideally fetch real release notes
-    return `Check the official LibRaw changelog at:
+    return `查看官方 LibRaw 更新日志:
 https://github.com/LibRaw/LibRaw/releases/tag/${version}
 
-Common improvements in newer versions:
-- Support for latest camera models
-- Performance optimizations
-- Bug fixes in metadata extraction
-- Enhanced color profile handling
-- Security updates`;
+新版本的常见改进:
+- 支持最新的相机型号
+- 性能优化
+- 元数据提取中的错误修复
+- 增强的颜色配置文件处理
+- 安全更新`;
   }
 
   async performUpgrade(targetVersion) {
-    console.log(`🚀 Starting upgrade to LibRaw ${targetVersion}...`);
+    console.log(`🚀 开始升级到 LibRaw ${targetVersion}...`);
 
     try {
       // Create backup
       const backupDir = `deps-backup-${Date.now()}`;
-      console.log("📦 Creating backup...");
+      console.log("📦 创建备份...");
       execSync(`xcopy deps ${backupDir} /E /I /H`, { cwd: __dirname });
 
       // Generate upgrade guide
       const guide = this.generateUpgradeGuide(targetVersion);
       fs.writeFileSync(path.join(__dirname, "../UPGRADE.md"), guide);
-      console.log("✅ Generated UPGRADE.md");
+      console.log("✅ 已生成 UPGRADE.md");
 
       console.log(`
-📋 Upgrade prepared for LibRaw ${targetVersion}
+📋 已为 LibRaw ${targetVersion} 准备升级
 
-Next steps:
-1. Download LibRaw ${targetVersion} from https://www.libraw.org/download
-2. Follow the instructions in UPGRADE.md
-3. Test thoroughly before deploying
+下一步:
+1. 从 https://www.libraw.org/download 下载 LibRaw ${targetVersion}
+2. 按照 UPGRADE.md 中的说明操作
+3. 部署前彻底测试
 
-The current installation has been backed up to: ${backupDir}
+当前安装已备份到: ${backupDir}
 `);
     } catch (error) {
-      console.error("❌ Upgrade preparation failed:", error.message);
+      console.error("❌ 升级准备失败:", error.message);
       process.exit(1);
     }
   }
 
   async run() {
-    console.log("🔄 LibRaw Upgrade Assistant");
+    console.log("🔄 LibRaw 升级助手");
     console.log("===========================\n");
 
-    console.log(`Current version: ${this.currentVersion || "Unknown"}`);
+    console.log(`当前版本: ${this.currentVersion || "未知"}`);
 
     try {
       const latestVersion = await this.checkLatestVersion();
-      console.log(`Latest version: ${latestVersion}`);
+      console.log(`最新版本: ${latestVersion}`);
 
       if (this.currentVersion === latestVersion) {
-        console.log("✅ You are already running the latest version!");
+        console.log("✅ 您已经在运行最新版本!");
         return;
       }
 
       if (this.compareVersions(latestVersion, this.currentVersion) > 0) {
-        console.log(`📢 New version available: ${latestVersion}`);
+        console.log(`📢 有新版本可用: ${latestVersion}`);
         await this.performUpgrade(latestVersion);
       } else {
         console.log(
-          "ℹ️  Your version appears to be newer than the latest release"
+          "ℹ️  您的版本似乎比最新发布版本更新"
         );
       }
     } catch (error) {
-      console.error("❌ Failed to check for updates:", error.message);
-      console.log("\n📖 Generating manual upgrade guide...");
+      console.error("❌ 检查更新失败:", error.message);
+      console.log("\n📖 生成手动升级指南...");
       const guide = this.generateUpgradeGuide("X.X.X");
       fs.writeFileSync(path.join(__dirname, "../UPGRADE.md"), guide);
-      console.log("✅ Manual upgrade guide created as UPGRADE.md");
+      console.log("✅ 已创建手动升级指南 UPGRADE.md");
     }
   }
 }

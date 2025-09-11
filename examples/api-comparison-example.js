@@ -3,20 +3,19 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * API Comparison: File-based vs Buffer-based
+ * API 比较：基于文件 vs 基于缓冲区
  *
- * This example demonstrates the difference between the traditional
- * file-based API and the new buffer-based API, highlighting the
- * benefits of each approach.
+ * 此示例演示了传统基于文件的 API 和新的基于缓冲区的 API 之间的差异，
+ * 突出了每种方法的优势。
  */
 
 async function apiComparisonExample(inputFile, outputDir) {
-  console.log("🔄 API Comparison: File vs Buffer Operations");
+  console.log("🔄 API 比较：文件 vs 缓冲区操作");
   console.log("============================================");
-  console.log(`📁 Input: ${inputFile}`);
-  console.log(`📂 Output Directory: ${outputDir}\n`);
+  console.log(`📁 输入: ${inputFile}`);
+  console.log(`📂 输出目录: ${outputDir}\n`);
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
@@ -25,35 +24,35 @@ async function apiComparisonExample(inputFile, outputDir) {
   const baseName = path.basename(inputFile, path.extname(inputFile));
 
   try {
-    // Load the RAW file once
-    console.log("🔄 Loading RAW file...");
+    // 加载 RAW 文件一次
+    console.log("🔄 加载 RAW 文件...");
     await processor.loadFile(inputFile);
-    console.log("✅ RAW file loaded\n");
+    console.log("✅ RAW 文件已加载\n");
 
-    // ============== OLD WAY: FILE-BASED API ==============
-    console.log("📁 OLD WAY: File-based Operations");
+    // ============== 旧方式：基于文件的 API ==============
+    console.log("📁 旧方式：基于文件的操作");
     console.log("==================================");
 
     const fileStartTime = Date.now();
 
-    // Traditional approach: process and write to files
-    console.log("1️⃣ Processing image...");
+    // 传统方法：处理并写入文件
+    console.log("1️⃣ 处理图像...");
     await processor.processImage();
 
-    console.log("2️⃣ Writing TIFF file...");
+    console.log("2️⃣ 写入 TIFF 文件...");
     const tiffPath = path.join(outputDir, `${baseName}_traditional.tiff`);
     await processor.writeTIFF(tiffPath);
 
-    console.log("3️⃣ Writing PPM file...");
+    console.log("3️⃣ 写入 PPM 文件...");
     const ppmPath = path.join(outputDir, `${baseName}_traditional.ppm`);
     await processor.writePPM(ppmPath);
 
-    console.log("4️⃣ Writing thumbnail...");
+    console.log("4️⃣ 写入缩略图...");
     const thumbPath = path.join(outputDir, `${baseName}_traditional_thumb.jpg`);
     await processor.writeThumbnail(thumbPath);
 
-    // Traditional JPEG conversion
-    console.log("5️⃣ Converting to JPEG...");
+    // 传统 JPEG 转换
+    console.log("5️⃣ 转换为 JPEG...");
     const jpegPath = path.join(outputDir, `${baseName}_traditional.jpg`);
     await processor.convertToJPEG(jpegPath, {
       quality: 85,
@@ -63,9 +62,9 @@ async function apiComparisonExample(inputFile, outputDir) {
     const fileEndTime = Date.now();
     const fileProcessingTime = fileEndTime - fileStartTime;
 
-    console.log(`✅ File-based processing complete in ${fileProcessingTime}ms`);
+    console.log(`✅ 基于文件的处理完成，用时 ${fileProcessingTime}ms`);
 
-    // Check file sizes
+    // 检查文件大小
     const fileSizes = {
       tiff: fs.statSync(tiffPath).size,
       ppm: fs.statSync(ppmPath).size,
@@ -73,41 +72,41 @@ async function apiComparisonExample(inputFile, outputDir) {
       jpeg: fs.statSync(jpegPath).size,
     };
 
-    console.log("📊 File sizes:");
+    console.log("📊 文件大小:");
     Object.entries(fileSizes).forEach(([format, size]) => {
       console.log(
         `   ${format.toUpperCase()}: ${(size / 1024 / 1024).toFixed(2)} MB`
       );
     });
 
-    // ============== NEW WAY: BUFFER-BASED API ==============
-    console.log("\n🚀 NEW WAY: Buffer-based Operations");
+    // ============== 新方式：基于缓冲区的 API ==============
+    console.log("\n🚀 新方式：基于缓冲区的操作");
     console.log("===================================");
 
     const bufferStartTime = Date.now();
 
-    // Modern approach: create buffers in memory
-    console.log("1️⃣ Creating TIFF buffer...");
+    // 现代方法：在内存中创建缓冲区
+    console.log("1️⃣ 创建 TIFF 缓冲区...");
     const tiffBuffer = await processor.createTIFFBuffer({
       compression: "lzw",
     });
 
-    console.log("2️⃣ Creating PPM buffer...");
+    console.log("2️⃣ 创建 PPM 缓冲区...");
     const ppmBuffer = await processor.createPPMBuffer();
 
-    console.log("3️⃣ Creating thumbnail buffer...");
+    console.log("3️⃣ 创建缩略图缓冲区...");
     const thumbBuffer = await processor.createThumbnailJPEGBuffer({
       quality: 85,
     });
 
-    console.log("4️⃣ Creating JPEG buffer...");
+    console.log("4️⃣ 创建 JPEG 缓冲区...");
     const jpegBuffer = await processor.createJPEGBuffer({
       quality: 85,
       width: 1920,
     });
 
-    // Bonus: Create multiple formats in parallel
-    console.log("5️⃣ Creating additional formats in parallel...");
+    // 额外：并行创建多种格式
+    console.log("5️⃣ 并行创建其他格式...");
     const [webpBuffer, avifBuffer, pngBuffer] = await Promise.all([
       processor.createWebPBuffer({ quality: 80, width: 1920 }),
       processor.createAVIFBuffer({ quality: 50, width: 1920 }),
@@ -118,11 +117,11 @@ async function apiComparisonExample(inputFile, outputDir) {
     const bufferProcessingTime = bufferEndTime - bufferStartTime;
 
     console.log(
-      `✅ Buffer-based processing complete in ${bufferProcessingTime}ms`
+      `✅ 基于缓冲区的处理完成，用时 ${bufferProcessingTime}ms`
     );
 
-    // Save buffers to files for comparison (optional step)
-    console.log("6️⃣ Saving buffers to files for comparison...");
+    // 将缓冲区保存到文件进行比较（可选步骤）
+    console.log("6️⃣ 将缓冲区保存到文件进行比较...");
     fs.writeFileSync(
       path.join(outputDir, `${baseName}_buffer.tiff`),
       tiffBuffer.buffer
@@ -152,7 +151,7 @@ async function apiComparisonExample(inputFile, outputDir) {
       pngBuffer.buffer
     );
 
-    console.log("📊 Buffer sizes:");
+    console.log("📊 缓冲区大小:");
     const buffers = {
       TIFF: tiffBuffer.buffer,
       PPM: ppmBuffer.buffer,
@@ -169,71 +168,71 @@ async function apiComparisonExample(inputFile, outputDir) {
       );
     });
 
-    // ============== PERFORMANCE COMPARISON ==============
-    console.log("\n⚡ Performance Comparison");
+    // ============== 性能比较 ==============
+    console.log("\n⚡ 性能比较");
     console.log("========================");
-    console.log(`📁 File-based approach: ${fileProcessingTime}ms`);
-    console.log(`🚀 Buffer-based approach: ${bufferProcessingTime}ms`);
+    console.log(`📁 基于文件的方法: ${fileProcessingTime}ms`);
+    console.log(`🚀 基于缓冲区的方法: ${bufferProcessingTime}ms`);
 
     const speedImprovement =
       ((fileProcessingTime - bufferProcessingTime) / fileProcessingTime) * 100;
     if (speedImprovement > 0) {
       console.log(
-        `🏆 Buffer approach is ${speedImprovement.toFixed(1)}% faster!`
+        `🏆 缓冲区方法快 ${speedImprovement.toFixed(1)}%！`
       );
     } else {
       console.log(
-        `📊 Performance difference: ${Math.abs(speedImprovement).toFixed(1)}%`
+        `📊 性能差异: ${Math.abs(speedImprovement).toFixed(1)}%`
       );
     }
 
-    // ============== USE CASE RECOMMENDATIONS ==============
-    console.log("\n💡 When to Use Each Approach");
+    // ============== 使用案例建议 ==============
+    console.log("\n💡 何时使用每种方法");
     console.log("=============================");
 
-    console.log("\n📁 Use File-based API when:");
-    console.log("   • You need to save final images to disk");
-    console.log("   • Working with large images (memory constraints)");
-    console.log("   • Building traditional desktop applications");
-    console.log("   • Creating permanent archives");
-    console.log("   • Integrating with file-based workflows");
+    console.log("\n📁 使用基于文件的 API 当:");
+    console.log("   • 您需要将最终图像保存到磁盘");
+    console.log("   • 处理大图像（内存限制）");
+    console.log("   • 构建传统桌面应用程序");
+    console.log("   • 创建永久存档");
+    console.log("   • 与基于文件的工作流程集成");
 
-    console.log("\n🚀 Use Buffer-based API when:");
-    console.log("   • Building web services and APIs");
-    console.log("   • Uploading to cloud storage");
-    console.log("   • Creating image processing pipelines");
-    console.log("   • Real-time image processing");
-    console.log("   • Serverless/lambda functions");
-    console.log("   • Streaming image data");
-    console.log("   • Creating multiple formats from one source");
+    console.log("\n🚀 使用基于缓冲区的 API 当:");
+    console.log("   • 构建 Web 服务和 API");
+    console.log("   • 上传到云存储");
+    console.log("   • 创建图像处理管道");
+    console.log("   • 实时图像处理");
+    console.log("   • 无服务器/ Lambda 函数");
+    console.log("   • 流式图像数据");
+    console.log("   • 从单一源创建多种格式");
 
-    // ============== CODE EXAMPLES ==============
-    console.log("\n📝 Code Examples");
+    // ============== 代码示例 ==============
+    console.log("\n📝 代码示例");
     console.log("================");
 
-    console.log("\n📁 File-based approach:");
+    console.log("\n📁 基于文件的方法:");
     console.log("```javascript");
-    console.log("// Traditional way");
+    console.log("// 传统方式");
     console.log('await processor.loadFile("input.raw");');
     console.log("await processor.processImage();");
     console.log(
       'await processor.convertToJPEG("output.jpg", { quality: 85 });'
     );
-    console.log('// File is now on disk at "output.jpg"');
+    console.log('// 文件现在在磁盘上的 "output.jpg"');
     console.log("```");
 
-    console.log("\n🚀 Buffer-based approach:");
+    console.log("\n🚀 基于缓冲区的方法:");
     console.log("```javascript");
-    console.log("// Modern way");
+    console.log("// 现代方式");
     console.log('await processor.loadFile("input.raw");');
     console.log(
       "const result = await processor.createJPEGBuffer({ quality: 85 });"
     );
-    console.log("// result.buffer contains the JPEG data");
-    console.log("// Use it directly without file I/O");
+    console.log("// result.buffer 包含 JPEG 数据");
+    console.log("// 直接使用，无需文件 I/O");
     console.log("```");
 
-    console.log("\n🌐 Web service example:");
+    console.log("\n🌐 Web 服务示例:");
     console.log("```javascript");
     console.log('app.post("/convert", async (req, res) => {');
     console.log("    const processor = new LibRaw();");
@@ -247,7 +246,7 @@ async function apiComparisonExample(inputFile, outputDir) {
     console.log("});");
     console.log("```");
 
-    console.log("\n☁️ Cloud storage example:");
+    console.log("\n☁️ 云存储示例:");
     console.log("```javascript");
     console.log(
       "const result = await processor.createJPEGBuffer({ quality: 90 });"
@@ -301,13 +300,13 @@ async function apiComparisonExample(inputFile, outputDir) {
   }
 }
 
-// Usage instructions
+// 使用说明
 if (process.argv.length < 3) {
   console.log(
-    "Usage: node api-comparison-example.js <path-to-raw-file> [output-dir]"
+    "用法: node api-comparison-example.js <raw文件路径> [输出目录]"
   );
   console.log(
-    "Example: node api-comparison-example.js ../sample-images/IMG_1234.CR2 ./comparison-output"
+    "示例: node api-comparison-example.js ../sample-images/IMG_1234.CR2 ./comparison-output"
   );
   process.exit(1);
 }

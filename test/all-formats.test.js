@@ -2,14 +2,14 @@ const LibRaw = require("../lib/index");
 const path = require("path");
 const fs = require("fs");
 
-// Comprehensive test for all supported RAW formats
+// 所有支持的 RAW 格式的综合测试
 async function testAllFormats() {
   console.log("🎯 LibRaw Node.js - Comprehensive Format Test");
   console.log("==============================================\n");
 
   const sampleDir = path.join(__dirname, "../raw-samples-repo");
 
-  // Define format groups with their expected characteristics
+  // 定义格式组及其预期特征
   const formatGroups = {
     "Canon CR3": {
       extensions: [".cr3"],
@@ -44,7 +44,7 @@ async function testAllFormats() {
   };
 
   try {
-    // Get all RAW files
+    // 获取所有 RAW 文件
     const allFiles = fs
       .readdirSync(sampleDir, { withFileTypes: true })
       .filter((file) => {

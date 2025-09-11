@@ -3,31 +3,31 @@ const path = require("path");
 const fs = require("fs");
 
 async function batchJPEGConversion() {
-  console.log("LibRaw Batch JPEG Conversion");
+  console.log("LibRaw 批量 JPEG 转换");
   console.log("============================\n");
 
   const processor = new LibRaw();
 
   try {
-    // Get input directory and output directory from command line
+    // 从命令行获取输入目录和输出目录
     const inputDir = process.argv[2];
     const outputDir = process.argv[3] || path.join(inputDir, "jpeg-output");
 
     if (!inputDir || !fs.existsSync(inputDir)) {
-      console.log("❌ Input directory not found or not specified");
+      console.log("❌ 未找到输入目录或未指定");
       console.log(
-        "\nUsage: node batch-jpeg-conversion.js <input-dir> [output-dir]"
+        "\n用法: node batch-jpeg-conversion.js <输入目录> [输出目录]"
       );
       console.log(
-        "Example: node batch-jpeg-conversion.js C:\\photos\\raw C:\\photos\\jpeg"
+        "示例: node batch-jpeg-conversion.js C:\\photos\\raw C:\\photos\\jpeg"
       );
       return;
     }
 
-    console.log(`📁 Input directory: ${inputDir}`);
-    console.log(`📁 Output directory: ${outputDir}`);
+    console.log(`📁 输入目录: ${inputDir}`);
+    console.log(`📁 输出目录: ${outputDir}`);
 
-    // Find all RAW files in input directory
+    // 在输入目录中查找所有 RAW 文件
     const rawExtensions = [
       ".cr2",
       ".cr3",
@@ -48,23 +48,23 @@ async function batchJPEGConversion() {
       .map((file) => path.join(inputDir, file));
 
     if (rawFiles.length === 0) {
-      console.log("❌ No RAW files found in input directory");
-      console.log("Supported formats:", rawExtensions.join(", "));
+      console.log("❌ 在输入目录中未找到 RAW 文件");
+      console.log("支持的格式:", rawExtensions.join(", "));
       return;
     }
 
-    console.log(`🔍 Found ${rawFiles.length} RAW files to convert\n`);
+    console.log(`🔍 找到 ${rawFiles.length} 个 RAW 文件需要转换\n`);
 
-    // Show conversion options menu
-    console.log("📋 Conversion Presets:");
-    console.log("1. Web Optimized (1920px, Q80, Progressive)");
-    console.log("2. Print Quality (Original size, Q95, High chroma)");
-    console.log("3. Archive (Original size, Q95, Maximum quality)");
-    console.log("4. Thumbnails (800px, Q85)");
-    console.log("5. Custom settings");
+    // 显示转换选项菜单
+    console.log("📋 转换预设:");
+    console.log("1. 网络优化 (1920px, Q80, 渐进式)");
+    console.log("2. 打印质量 (原始尺寸, Q95, 高色度)");
+    console.log("3. 存档 (原始尺寸, Q95, 最高质量)");
+    console.log("4. 缩略图 (800px, Q85)");
+    console.log("5. 自定义设置");
 
-    // For this example, we'll use web optimized settings
-    // In a real CLI tool, you'd prompt for user input
+    // 在此示例中，我们将使用网络优化设置
+    // 在真实的 CLI 工具中，您会提示用户输入
     const preset = process.argv[4] || "1";
 
     let conversionOptions = {};
@@ -80,7 +80,7 @@ async function batchJPEGConversion() {
           optimizeScans: true,
           chromaSubsampling: "4:2:0",
         };
-        presetName = "Web Optimized";
+        presetName = "网络优化";
         break;
       case "2":
         conversionOptions = {
@@ -90,7 +90,7 @@ async function batchJPEGConversion() {
           optimizeCoding: true,
           mozjpeg: true,
         };
-        presetName = "Print Quality";
+        presetName = "打印质量";
         break;
       case "3":
         conversionOptions = {
@@ -100,7 +100,7 @@ async function batchJPEGConversion() {
           optimizeCoding: true,
           mozjpeg: true,
         };
-        presetName = "Archive Quality";
+        presetName = "存档质量";
         break;
       case "4":
         conversionOptions = {
@@ -109,19 +109,19 @@ async function batchJPEGConversion() {
           chromaSubsampling: "4:2:2",
           mozjpeg: true,
         };
-        presetName = "Thumbnails";
+        presetName = "缩略图";
         break;
       default:
         // Custom settings - use defaults
         conversionOptions = { quality: 85 };
-        presetName = "Custom";
+        presetName = "自定义";
     }
 
-    console.log(`\n🎯 Using preset: ${presetName}`);
-    console.log("Settings:", JSON.stringify(conversionOptions, null, 2));
+    console.log(`\n🎯 使用预设: ${presetName}`);
+    console.log("设置:", JSON.stringify(conversionOptions, null, 2));
 
-    // Start batch conversion
-    console.log("\n🔄 Starting batch conversion...\n");
+    // 开始批量转换
+    console.log("\n🔄 开始批量转换...\n");
     const startTime = process.hrtime.bigint();
 
     const result = await processor.batchConvertToJPEG(
@@ -133,22 +133,22 @@ async function batchJPEGConversion() {
     const endTime = process.hrtime.bigint();
     const totalTime = Number(endTime - startTime) / 1000000; // ms
 
-    // Display results
-    console.log("\n📊 Conversion Results:");
+    // 显示结果
+    console.log("\n📊 转换结果:");
     console.log("======================");
     console.log(
-      `✅ Successfully converted: ${result.summary.processed}/${result.summary.total} files`
+      `✅ 成功转换: ${result.summary.processed}/${result.summary.total} 个文件`
     );
-    console.log(`❌ Failed conversions: ${result.summary.errors}`);
-    console.log(`🕐 Total processing time: ${(totalTime / 1000).toFixed(1)}s`);
+    console.log(`❌ 转换失败: ${result.summary.errors}`);
+    console.log(`🕐 总处理时间: ${(totalTime / 1000).toFixed(1)}秒`);
     console.log(
-      `⚡ Average time per file: ${result.summary.averageProcessingTimePerFile}ms`
-    );
-    console.log(
-      `📉 Average compression ratio: ${result.summary.averageCompressionRatio}x`
+      `⚡ 平均每文件时间: ${result.summary.averageProcessingTimePerFile}毫秒`
     );
     console.log(
-      `💾 Space saved: ${(
+      `📉 平均压缩比: ${result.summary.averageCompressionRatio}倍`
+    );
+    console.log(
+      `💾 节省空间: ${(
         (result.summary.totalOriginalSize -
           result.summary.totalCompressedSize) /
         1024 /
@@ -157,7 +157,7 @@ async function batchJPEGConversion() {
     );
 
     if (result.successful.length > 0) {
-      console.log("\n✅ Successfully converted files:");
+      console.log("\n✅ 成功转换的文件:");
       result.successful.forEach((item, index) => {
         const fileName = path.basename(item.input);
         const outputSize = (
@@ -170,30 +170,30 @@ async function batchJPEGConversion() {
 
         console.log(`   ${index + 1}. ${fileName}`);
         console.log(
-          `      📊 Size: ${outputSize}KB (${compressionRatio}x compression)`
+          `      📊 大小: ${outputSize}KB (${compressionRatio}倍压缩)`
         );
-        console.log(`      ⚡ Time: ${processingTime}ms`);
+        console.log(`      ⚡ 时间: ${processingTime}毫秒`);
 
         if (
           item.result.metadata.outputDimensions.width !==
           item.result.metadata.originalDimensions.width
         ) {
           console.log(
-            `      📐 Resized: ${item.result.metadata.originalDimensions.width}x${item.result.metadata.originalDimensions.height} → ${item.result.metadata.outputDimensions.width}x${item.result.metadata.outputDimensions.height}`
+            `      📐 调整尺寸: ${item.result.metadata.originalDimensions.width}x${item.result.metadata.originalDimensions.height} → ${item.result.metadata.outputDimensions.width}x${item.result.metadata.outputDimensions.height}`
           );
         }
       });
     }
 
     if (result.failed.length > 0) {
-      console.log("\n❌ Failed conversions:");
+      console.log("\n❌ 转换失败:");
       result.failed.forEach((item, index) => {
         const fileName = path.basename(item.input);
         console.log(`   ${index + 1}. ${fileName}: ${item.error}`);
       });
     }
 
-    // Performance analysis
+    // 性能分析
     if (result.successful.length > 0) {
       const throughputs = result.successful.map((item) =>
         parseFloat(item.result.metadata.processing.throughputMBps)
@@ -202,17 +202,17 @@ async function batchJPEGConversion() {
         throughputs.reduce((a, b) => a + b, 0) / throughputs.length
       ).toFixed(1);
 
-      console.log("\n📈 Performance Analysis:");
-      console.log(`   Average throughput: ${avgThroughput} MB/s`);
+      console.log("\n📈 性能分析:");
+      console.log(`   平均吞吐量: ${avgThroughput} MB/s`);
       console.log(
-        `   Total data processed: ${(
+        `   总处理数据: ${(
           result.summary.totalOriginalSize /
           1024 /
           1024
         ).toFixed(1)}MB`
       );
       console.log(
-        `   Total output size: ${(
+        `   总输出大小: ${(
           result.summary.totalCompressedSize /
           1024 /
           1024
@@ -220,27 +220,27 @@ async function batchJPEGConversion() {
       );
     }
 
-    // Create a summary HTML report
+    // 创建摘要 HTML 报告
     const reportPath = path.join(outputDir, "conversion-report.html");
     await createHTMLReport(result, conversionOptions, presetName, reportPath);
-    console.log(`\n📄 HTML report created: ${reportPath}`);
+    console.log(`\n📄 HTML 报告已创建: ${reportPath}`);
 
-    console.log("\n🧹 Cleaning up...");
+    console.log("\n🧹 清理中...");
     await processor.close();
 
-    console.log("\n🎉 Batch conversion completed!");
-    console.log(`📁 Check output directory: ${outputDir}`);
+    console.log("\n🎉 批量转换完成!");
+    console.log(`📁 检查输出目录: ${outputDir}`);
   } catch (error) {
-    console.error("\n❌ Error:", error.message);
-    console.error("\nTroubleshooting:");
+    console.error("\n❌ 错误:", error.message);
+    console.error("\n故障排除:");
     console.error(
-      "1. Ensure the input directory exists and contains RAW files"
+      "1. 确保输入目录存在且包含 RAW 文件"
     );
     console.error(
-      "2. Check that you have write permissions to the output directory"
+      "2. 检查您对输出目录有写入权限"
     );
-    console.error("3. Verify that the LibRaw addon is built: npm run build");
-    console.error("4. Make sure Sharp is installed: npm install sharp");
+    console.error("3. 验证 LibRaw 插件已构建: npm run build");
+    console.error("4. 确保 Sharp 已安装: npm install sharp");
   }
 }
 
@@ -249,7 +249,7 @@ async function createHTMLReport(result, options, presetName, outputPath) {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>LibRaw JPEG Conversion Report</title>
+    <title>LibRaw JPEG 转换报告</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -272,34 +272,34 @@ async function createHTMLReport(result, options, presetName, outputPath) {
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 LibRaw JPEG Conversion Report</h1>
-            <p>Generated on ${new Date().toLocaleString()}</p>
-            <p><strong>Preset:</strong> ${presetName}</p>
+            <h1>📸 LibRaw JPEG 转换报告</h1>
+            <p>生成时间: ${new Date().toLocaleString()}</p>
+            <p><strong>预设:</strong> ${presetName}</p>
         </div>
         
         <div class="summary">
             <div class="stat-card">
                 <div class="stat-value">${result.summary.processed}</div>
-                <div class="stat-label">Files Converted</div>
+                <div class="stat-label">已转换文件</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${(
                   (result.summary.processed / result.summary.total) *
                   100
                 ).toFixed(1)}%</div>
-                <div class="stat-label">Success Rate</div>
+                <div class="stat-label">成功率</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${
                   result.summary.averageProcessingTimePerFile
                 }ms</div>
-                <div class="stat-label">Avg Time/File</div>
+                <div class="stat-label">平均时间/文件</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${
                   result.summary.averageCompressionRatio
                 }x</div>
-                <div class="stat-label">Avg Compression</div>
+                <div class="stat-label">平均压缩比</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${(
@@ -308,30 +308,30 @@ async function createHTMLReport(result, options, presetName, outputPath) {
                   1024 /
                   1024
                 ).toFixed(1)}MB</div>
-                <div class="stat-label">Space Saved</div>
+                <div class="stat-label">节省空间</div>
             </div>
         </div>
         
         <div class="section">
-            <h3>⚙️ Conversion Settings</h3>
+            <h3>⚙️ 转换设置</h3>
             <div class="settings">
                 <pre>${JSON.stringify(options, null, 2)}</pre>
             </div>
         </div>
         
         <div class="section">
-            <h3>✅ Successfully Converted Files (${
+            <h3>✅ 成功转换的文件 (${
               result.successful.length
             })</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>File Name</th>
-                        <th>Original Size</th>
-                        <th>Output Size</th>
-                        <th>Compression</th>
-                        <th>Processing Time</th>
-                        <th>Dimensions</th>
+                        <th>文件名</th>
+                        <th>原始大小</th>
+                        <th>输出大小</th>
+                        <th>压缩比</th>
+                        <th>处理时间</th>
+                        <th>尺寸</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -372,12 +372,12 @@ async function createHTMLReport(result, options, presetName, outputPath) {
           result.failed.length > 0
             ? `
         <div class="section">
-            <h3>❌ Failed Conversions (${result.failed.length})</h3>
+            <h3>❌ 转换失败 (${result.failed.length})</h3>
             <table>
                 <thead>
                     <tr>
                         <th>File Name</th>
-                        <th>Error</th>
+                        <th>错误</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -399,25 +399,25 @@ async function createHTMLReport(result, options, presetName, outputPath) {
         }
         
         <div class="section">
-            <h3>📊 Performance Summary</h3>
+            <h3>📊 性能摘要</h3>
             <ul>
-                <li><strong>Total processing time:</strong> ${(
+                <li><strong>总处理时间:</strong> ${(
                   result.summary.totalProcessingTime / 1000
-                ).toFixed(1)} seconds</li>
-                <li><strong>Average time per file:</strong> ${
+                ).toFixed(1)} 秒</li>
+                <li><strong>平均每文件时间:</strong> ${
                   result.summary.averageProcessingTimePerFile
-                }ms</li>
-                <li><strong>Total original data:</strong> ${(
+                }毫秒</li>
+                <li><strong>总原始数据:</strong> ${(
                   result.summary.totalOriginalSize /
                   1024 /
                   1024
                 ).toFixed(1)}MB</li>
-                <li><strong>Total compressed data:</strong> ${(
+                <li><strong>总压缩数据:</strong> ${(
                   result.summary.totalCompressedSize /
                   1024 /
                   1024
                 ).toFixed(1)}MB</li>
-                <li><strong>Space savings:</strong> ${(
+                <li><strong>空间节省:</strong> ${(
                   ((result.summary.totalOriginalSize -
                     result.summary.totalCompressedSize) /
                     result.summary.totalOriginalSize) *
@@ -427,7 +427,7 @@ async function createHTMLReport(result, options, presetName, outputPath) {
         </div>
         
         <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666;">
-            <p>Generated by LibRaw Node.js JPEG Converter</p>
+            <p>由 LibRaw Node.js JPEG 转换器生成</p>
         </div>
     </div>
 </body>
@@ -436,27 +436,27 @@ async function createHTMLReport(result, options, presetName, outputPath) {
   fs.writeFileSync(outputPath, html);
 }
 
-// Usage instructions
+// 使用说明
 if (process.argv.length < 3) {
-  console.log("LibRaw Batch JPEG Conversion");
+  console.log("LibRaw 批量 JPEG 转换");
   console.log(
-    "Usage: node batch-jpeg-conversion.js <input-dir> [output-dir] [preset]"
+    "用法: node batch-jpeg-conversion.js <输入目录> [输出目录] [预设]"
   );
   console.log("");
-  console.log("Parameters:");
-  console.log("  input-dir   Directory containing RAW files");
+  console.log("参数:");
+  console.log("  输入目录   包含 RAW 文件的目录");
   console.log(
-    "  output-dir  Directory for JPEG output (optional, default: input-dir/jpeg-output)"
+    "  输出目录   JPEG 输出目录 (可选，默认: 输入目录/jpeg-output)"
   );
-  console.log("  preset      Conversion preset (1-4, optional, default: 1)");
+  console.log("  预设        转换预设 (1-4，可选，默认: 1)");
   console.log("");
-  console.log("Presets:");
-  console.log("  1 - Web Optimized (1920px, Q80, Progressive)");
-  console.log("  2 - Print Quality (Original size, Q95, High chroma)");
-  console.log("  3 - Archive (Original size, Q98, Maximum quality)");
-  console.log("  4 - Thumbnails (800px, Q85)");
+  console.log("预设:");
+  console.log("  1 - 网络优化 (1920px, Q80, 渐进式)");
+  console.log("  2 - 打印质量 (原始尺寸, Q95, 高色度)");
+  console.log("  3 - 存档 (原始尺寸, Q98, 最高质量)");
+  console.log("  4 - 缩略图 (800px, Q85)");
   console.log("");
-  console.log("Examples:");
+  console.log("示例:");
   console.log("  node batch-jpeg-conversion.js C:\\photos\\raw");
   console.log(
     "  node batch-jpeg-conversion.js C:\\photos\\raw C:\\photos\\web 1"

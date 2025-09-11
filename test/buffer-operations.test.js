@@ -3,25 +3,25 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Test buffer operations and memory handling
+ * 测试缓冲区操作和内存处理
  */
 
 async function testBufferOperations() {
   console.log("📦 LibRaw Buffer Operations Test");
   console.log("=".repeat(40));
 
-  // Find a sample image to test with
+  // 查找用于测试的示例图像
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
   if (!fs.existsSync(sampleImagesDir)) {
-    console.log("\nℹ️ No sample images directory found");
+    console.log("\nℹ️ 未找到示例图像目录");
     console.log("   Creating sample test data...");
 
-    // Create test buffer data
+    // 创建测试缓冲区数据
     await testWithSyntheticData();
     return;
   }
 
-  // Look for RAW files in subdirectories
+  // 在子目录中查找 RAW 文件
   const sampleFiles = [];
   const subdirs = fs.readdirSync(sampleImagesDir, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
@@ -36,7 +36,7 @@ async function testBufferOperations() {
   }
 
   if (sampleFiles.length === 0) {
-    console.log("\nℹ️ No RAW sample files found");
+    console.log("\nℹ️ 未找到 RAW 示例文件");
     console.log("   Creating sample test data...");
 
     await testWithSyntheticData();

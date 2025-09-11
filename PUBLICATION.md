@@ -1,88 +1,88 @@
-# Publication Guide - GitHub & npm
+# 发布指南 - GitHub & npm
 
-This guide will walk you through publishing your LibRaw Node.js project to GitHub and npm.
+本指南将引导您将 LibRaw Node.js 项目发布到 GitHub 和 npm。
 
-## 📋 Pre-Publication Checklist
+## 📋 发布前检查清单
 
-### ✅ Tests Completed
+### ✅ 测试完成
 
-- [x] All format tests passing (21/21 files)
-- [x] Performance benchmarks completed
-- [x] Comprehensive test coverage
-- [x] Documentation generated
+- [x] 所有格式测试通过（21/21 文件）
+- [x] 性能基准测试完成
+- [x] 综合测试覆盖
+- [x] 文档已生成
 
-### ✅ Project Structure
+### ✅ 项目结构
 
-- [x] Clean folder structure
-- [x] TypeScript definitions included
-- [x] Proper package.json configuration
-- [x] MIT License included
-- [x] CHANGELOG.md created
+- [x] 清洁的文件夹结构
+- [x] 包含 TypeScript 定义
+- [x] 正确的 package.json 配置
+- [x] 包含 MIT 许可证
+- [x] 创建了 CHANGELOG.md
 
-### ✅ Quality Checks
+### ✅ 质量检查
 
-- [x] No hardcoded paths
-- [x] Cross-platform compatibility
-- [x] Memory leak free
-- [x] Error handling robust
-- [x] Performance optimized
+- [x] 无硬编码路径
+- [x] 跨平台兼容性
+- [x] 无内存泄漏
+- [x] 错误处理健壮
+- [x] 性能优化
 
-## 🚀 Step 1: GitHub Publication
+## 🚀 步骤 1：GitHub 发布
 
-### 1.1 Create GitHub Repository
+### 1.1 创建 GitHub 仓库
 
-1. Go to [GitHub.com](https://github.com)
-2. Click "New Repository"
-3. Repository settings:
-   - **Name**: `librawspeed`
-   - **Description**: `Node.js Native Addon for LibRaw - Process RAW image files with JavaScript`
-   - **Visibility**: Public
-   - **Initialize**: ❌ Don't add README/License (we have them)
+1. 访问 [GitHub.com](https://github.com)
+2. 点击 "New Repository"
+3. 仓库设置：
+   - **名称**：`librawspeed`
+   - **描述**：`Node.js Native Addon for LibRaw - Process RAW image files with JavaScript`
+   - **可见性**：公开
+   - **初始化**：❌ 不要添加 README/许可证（我们已有）
 
-### 1.2 Connect Local Repository to GitHub
+### 1.2 将本地仓库连接到 GitHub
 
 ```bash
-# Add remote origin (replace with your GitHub username)
+# 添加远程源（替换为您的 GitHub 用户名）
 git remote add origin https://github.com/pixFlowTeam/librawspeed.git
 
-# Verify remote
+# 验证远程
 git remote -v
 
-# Push to GitHub
+# 推送到 GitHub
 git push -u origin main
 ```
 
-### 1.3 Verify GitHub Setup
+### 1.3 验证 GitHub 设置
 
-Check your repository includes:
+检查您的仓库包含：
 
-- ✅ All source files
-- ✅ README.md with badges
-- ✅ LICENSE file
+- ✅ 所有源文件
+- ✅ 带徽章的 README.md
+- ✅ LICENSE 文件
 - ✅ CHANGELOG.md
-- ✅ Complete documentation
+- ✅ 完整文档
 
-### 1.4 Setup Repository Features
+### 1.4 设置仓库功能
 
-1. **Enable Issues**: Settings → Features → Issues ✅
-2. **Enable Discussions**: Settings → Features → Discussions ✅
-3. **Add Topics**: About section → Add topics:
+1. **启用 Issues**：设置 → 功能 → Issues ✅
+2. **启用讨论**：设置 → 功能 → 讨论 ✅
+3. **添加主题**：关于部分 → 添加主题：
    - `libraw`, `nodejs`, `raw-images`, `native-addon`, `photography`, `metadata`, `exif`
 
-## 📦 Step 2: npm Publication
+## 📦 步骤 2：npm 发布
 
-### 2.1 Update Package Information
+### 2.1 更新包信息
 
-Update `package.json` with your details:
+使用您的详细信息更新 `package.json`：
 
 ```bash
-# Update author information
+# 更新作者信息
 npm config set init-author-name "Bao LE"
 npm config set init-author-email "bao.lq.it@gmail.com"
 npm config set init-author-url "https://github.com/pixFlowTeam"
 ```
 
-Edit `package.json`:
+编辑 `package.json`：
 
 ```json
 {
@@ -98,115 +98,115 @@ Edit `package.json`:
 }
 ```
 
-### 2.2 Pre-Publication Tests
+### 2.2 发布前测试
 
 ```bash
-# Run comprehensive tests
+# 运行综合测试
 npm test
 
-# Check package contents
+# 检查包内容
 npm run publish:dry
 
-# Verify all files are included
+# 验证所有文件都包含
 npm pack --dry-run
 ```
 
-### 2.3 npm Account Setup
+### 2.3 npm 账户设置
 
 ```bash
-# Login to npm (create account if needed)
+# 登录到 npm（如需要则创建账户）
 npm login
 
-# Verify login
+# 验证登录
 npm whoami
 ```
 
-### 2.4 Publish to npm
+### 2.4 发布到 npm
 
 ```bash
-# Final pre-publish check
+# 最终发布前检查
 npm run prepublishOnly
 
-# Publish (first time)
+# 发布（首次）
 npm publish
 
-# If name is taken, try scoped package:
+# 如果名称被占用，尝试作用域包：
 # npm publish --access public
 ```
 
-### 2.5 Verify Publication
+### 2.5 验证发布
 
-1. Check package page: `https://www.npmjs.com/package/librawspeed`
-2. Test installation: `npm install librawspeed`
-3. Update README badges with real npm stats
+1. 检查包页面：`https://www.npmjs.com/package/librawspeed`
+2. 测试安装：`npm install librawspeed`
+3. 使用真实的 npm 统计更新 README 徽章
 
-## 📈 Step 3: Post-Publication Setup
+## 📈 步骤 3：发布后设置
 
-### 3.1 Update Badges
+### 3.1 更新徽章
 
-Replace placeholder badges in README.md:
+替换 README.md 中的占位符徽章：
 
 ```markdown
 [![npm version](https://badge.fury.io/js/librawspeed.svg)](https://www.npmjs.com/package/librawspeed)
 [![Downloads](https://img.shields.io/npm/dm/librawspeed.svg)](https://www.npmjs.com/package/librawspeed)
 ```
 
-### 3.2 Add GitHub Release
+### 3.2 添加 GitHub 发布
 
 ```bash
-# Create and push a tag
+# 创建并推送标签
 git tag v0.1.34-poc
 git push origin v0.1.34-poc
 ```
 
-Then create release on GitHub:
+然后在 GitHub 上创建发布：
 
-1. Go to repository → Releases → Create new release
-2. Tag: `v0.1.34-poc`
-3. Title: `LibRaw Node.js v0.1.34-poc - Initial Release`
-4. Description: Copy from CHANGELOG.md
+1. 转到仓库 → 发布 → 创建新发布
+2. 标签：`v0.1.34-poc`
+3. 标题：`LibRaw Node.js v0.1.34-poc - Initial Release`
+4. 描述：从 CHANGELOG.md 复制
 
-### 3.3 Documentation Website (Optional)
+### 3.3 文档网站（可选）
 
-Consider setting up GitHub Pages:
+考虑设置 GitHub Pages：
 
-1. Repository → Settings → Pages
-2. Source: Deploy from branch `main` `/docs` folder
-3. Custom domain (optional)
+1. 仓库 → 设置 → Pages
+2. 源：从分支 `main` `/docs` 文件夹部署
+3. 自定义域名（可选）
 
-## 🔄 Step 4: Upgrading LibRaw
+## 🔄 步骤 4：升级 LibRaw
 
-When LibRaw releases new versions:
+当 LibRaw 发布新版本时：
 
-### 4.1 Check for Updates
+### 4.1 检查更新
 
 ```bash
 npm run upgrade:libraw
 ```
 
-### 4.2 Manual Upgrade Process
+### 4.2 手动升级过程
 
-1. **Download New LibRaw**: Visit [LibRaw Downloads](https://www.libraw.org/download)
+1. **下载新的 LibRaw**：访问 [LibRaw Downloads](https://www.libraw.org/download)
 
-2. **Backup Current Version**:
+2. **备份当前版本**：
 
    ```bash
    xcopy deps deps-backup-%date:~-4,4%%date:~-10,2%%date:~-7,2% /E /I /H
    ```
 
-3. **Replace Library Files**:
+3. **替换库文件**：
 
-   - Extract new `LibRaw-X.X.X-Win64.zip`
-   - Replace `deps/LibRaw-Win64/` contents
-   - Ensure all required files are present
+   - 解压新的 `LibRaw-X.X.X-Win64.zip`
+   - 替换 `deps/LibRaw-Win64/` 内容
+   - 确保所有必需文件都存在
 
-4. **Update Build Configuration** (if needed):
+4. **更新构建配置**（如需要）：
 
    ```json
-   // binding.gyp - update paths if LibRaw structure changed
+   // binding.gyp - 如果 LibRaw 结构发生变化则更新路径
    ```
 
-5. **Rebuild and Test**:
+5. **重新构建和测试**：
 
    ```bash
    npm run clean
@@ -214,127 +214,127 @@ npm run upgrade:libraw
    npm test
    ```
 
-6. **Update Documentation**:
+6. **更新文档**：
 
    ```bash
    npm run docs:generate
    ```
 
-7. **Publish Update**:
+7. **发布更新**：
    ```bash
-   npm version patch  # or minor/major
+   npm version patch  # 或 minor/major
    npm publish
    git push --tags
    ```
 
-## 🐛 Troubleshooting
+## 🐛 故障排除
 
-### Build Issues
+### 构建问题
 
-**Error: Python not found**
+**错误：找不到 Python**
 
 ```bash
 npm config set python python3
-# or install Python 3.x
+# 或安装 Python 3.x
 ```
 
-**Error: Visual Studio not found (Windows)**
+**错误：找不到 Visual Studio（Windows）**
 
 ```bash
 npm install --global windows-build-tools
 ```
 
-**Error: node-gyp failed**
+**错误：node-gyp 失败**
 
 ```bash
 npm install --global node-gyp
 node-gyp configure
 ```
 
-### Publishing Issues
+### 发布问题
 
-**Error: Package name already exists**
+**错误：包名已存在**
 
-- Use scoped package: `@pixflowteam/librawspeed`
-- Choose different name: `librawspeedjs`, `node-libraw`
+- 使用作用域包：`@pixflowteam/librawspeed`
+- 选择不同名称：`librawspeedjs`, `node-libraw`
 
-**Error: Not authorized**
+**错误：未授权**
 
 ```bash
 npm logout
 npm login
 ```
 
-**Error: 2FA required**
+**错误：需要 2FA**
 
 ```bash
 npm publish --otp=123456
 ```
 
-## 📊 Success Metrics
+## 📊 成功指标
 
-After publication, monitor:
+发布后，监控：
 
-### GitHub Metrics
+### GitHub 指标
 
-- ⭐ Stars and forks
-- 🐛 Issues and discussions
-- 📈 Traffic and clones
-- 🤝 Contributors
+- ⭐ 星标和分叉
+- 🐛 问题和讨论
+- 📈 流量和克隆
+- 🤝 贡献者
 
-### npm Metrics
+### npm 指标
 
-- 📦 Download counts
-- 🔄 Version adoption
-- 💬 Community feedback
-- 🔍 Search ranking
+- 📦 下载次数
+- 🔄 版本采用
+- 💬 社区反馈
+- 🔍 搜索排名
 
-### Usage Analytics
+### 使用分析
 
-- 📧 Support requests
-- 📝 Blog mentions
-- 🎯 Use cases
-- 🚀 Performance feedback
+- 📧 支持请求
+- 📝 博客提及
+- 🎯 使用案例
+- 🚀 性能反馈
 
-## 🎯 Next Steps
+## 🎯 下一步
 
-1. **Community Building**:
+1. **社区建设**：
 
-   - Share on social media
-   - Post in relevant forums
-   - Write blog posts
-   - Create video tutorials
+   - 在社交媒体上分享
+   - 在相关论坛发帖
+   - 写博客文章
+   - 创建视频教程
 
-2. **Feature Development**:
+2. **功能开发**：
 
-   - Gather user feedback
-   - Plan v2.0 features
-   - Implement full image decoding
-   - Add batch processing
+   - 收集用户反馈
+   - 规划 v2.0 功能
+   - 实现完整图像解码
+   - 添加批量处理
 
-3. **Maintenance**:
-   - Regular LibRaw updates
-   - Security patches
-   - Performance improvements
-   - Bug fixes
+3. **维护**：
+   - 定期 LibRaw 更新
+   - 安全补丁
+   - 性能改进
+   - 错误修复
 
-## 📞 Support Channels
+## 📞 支持渠道
 
-Set up these support channels:
+设置这些支持渠道：
 
-- 📧 Email: bao.lq.it@gmail.com
-- 🐛 GitHub Issues: Bug reports and feature requests
-- 💬 GitHub Discussions: Community support
-- 📖 Documentation: Wiki or docs site
-- 🐦 Social Media: Updates and announcements
+- 📧 邮箱：bao.lq.it@gmail.com
+- 🐛 GitHub Issues：错误报告和功能请求
+- 💬 GitHub 讨论：社区支持
+- 📖 文档：Wiki 或文档站点
+- 🐦 社交媒体：更新和公告
 
 ---
 
-**Congratulations! Your LibRaw Node.js project is ready for the world! 🎉**
+**恭喜！您的 LibRaw Node.js 项目已准备好面向世界！🎉**
 
-Remember to:
+请记住：
 
-- Keep documentation updated
-- Respond to community feedback
-- Maintain regular releases
-- Monitor security advisories
+- 保持文档更新
+- 回应社区反馈
+- 维护定期发布
+- 监控安全建议

@@ -3,25 +3,25 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Demo test showing the buffer creation methods in action
- * This serves as both a test and documentation example
+ * 演示缓冲区创建方法的演示测试
+ * 这既是测试也是文档示例
  */
 
 async function demonstrateBufferMethods() {
-  console.log("🎨 LibRaw Buffer Methods Demonstration");
+  console.log("🎨 LibRaw 缓冲区方法演示");
   console.log("=".repeat(50));
 
   const processor = new LibRaw();
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
   const outputDir = path.join(__dirname, "demo-output");
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
   try {
-    // Find a test file
+    // 查找测试文件
     const files = fs.readdirSync(sampleImagesDir);
     const rawExtensions = [
       ".cr2",
@@ -38,24 +38,24 @@ async function demonstrateBufferMethods() {
     });
 
     if (!testFile) {
-      throw new Error("No RAW test file found");
+      throw new Error("未找到 RAW 测试文件");
     }
 
     const fullPath = path.join(sampleImagesDir, testFile);
-    console.log(`📁 Processing: ${testFile}`);
+    console.log(`📁 处理: ${testFile}`);
 
-    // Load and process the RAW file
+    // 加载并处理 RAW 文件
     await processor.loadFile(fullPath);
-    console.log("✅ File loaded successfully");
+    console.log("✅ 文件加载成功");
 
     await processor.processImage();
-    console.log("✅ Image processed successfully");
+    console.log("✅ 图像处理成功");
 
-    // Demonstrate each buffer method
-    console.log("\n📸 Creating different format buffers...");
+    // 演示各种缓冲区方法
+    console.log("\n📸 创建不同格式的缓冲区...");
 
-    // 1. JPEG Buffer
-    console.log("  • Creating JPEG buffer...");
+    // 1. JPEG 缓冲区
+    console.log("  • 创建 JPEG 缓冲区...");
     const jpegResult = await processor.createJPEGBuffer({
       quality: 85,
       width: 1200,
@@ -69,8 +69,8 @@ async function demonstrateBufferMethods() {
       );
     }
 
-    // 2. PNG Buffer
-    console.log("  • Creating PNG buffer...");
+    // 2. PNG 缓冲区
+    console.log("  • 创建 PNG 缓冲区...");
     const pngResult = await processor.createPNGBuffer({
       width: 800,
       compressionLevel: 6,
@@ -84,8 +84,8 @@ async function demonstrateBufferMethods() {
       );
     }
 
-    // 3. WebP Buffer
-    console.log("  • Creating WebP buffer...");
+    // 3. WebP 缓冲区
+    console.log("  • 创建 WebP 缓冲区...");
     const webpResult = await processor.createWebPBuffer({
       quality: 80,
       width: 1000,
@@ -99,8 +99,8 @@ async function demonstrateBufferMethods() {
       );
     }
 
-    // 4. AVIF Buffer (next-gen format)
-    console.log("  • Creating AVIF buffer...");
+    // 4. AVIF 缓冲区（下一代格式）
+    console.log("  • 创建 AVIF 缓冲区...");
     try {
       const avifResult = await processor.createAVIFBuffer({
         quality: 50,
@@ -115,11 +115,11 @@ async function demonstrateBufferMethods() {
         );
       }
     } catch (error) {
-      console.log(`    ⚠️ AVIF not supported: ${error.message}`);
+      console.log(`    ⚠️ AVIF 不受支持: ${error.message}`);
     }
 
-    // 5. TIFF Buffer
-    console.log("  • Creating TIFF buffer...");
+    // 5. TIFF 缓冲区
+    console.log("  • 创建 TIFF 缓冲区...");
     const tiffResult = await processor.createTIFFBuffer({
       compression: "lzw",
       width: 600,
@@ -133,8 +133,8 @@ async function demonstrateBufferMethods() {
       );
     }
 
-    // 6. PPM Buffer (raw format)
-    console.log("  • Creating PPM buffer...");
+    // 6. PPM 缓冲区（原始格式）
+    console.log("  • 创建 PPM 缓冲区...");
     try {
       const ppmResult = await processor.createPPMBuffer();
       if (ppmResult.success) {
@@ -172,8 +172,8 @@ async function demonstrateBufferMethods() {
     }
     await processor2.close();
 
-    // Parallel creation demonstration
-    console.log("\n🔄 Creating multiple formats in parallel...");
+    // 并行创建演示
+    console.log("\n🔄 并行创建多种格式...");
     const startTime = Date.now();
 
     const [parallelJpeg, parallelPng, parallelWebp] = await Promise.all([
@@ -183,7 +183,7 @@ async function demonstrateBufferMethods() {
     ]);
 
     const endTime = Date.now();
-    console.log(`    ⚡ Parallel creation took: ${endTime - startTime}ms`);
+    console.log(`    ⚡ 并行创建耗时: ${endTime - startTime}ms`);
 
     if (parallelJpeg.success && parallelPng.success && parallelWebp.success) {
       fs.writeFileSync(
@@ -210,19 +210,19 @@ async function demonstrateBufferMethods() {
       );
     }
 
-    console.log(`\n🎉 Demo completed successfully!`);
-    console.log(`📂 Output files saved to: ${outputDir}`);
+    console.log(`\n🎉 演示成功完成！`);
+    console.log(`📂 输出文件已保存到: ${outputDir}`);
 
-    // List output files
+    // 列出输出文件
     const outputFiles = fs.readdirSync(outputDir);
-    console.log(`📋 Generated ${outputFiles.length} files:`);
+    console.log(`📋 生成了 ${outputFiles.length} 个文件:`);
     outputFiles.forEach((file) => {
       const filePath = path.join(outputDir, file);
       const stats = fs.statSync(filePath);
       console.log(`   ${file} (${(stats.size / 1024).toFixed(1)}KB)`);
     });
   } catch (error) {
-    console.error(`❌ Demo failed: ${error.message}`);
+    console.error(`❌ 演示失败: ${error.message}`);
     console.error(error.stack);
   } finally {
     await processor.close();

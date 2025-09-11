@@ -2,13 +2,13 @@ const LibRaw = require("../lib/index.js");
 const path = require("path");
 
 async function advancedExample() {
-  console.log("🔬 Advanced LibRaw Features Demo");
+  console.log("🔬 高级 LibRaw 功能演示");
   console.log("=".repeat(40));
 
   const processor = new LibRaw();
 
   try {
-    // Example using the first available sample image
+    // 使用第一个可用示例图像的示例
     const sampleFile = path.join(
       __dirname,
       "..",
@@ -16,10 +16,10 @@ async function advancedExample() {
       "ILCE-7RM2_01.ARW"
     );
 
-    console.log("\n1️⃣ Loading RAW file...");
+    console.log("\n1️⃣ 加载 RAW 文件...");
     await processor.loadFile(sampleFile);
 
-    console.log("\n2️⃣ Advanced Metadata Extraction...");
+    console.log("\n2️⃣ 高级元数据提取...");
     const [metadata, advanced, lens, color] = await Promise.all([
       processor.getMetadata(),
       processor.getAdvancedMetadata(),
@@ -27,40 +27,40 @@ async function advancedExample() {
       processor.getColorInfo(),
     ]);
 
-    console.log(`📷 Camera: ${metadata.make} ${metadata.model}`);
-    console.log(`🔍 Lens: ${lens.lensName || "Unknown"}`);
+    console.log(`📷 相机: ${metadata.make} ${metadata.model}`);
+    console.log(`🔍 镜头: ${lens.lensName || "未知"}`);
     console.log(
-      `📊 Color Matrix Available: ${
-        advanced.colorMatrix.length > 0 ? "Yes" : "No"
+      `📊 色彩矩阵可用: ${
+        advanced.colorMatrix.length > 0 ? "是" : "否"
       }`
     );
 
-    console.log("\n3️⃣ Configuring Processing...");
+    console.log("\n3️⃣ 配置处理...");
     await processor.setOutputParams({
-      bright: 1.1, // Slight brightness boost
-      gamma: [2.2, 4.5], // Standard sRGB gamma
-      output_bps: 16, // 16-bit output
-      no_auto_bright: false, // Enable auto brightness
-      highlight: 1, // Highlight recovery mode
+      bright: 1.1, // 轻微亮度提升
+      gamma: [2.2, 4.5], // 标准 sRGB 伽马
+      output_bps: 16, // 16 位输出
+      no_auto_bright: false, // 启用自动亮度
+      highlight: 1, // 高光恢复模式
     });
 
-    console.log("\n4️⃣ Processing Pipeline...");
+    console.log("\n4️⃣ 处理管道...");
     await processor.subtractBlack();
-    console.log("   ✅ Black level subtracted");
+    console.log("   ✅ 已减去黑电平");
 
     await processor.raw2Image();
-    console.log("   ✅ RAW data converted to image");
+    console.log("   ✅ RAW 数据已转换为图像");
 
     await processor.adjustMaximum();
-    console.log("   ✅ Maximum values adjusted");
+    console.log("   ✅ 最大值已调整");
 
     await processor.processImage();
-    console.log("   ✅ Image processing completed");
+    console.log("   ✅ 图像处理完成");
 
-    console.log("\n5️⃣ Creating Memory Images...");
+    console.log("\n5️⃣ 创建内存图像...");
     const imageData = await processor.createMemoryImage();
     console.log(
-      `   📸 Main Image: ${imageData.width}x${imageData.height} (${(
+      `   📸 主图像: ${imageData.width}x${imageData.height} (${(
         imageData.dataSize /
         1024 /
         1024
@@ -70,22 +70,22 @@ async function advancedExample() {
     await processor.unpackThumbnail();
     const thumbData = await processor.createMemoryThumbnail();
     console.log(
-      `   🖼️ Thumbnail: ${thumbData.width}x${thumbData.height} (${(
+      `   🖼️ 缩略图: ${thumbData.width}x${thumbData.height} (${(
         thumbData.dataSize / 1024
       ).toFixed(1)}KB)`
     );
 
-    console.log("\n6️⃣ Exporting Files...");
+    console.log("\n6️⃣ 导出文件...");
     const outputDir = path.join(__dirname, "..", "output");
     require("fs").mkdirSync(outputDir, { recursive: true });
 
     await processor.writeTIFF(path.join(outputDir, "processed.tiff"));
-    console.log("   💾 TIFF saved");
+    console.log("   💾 TIFF 已保存");
 
     await processor.writeThumbnail(path.join(outputDir, "thumbnail.jpg"));
-    console.log("   💾 Thumbnail saved");
+    console.log("   💾 缩略图已保存");
 
-    console.log("\n7️⃣ Image Analysis...");
+    console.log("\n7️⃣ 图像分析...");
     const [isFloating, isFuji, isSRAW, errors] = await Promise.all([
       processor.isFloatingPoint(),
       processor.isFujiRotated(),
@@ -93,22 +93,22 @@ async function advancedExample() {
       processor.errorCount(),
     ]);
 
-    console.log(`   🔢 Floating Point: ${isFloating}`);
-    console.log(`   🔄 Fuji Rotated: ${isFuji}`);
+    console.log(`   🔢 浮点: ${isFloating}`);
+    console.log(`   🔄 富士旋转: ${isFuji}`);
     console.log(`   📦 sRAW: ${isSRAW}`);
-    console.log(`   ⚠️ Processing Errors: ${errors}`);
+    console.log(`   ⚠️ 处理错误: ${errors}`);
 
-    console.log("\n✨ Complete! All advanced features demonstrated.");
+    console.log("\n✨ 完成！所有高级功能已演示。");
   } catch (error) {
-    console.error(`❌ Error: ${error.message}`);
+    console.error(`❌ 错误: ${error.message}`);
   } finally {
     await processor.close();
   }
 }
 
-// Buffer loading example
+// 缓冲区加载示例
 async function bufferExample() {
-  console.log("\n🗂️ Buffer Loading Example");
+  console.log("\n🗂️ 缓冲区加载示例");
   console.log("-".repeat(30));
 
   const fs = require("fs");
@@ -120,56 +120,56 @@ async function bufferExample() {
   );
 
   if (!fs.existsSync(sampleFile)) {
-    console.log("❌ Sample file not found for buffer demo");
+    console.log("❌ 未找到缓冲区演示的示例文件");
     return;
   }
 
   const processor = new LibRaw();
 
   try {
-    // Load file into buffer
+    // 将文件加载到缓冲区
     const buffer = fs.readFileSync(sampleFile);
     console.log(
-      `📁 Loaded ${(buffer.length / 1024 / 1024).toFixed(1)}MB into buffer`
+      `📁 已加载 ${(buffer.length / 1024 / 1024).toFixed(1)}MB 到缓冲区`
     );
 
-    // Process from buffer
+    // 从缓冲区处理
     await processor.loadBuffer(buffer);
-    console.log("✅ RAW loaded from buffer");
+    console.log("✅ 从缓冲区加载 RAW");
 
     const metadata = await processor.getMetadata();
-    console.log(`📷 ${metadata.make} ${metadata.model} loaded successfully`);
+    console.log(`📷 ${metadata.make} ${metadata.model} 加载成功`);
   } catch (error) {
-    console.error(`❌ Buffer loading error: ${error.message}`);
+    console.error(`❌ 缓冲区加载错误: ${error.message}`);
   } finally {
     await processor.close();
   }
 }
 
-// Static information example
+// 静态信息示例
 function staticInfoExample() {
-  console.log("\n📊 Static Library Information");
+  console.log("\n📊 静态库信息");
   console.log("-".repeat(35));
 
-  console.log(`📋 LibRaw Version: ${LibRaw.getVersion()}`);
-  console.log(`🎯 Capabilities: 0x${LibRaw.getCapabilities().toString(16)}`);
-  console.log(`📷 Supported Cameras: ${LibRaw.getCameraCount()}`);
+  console.log(`📋 LibRaw 版本: ${LibRaw.getVersion()}`);
+  console.log(`🎯 功能: 0x${LibRaw.getCapabilities().toString(16)}`);
+  console.log(`📷 支持的相机: ${LibRaw.getCameraCount()}`);
 
   const cameras = LibRaw.getCameraList();
-  console.log(`🏷️ Sample Camera Models:`);
+  console.log(`🏷️ 示例相机型号:`);
   cameras.slice(0, 10).forEach((camera) => console.log(`   • ${camera}`));
   if (cameras.length > 10) {
-    console.log(`   ... and ${cameras.length - 10} more`);
+    console.log(`   ... 还有 ${cameras.length - 10} 个`);
   }
 }
 
-// Run all examples
+// 运行所有示例
 async function runExamples() {
   staticInfoExample();
   await advancedExample();
   await bufferExample();
 
-  console.log("\n🎉 All examples completed!");
+  console.log("\n🎉 所有示例完成！");
 }
 
 runExamples().catch(console.error);

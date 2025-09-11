@@ -1,5 +1,4 @@
-This repository contains RAW files for the Taglib# test suite.
+此仓库包含用于 Taglib# 测试套件的 RAW 文件。
 
-All available images are offered to you under the CCL (Creative Common License)
-(in accordance with the license of rawsamples.ch, from which many of the used
-files originate).
+所有可用图像均根据 CCL（知识共享许可协议）提供给您
+（符合 rawsamples.ch 的许可协议，许多使用的文件都来源于此）。

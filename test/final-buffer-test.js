@@ -3,8 +3,8 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Final verification test for all buffer creation methods
- * This test verifies all methods work correctly and creates output files
+ * 所有缓冲区创建方法的最终验证测试
+ * 此测试验证所有方法正常工作并创建输出文件
  */
 
 async function finalBufferTest() {
@@ -15,13 +15,13 @@ async function finalBufferTest() {
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
   const outputDir = path.join(__dirname, "final-test-output");
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
   try {
-    // Find a test file
+    // 查找测试文件
     const files = fs.readdirSync(sampleImagesDir);
     const rawExtensions = [
       ".cr2",
@@ -38,13 +38,13 @@ async function finalBufferTest() {
     });
 
     if (!testFile) {
-      throw new Error("No RAW test file found");
+      throw new Error("未找到 RAW 测试文件");
     }
 
     const fullPath = path.join(sampleImagesDir, testFile);
     console.log(`📁 Testing with: ${testFile}`);
 
-    // Load and process the RAW file
+    // 加载并处理 RAW 文件
     await processor.loadFile(fullPath);
     await processor.processImage();
 

@@ -1,6 +1,6 @@
-# Usage Examples
+# 使用示例
 
-## Basic RAW File Processing
+## 基础 RAW 文件处理
 
 ```javascript
 const LibRaw = require("librawspeed");
@@ -14,7 +14,7 @@ async function basicExample() {
     const size = await processor.getImageSize();
 
     console.log(`📷 ${metadata.make} ${metadata.model}`);
-    console.log(`📐 ${size.width}x${size.height} pixels`);
+    console.log(`📐 ${size.width}x${size.height} 像素`);
     console.log(`⚙️  ISO ${metadata.iso}, f/${metadata.aperture}`);
   } finally {
     await processor.close();
@@ -22,7 +22,7 @@ async function basicExample() {
 }
 ```
 
-## Batch Processing Multiple Files
+## 批量处理多个文件
 
 ```javascript
 const fs = require("fs");
@@ -52,7 +52,7 @@ async function batchProcess(directory) {
         captureDate: new Date(metadata.timestamp * 1000),
       });
     } catch (error) {
-      console.error(`Failed to process ${file}: ${error.message}`);
+      console.error(`处理失败 ${file}: ${error.message}`);
     } finally {
       await processor.close();
     }
@@ -62,7 +62,7 @@ async function batchProcess(directory) {
 }
 ```
 
-## Photo Gallery Metadata Extraction
+## 照片画廊元数据提取
 
 ```javascript
 async function extractGalleryMetadata(photoPath) {
@@ -74,13 +74,13 @@ async function extractGalleryMetadata(photoPath) {
     const size = await processor.getImageSize();
 
     return {
-      // Basic info
+      // 基本信息
       camera: {
         make: metadata.make,
         model: metadata.model,
       },
 
-      // Technical settings
+      // 技术设置
       settings: {
         iso: metadata.iso,
         aperture: metadata.aperture,
@@ -88,7 +88,7 @@ async function extractGalleryMetadata(photoPath) {
         focalLength: metadata.focalLength,
       },
 
-      // Image specs
+      // 图像规格
       image: {
         width: size.width,
         height: size.height,
@@ -96,7 +96,7 @@ async function extractGalleryMetadata(photoPath) {
         aspectRatio: (size.width / size.height).toFixed(2),
       },
 
-      // Capture info
+      // 拍摄信息
       capture: {
         timestamp: metadata.timestamp,
         date: new Date(metadata.timestamp * 1000).toISOString(),
@@ -110,7 +110,7 @@ async function extractGalleryMetadata(photoPath) {
 }
 ```
 
-## Performance Monitoring
+## 性能监控
 
 ```javascript
 async function monitoredProcessing(filepath) {
@@ -118,27 +118,27 @@ async function monitoredProcessing(filepath) {
   const startTime = Date.now();
 
   try {
-    console.time("Total Processing");
+    console.time("总处理时间");
 
-    console.time("File Loading");
+    console.time("文件加载");
     await processor.loadFile(filepath);
-    console.timeEnd("File Loading");
+    console.timeEnd("文件加载");
 
-    console.time("Metadata Extraction");
+    console.time("元数据提取");
     const metadata = await processor.getMetadata();
-    console.timeEnd("Metadata Extraction");
+    console.timeEnd("元数据提取");
 
-    console.time("Size Detection");
+    console.time("尺寸检测");
     const size = await processor.getImageSize();
-    console.timeEnd("Size Detection");
+    console.timeEnd("尺寸检测");
 
-    console.timeEnd("Total Processing");
+    console.timeEnd("总处理时间");
 
     const fileStats = require("fs").statSync(filepath);
     const throughput =
       ((fileStats.size / (Date.now() - startTime)) * 1000) / 1024 / 1024;
 
-    console.log(`📊 Throughput: ${throughput.toFixed(2)} MB/s`);
+    console.log(`📊 吞吐量: ${throughput.toFixed(2)} MB/s`);
 
     return { metadata, size };
   } finally {
@@ -147,30 +147,30 @@ async function monitoredProcessing(filepath) {
 }
 ```
 
-## Error Handling Best Practices
+## 错误处理最佳实践
 
 ```javascript
 async function robustProcessing(filepath) {
   const processor = new LibRaw();
 
   try {
-    // Validate file exists
+    // 验证文件存在
     if (!require("fs").existsSync(filepath)) {
-      throw new Error(`File not found: ${filepath}`);
+      throw new Error(`文件未找到: ${filepath}`);
     }
 
-    // Check file extension
+    // 检查文件扩展名
     const ext = require("path").extname(filepath).toLowerCase();
     const supported = [".nef", ".cr2", ".cr3", ".arw", ".raf", ".rw2", ".dng"];
     if (!supported.includes(ext)) {
-      throw new Error(`Unsupported format: ${ext}`);
+      throw new Error(`不支持的格式: ${ext}`);
     }
 
     await processor.loadFile(filepath);
 
-    // Extract with timeout
+    // 带超时的提取
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Processing timeout")), 30000)
+      setTimeout(() => reject(new Error("处理超时")), 30000)
     );
 
     const processing = Promise.all([
@@ -182,19 +182,19 @@ async function robustProcessing(filepath) {
 
     return { metadata, size, success: true };
   } catch (error) {
-    console.error(`Processing error for ${filepath}:`, error.message);
+    console.error(`处理错误 ${filepath}:`, error.message);
     return { error: error.message, success: false };
   } finally {
     try {
       await processor.close();
     } catch (closeError) {
-      console.warn("Warning: Failed to close processor:", closeError.message);
+      console.warn("警告: 关闭处理器失败:", closeError.message);
     }
   }
 }
 ```
 
-## Integration with Express.js
+## 与 Express.js 集成
 
 ```javascript
 const express = require("express");
@@ -206,7 +206,7 @@ const upload = multer({ dest: "uploads/" });
 
 app.post("/analyze-raw", upload.single("rawFile"), async (req, res) => {
   if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded" });
+    return res.status(400).json({ error: "未上传文件" });
   }
 
   const processor = new LibRaw();
@@ -237,7 +237,7 @@ app.post("/analyze-raw", upload.single("rawFile"), async (req, res) => {
     });
   } finally {
     await processor.close();
-    // Clean up uploaded file
+    // 清理上传的文件
     require("fs").unlinkSync(req.file.path);
   }
 });

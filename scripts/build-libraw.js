@@ -23,19 +23,19 @@ class LibRawBuilder {
   }
 
   log(message) {
-    console.log(`[LibRaw Builder] ${message}`);
+    console.log(`[LibRaw 构建器] ${message}`);
   }
 
   async ensureDirectories() {
     const platformBuildDir = path.join(this.buildDir, this.getPlatformName());
     if (!fs.existsSync(platformBuildDir)) {
       fs.mkdirSync(platformBuildDir, { recursive: true });
-      this.log(`Created directory: ${platformBuildDir}`);
+      this.log(`已创建目录: ${platformBuildDir}`);
     }
   }
 
   async build() {
-    this.log("Starting LibRaw build...");
+    this.log("开始 LibRaw 构建...");
     
     try {
       // 确保目录存在
@@ -57,29 +57,29 @@ class LibRawBuilder {
         '--disable-examples'   // 禁用示例程序
       ];
 
-      this.log("Configuring LibRaw...");
+      this.log("配置 LibRaw...");
       execSync(`./configure ${configureArgs.join(' ')}`, {
         cwd: this.librawSourceDir,
         stdio: 'inherit'
       });
 
-      this.log("Building LibRaw...");
+      this.log("构建 LibRaw...");
       execSync('make -j4', {
         cwd: this.librawSourceDir,
         stdio: 'inherit'
       });
 
-      this.log("Installing LibRaw...");
+      this.log("安装 LibRaw...");
       execSync('make install', {
         cwd: this.librawSourceDir,
         stdio: 'inherit'
       });
 
-      this.log("LibRaw build completed successfully!");
-      this.log(`Build output: ${platformBuildDir}`);
+      this.log("LibRaw 构建成功完成!");
+      this.log(`构建输出: ${platformBuildDir}`);
       
     } catch (error) {
-      this.log(`Build failed: ${error.message}`);
+      this.log(`构建失败: ${error.message}`);
       throw error;
     }
   }
@@ -90,9 +90,9 @@ class LibRawBuilder {
       execSync('which make', { stdio: 'ignore' });
       execSync('which gcc', { stdio: 'ignore' });
       execSync('which g++', { stdio: 'ignore' });
-      this.log("Build tools found");
+      this.log("找到构建工具");
     } catch (error) {
-      throw new Error(`Required build tools not found for ${this.platform}`);
+      throw new Error(`未找到 ${this.platform} 平台所需的构建工具`);
     }
   }
 }
@@ -103,7 +103,7 @@ async function main() {
   try {
     await builder.build();
   } catch (error) {
-    console.error(`LibRaw build failed: ${error.message}`);
+    console.error(`LibRaw 构建失败: ${error.message}`);
     process.exit(1);
   }
 }

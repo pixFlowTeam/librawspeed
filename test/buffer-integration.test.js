@@ -3,24 +3,24 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Integration tests for buffer creation methods with existing test framework
- * This file integrates the new buffer methods with the existing test structure
+ * 缓冲区创建方法与现有测试框架的集成测试
+ * 此文件将新的缓冲区方法与现有测试结构集成
  */
 
 describe("Buffer Creation Methods", function () {
-  this.timeout(30000); // 30 seconds
+  this.timeout(30000); // 30 秒
 
   const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
   const outputDir = path.join(__dirname, "buffer-integration-output");
   let testFile;
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   before(function () {
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // Find a test file
+    // 查找测试文件
     const rawExtensions = [
       ".cr2",
       ".cr3",
@@ -41,7 +41,7 @@ describe("Buffer Creation Methods", function () {
     }
 
     if (!testFile) {
-      throw new Error("No RAW test file found for buffer creation tests");
+      throw new Error("未找到用于缓冲区创建测试的 RAW 测试文件");
     }
   });
 

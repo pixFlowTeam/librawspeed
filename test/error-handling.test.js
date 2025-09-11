@@ -1,24 +1,24 @@
 const LibRaw = require("../lib/index.js");
 
 /**
- * Test error handling and edge cases
+ * 测试错误处理和边缘情况
  */
 
 async function testErrorHandling() {
   console.log("⚠️ LibRaw Error Handling Test");
   console.log("=".repeat(40));
 
-  // Test constructor
+  // 测试构造函数
   console.log("\n🏗️ Constructor Tests:");
   try {
     const processor = new LibRaw();
     console.log("   ✅ Constructor succeeded");
-    await processor.close(); // Clean up
+    await processor.close(); // 清理
   } catch (error) {
     console.log(`   ❌ Constructor failed: ${error.message}`);
   }
 
-  // Test methods without loading file
+  // 测试未加载文件的方法
   console.log("\n🚫 Methods Without File Loaded:");
   const processor = new LibRaw();
 

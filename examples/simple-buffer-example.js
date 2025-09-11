@@ -2,12 +2,12 @@ const LibRaw = require("../lib/index");
 const fs = require("fs");
 
 /**
- * Simple Buffer API Example
+ * 简单缓冲区 API 示例
  *
- * Demonstrates the most common use cases for the new buffer API:
- * - Creating JPEG buffers for web use
- * - Creating thumbnails in memory
- * - Using buffers instead of files
+ * 演示新缓冲区 API 的最常见用例：
+ * - 为 Web 使用创建 JPEG 缓冲区
+ * - 在内存中创建缩略图
+ * - 使用缓冲区而不是文件
  */
 
 async function simpleBufferExample(inputFile) {
@@ -18,19 +18,19 @@ async function simpleBufferExample(inputFile) {
   const processor = new LibRaw();
 
   try {
-    // Load and process the RAW file
+    // 加载并处理 RAW 文件
     console.log("🔄 Loading RAW file...");
     await processor.loadFile(inputFile);
 
     console.log("⚙️ Processing image...");
     await processor.processImage();
 
-    // ============== EXAMPLE 1: Create JPEG buffer for web use ==============
+    // ============== 示例 1：为 Web 使用创建 JPEG 缓冲区 ==============
     console.log("\n📸 Creating web-optimized JPEG buffer...");
     const webJpeg = await processor.createJPEGBuffer({
       quality: 85,
-      width: 1920, // Resize to 1920px wide
-      progressive: true, // Better for web loading
+      width: 1920, // 调整到 1920px 宽度
+      progressive: true, // 更适合 Web 加载
     });
 
     console.log(`✅ Web JPEG created: ${webJpeg.buffer.length} bytes`);
@@ -41,11 +41,11 @@ async function simpleBufferExample(inputFile) {
       `   Compression: ${webJpeg.metadata.fileSize.compressionRatio}:1`
     );
 
-    // ============== EXAMPLE 2: Create thumbnail buffer ==============
+    // ============== 示例 2：创建缩略图缓冲区 ==============
     console.log("\n🔍 Creating thumbnail buffer...");
     const thumbnail = await processor.createThumbnailJPEGBuffer({
       quality: 85,
-      maxSize: 300, // Max 300px on any side
+      maxSize: 300, // 任意边最大 300px
     });
 
     console.log(`✅ Thumbnail created: ${thumbnail.buffer.length} bytes`);
@@ -53,11 +53,11 @@ async function simpleBufferExample(inputFile) {
       `   Size: ${thumbnail.metadata.outputDimensions.width}x${thumbnail.metadata.outputDimensions.height}`
     );
 
-    // ============== EXAMPLE 3: Create high-quality buffer for storage ==============
+    // ============== 示例 3：为存储创建高质量缓冲区 ==============
     console.log("\n🎨 Creating high-quality buffer...");
     const highQuality = await processor.createJPEGBuffer({
-      quality: 95, // High quality
-      // No resizing - keep original dimensions
+      quality: 95, // 高质量
+      // 不调整大小 - 保持原始尺寸
     });
 
     console.log(
@@ -67,16 +67,16 @@ async function simpleBufferExample(inputFile) {
       `   Size: ${highQuality.metadata.outputDimensions.width}x${highQuality.metadata.outputDimensions.height}`
     );
 
-    // ============== PRACTICAL USAGE EXAMPLES ==============
+    // ============== 实用使用示例 ==============
     console.log("\n💡 Practical Usage Examples:\n");
 
-    // Example 1: Save to file (if needed)
+    // 示例 1：保存到文件（如果需要）
     console.log("1️⃣ Save buffer to file:");
     console.log("```javascript");
     console.log('fs.writeFileSync("output.jpg", webJpeg.buffer);');
     console.log("```\n");
 
-    // Example 2: Send via HTTP (Express.js)
+    // 示例 2：通过 HTTP 发送（Express.js）
     console.log("2️⃣ Send via HTTP response:");
     console.log("```javascript");
     console.log('app.get("/image", async (req, res) => {');
@@ -88,7 +88,7 @@ async function simpleBufferExample(inputFile) {
     console.log("});");
     console.log("```\n");
 
-    // Example 3: Upload to cloud storage
+    // 示例 3：上传到云存储
     console.log("3️⃣ Upload to cloud storage:");
     console.log("```javascript");
     console.log(

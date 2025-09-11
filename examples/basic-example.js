@@ -7,7 +7,7 @@ async function basicExample() {
     const processor = new LibRaw();
 
     try {
-        // Replace with your RAW file path
+        // 替换为您的 RAW 文件路径
         const rawFile = process.argv[2] || 'sample.cr2';
         
         console.log(`📁 Loading RAW file: ${rawFile}`);
@@ -47,16 +47,16 @@ async function basicExample() {
     } catch (error) {
         console.error('\n❌ Error:', error.message);
         console.error('\nMake sure you have:');
-        console.error('1. Built the addon with: npm run build');
-        console.error('2. Provided a valid RAW file path');
-        console.error('3. The RAW file is accessible and not corrupted');
+        console.error('1. 使用 npm run build 构建了插件');
+        console.error('2. 提供了有效的 RAW 文件路径');
+        console.error('3. RAW 文件可访问且未损坏');
     }
 }
 
-// Usage instructions
+// 使用说明
 if (process.argv.length < 3) {
-    console.log('Usage: node basic-example.js <path-to-raw-file>');
-    console.log('Example: node basic-example.js C:\\photos\\IMG_1234.CR2');
+    console.log('用法: node basic-example.js <raw文件路径>');
+    console.log('示例: node basic-example.js C:\\photos\\IMG_1234.CR2');
     process.exit(1);
 }
 

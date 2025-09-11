@@ -3,42 +3,42 @@ const path = require("path");
 const fs = require("fs");
 
 async function jpegConversionExample() {
-  console.log("LibRaw JPEG Conversion Example");
+  console.log("LibRaw JPEG 转换示例");
   console.log("===============================\n");
 
   const processor = new LibRaw();
 
   try {
-    // Replace with your RAW file path
+    // 替换为您的 RAW 文件路径
     const rawFile = process.argv[2] || "sample.cr2";
 
     if (!fs.existsSync(rawFile)) {
-      console.log("❌ RAW file not found:", rawFile);
+      console.log("❌ 未找到 RAW 文件:", rawFile);
       console.log(
-        "\nUsage: node jpeg-conversion-example.js <path-to-raw-file>"
+        "\n用法: node jpeg-conversion-example.js <RAW文件路径>"
       );
       console.log(
-        "Example: node jpeg-conversion-example.js C:\\photos\\IMG_1234.CR2"
+        "示例: node jpeg-conversion-example.js C:\\photos\\IMG_1234.CR2"
       );
       return;
     }
 
-    console.log(`📁 Loading RAW file: ${rawFile}`);
+    console.log(`📁 加载 RAW 文件: ${rawFile}`);
     await processor.loadFile(rawFile);
 
-    console.log("📊 Analyzing image for optimal settings...");
+    console.log("📊 分析图像以获得最佳设置...");
     const metadata = await processor.getMetadata();
 
-    console.log(`\n📷 Image Information:`);
-    console.log(`   Camera: ${metadata.make} ${metadata.model}`);
-    console.log(`   Dimensions: ${metadata.width} x ${metadata.height}`);
+    console.log(`\n📷 图像信息:`);
+    console.log(`   相机: ${metadata.make} ${metadata.model}`);
+    console.log(`   尺寸: ${metadata.width} x ${metadata.height}`);
     console.log(
-      `   Megapixels: ${((metadata.width * metadata.height) / 1000000).toFixed(
+      `   百万像素: ${((metadata.width * metadata.height) / 1000000).toFixed(
         1
       )}MP`
     );
 
-    // Create output directory
+    // 创建输出目录
     const outputDir = path.join(__dirname, "jpeg-examples");
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
@@ -46,116 +46,116 @@ async function jpegConversionExample() {
 
     const baseName = path.basename(rawFile, path.extname(rawFile));
 
-    // Example 1: Basic JPEG conversion with default settings
-    console.log("\n🖼️  Example 1: Basic JPEG conversion (default quality)");
+    // 示例 1：使用默认设置的基本 JPEG 转换
+    console.log("\n🖼️  示例 1：基本 JPEG 转换（默认质量）");
     const basicOutput = path.join(outputDir, `${baseName}_basic.jpg`);
     const basicResult = await processor.convertToJPEG(basicOutput);
-    console.log(`   ✅ Saved: ${basicOutput}`);
+    console.log(`   ✅ 已保存: ${basicOutput}`);
     console.log(
-      `   📊 Size: ${(basicResult.metadata.fileSize.compressed / 1024).toFixed(
+      `   📊 大小: ${(basicResult.metadata.fileSize.compressed / 1024).toFixed(
         1
       )}KB`
     );
-    console.log(`   ⚡ Time: ${basicResult.metadata.processing.timeMs}ms`);
+    console.log(`   ⚡ 时间: ${basicResult.metadata.processing.timeMs}ms`);
     console.log(
-      `   📉 Compression: ${basicResult.metadata.fileSize.compressionRatio}x`
+      `   📉 压缩: ${basicResult.metadata.fileSize.compressionRatio}x`
     );
 
-    // Example 2: High-quality JPEG for print
-    console.log("\n🖼️  Example 2: High-quality JPEG for print");
+    // 示例 2：用于打印的高质量 JPEG
+    console.log("\n🖼️  示例 2：用于打印的高质量 JPEG");
     const printOutput = path.join(outputDir, `${baseName}_print.jpg`);
     const printResult = await processor.convertToJPEG(printOutput, {
       quality: 95,
-      chromaSubsampling: "4:2:2", // Better chroma for print
-      trellisQuantisation: true, // Better compression
+      chromaSubsampling: "4:2:2", // 更好的色度用于打印
+      trellisQuantisation: true, // 更好的压缩
       optimizeCoding: true,
     });
-    console.log(`   ✅ Saved: ${printOutput}`);
+    console.log(`   ✅ 已保存: ${printOutput}`);
     console.log(
-      `   📊 Size: ${(printResult.metadata.fileSize.compressed / 1024).toFixed(
+      `   📊 大小: ${(printResult.metadata.fileSize.compressed / 1024).toFixed(
         1
       )}KB`
     );
-    console.log(`   ⚡ Time: ${printResult.metadata.processing.timeMs}ms`);
+    console.log(`   ⚡ 时间: ${printResult.metadata.processing.timeMs}ms`);
 
-    // Example 3: Web-optimized JPEG with resize
-    console.log("\n🖼️  Example 3: Web-optimized JPEG (1920px wide)");
+    // 示例 3：Web 优化的 JPEG 带调整大小
+    console.log("\n🖼️  示例 3：Web 优化的 JPEG（1920px 宽）");
     const webOutput = path.join(outputDir, `${baseName}_web.jpg`);
     const webResult = await processor.convertToJPEG(webOutput, {
       quality: 80,
-      width: 1920, // Resize to 1920px width
-      progressive: true, // Progressive loading
-      mozjpeg: true, // Better compression
+      width: 1920, // 调整到 1920px 宽度
+      progressive: true, // 渐进式加载
+      mozjpeg: true, // 更好的压缩
       optimizeScans: true,
     });
-    console.log(`   ✅ Saved: ${webOutput}`);
+    console.log(`   ✅ 已保存: ${webOutput}`);
     console.log(
-      `   📊 Size: ${(webResult.metadata.fileSize.compressed / 1024).toFixed(
+      `   📊 大小: ${(webResult.metadata.fileSize.compressed / 1024).toFixed(
         1
       )}KB`
     );
     console.log(
-      `   📐 Dimensions: ${webResult.metadata.outputDimensions.width}x${webResult.metadata.outputDimensions.height}`
+      `   📐 尺寸: ${webResult.metadata.outputDimensions.width}x${webResult.metadata.outputDimensions.height}`
     );
-    console.log(`   ⚡ Time: ${webResult.metadata.processing.timeMs}ms`);
+    console.log(`   ⚡ 时间: ${webResult.metadata.processing.timeMs}ms`);
 
-    // Example 4: Thumbnail creation
-    console.log("\n🖼️  Example 4: Thumbnail creation (400x300)");
+    // 示例 4：缩略图创建
+    console.log("\n🖼️  示例 4：缩略图创建（400x300）");
     const thumbOutput = path.join(outputDir, `${baseName}_thumb.jpg`);
     const thumbResult = await processor.convertToJPEG(thumbOutput, {
       quality: 85,
       width: 400,
       height: 300,
-      chromaSubsampling: "4:2:2", // Better quality for small images
+      chromaSubsampling: "4:2:2", // 小图像更好的质量
     });
-    console.log(`   ✅ Saved: ${thumbOutput}`);
+    console.log(`   ✅ 已保存: ${thumbOutput}`);
     console.log(
-      `   📊 Size: ${(thumbResult.metadata.fileSize.compressed / 1024).toFixed(
+      `   📊 大小: ${(thumbResult.metadata.fileSize.compressed / 1024).toFixed(
         1
       )}KB`
     );
     console.log(
-      `   📐 Dimensions: ${thumbResult.metadata.outputDimensions.width}x${thumbResult.metadata.outputDimensions.height}`
+      `   📐 尺寸: ${thumbResult.metadata.outputDimensions.width}x${thumbResult.metadata.outputDimensions.height}`
     );
 
-    // Example 5: Get optimal settings recommendations
-    console.log("\n🧠 Example 5: AI-optimized settings analysis");
+    // 示例 5：获取最佳设置建议
+    console.log("\n🧠 示例 5：AI 优化设置分析");
     const webSettings = await processor.getOptimalJPEGSettings({
       usage: "web",
     });
-    console.log(`   🎯 Recommended for web:`);
-    console.log(`      Quality: ${webSettings.recommended.quality}`);
-    console.log(`      Progressive: ${webSettings.recommended.progressive}`);
-    console.log(`      Chroma: ${webSettings.recommended.chromaSubsampling}`);
-    console.log(`      Category: ${webSettings.imageAnalysis.category}`);
+    console.log(`   🎯 Web 推荐:`);
+    console.log(`      质量: ${webSettings.recommended.quality}`);
+    console.log(`      渐进式: ${webSettings.recommended.progressive}`);
+    console.log(`      色度: ${webSettings.recommended.chromaSubsampling}`);
+    console.log(`      类别: ${webSettings.imageAnalysis.category}`);
 
-    // Apply the recommended settings
+    // 应用推荐设置
     const optimizedOutput = path.join(outputDir, `${baseName}_optimized.jpg`);
     const optimizedResult = await processor.convertToJPEG(
       optimizedOutput,
       webSettings.recommended
     );
     console.log(
-      `   ✅ Applied optimal settings: ${(
+      `   ✅ 应用最佳设置: ${(
         optimizedResult.metadata.fileSize.compressed / 1024
       ).toFixed(1)}KB`
     );
 
-    console.log("\n📊 Performance Summary:");
+    console.log("\n📊 性能汇总:");
     console.log("   ========================");
-    console.log(`   📁 Total files created: 5`);
-    console.log(`   📂 Output directory: ${outputDir}`);
+    console.log(`   📁 创建的文件总数: 5`);
+    console.log(`   📂 输出目录: ${outputDir}`);
 
-    // Show file size comparison
+    // 显示文件大小比较
     const outputs = [
-      { name: "Basic (Q85)", path: basicOutput },
-      { name: "Print (Q95)", path: printOutput },
+      { name: "基本 (Q85)", path: basicOutput },
+      { name: "打印 (Q95)", path: printOutput },
       { name: "Web (1920px)", path: webOutput },
-      { name: "Thumbnail", path: thumbOutput },
-      { name: "Optimized", path: optimizedOutput },
+      { name: "缩略图", path: thumbOutput },
+      { name: "优化", path: optimizedOutput },
     ];
 
-    console.log("\n   📋 File Size Comparison:");
+    console.log("\n   📋 文件大小比较:");
     outputs.forEach((output) => {
       if (fs.existsSync(output.path)) {
         const stats = fs.statSync(output.path);
@@ -165,20 +165,20 @@ async function jpegConversionExample() {
       }
     });
 
-    console.log("\n🧹 Cleaning up...");
+    console.log("\n🧹 清理中...");
     await processor.close();
 
-    console.log("\n✅ JPEG conversion examples completed!");
-    console.log("🎉 Check the output files to see the quality differences");
+    console.log("\n✅ JPEG 转换示例完成！");
+    console.log("🎉 检查输出文件以查看质量差异");
   } catch (error) {
-    console.error("\n❌ Error:", error.message);
-    console.error("\nMake sure you have:");
-    console.error("1. Built the addon with: npm run build");
-    console.error("2. Installed Sharp: npm install sharp");
-    console.error("3. Provided a valid RAW file path");
-    console.error("4. The RAW file is accessible and not corrupted");
+    console.error("\n❌ 错误:", error.message);
+    console.error("\n请确保您有:");
+    console.error("1. 已构建插件: npm run build");
+    console.error("2. 已安装 Sharp: npm install sharp");
+    console.error("3. 提供了有效的 RAW 文件路径");
+    console.error("4. RAW 文件可访问且未损坏");
 
-    // Show available sample files if no argument provided
+    // 如果没有提供参数，显示可用的示例文件
     if (!process.argv[2]) {
       const sampleDir = path.join(__dirname, "..", "sample-images");
       if (fs.existsSync(sampleDir)) {
@@ -190,7 +190,7 @@ async function jpegConversionExample() {
             )
           );
         if (files.length > 0) {
-          console.error("\nAvailable sample files:");
+          console.error("\n可用的示例文件:");
           files.forEach((file) => {
             console.error(`   ${path.join(sampleDir, file)}`);
           });
@@ -200,24 +200,24 @@ async function jpegConversionExample() {
   }
 }
 
-// Usage instructions
+// 使用说明
 if (process.argv.length < 3) {
-  console.log("LibRaw JPEG Conversion Example");
-  console.log("Usage: node jpeg-conversion-example.js <path-to-raw-file>");
+  console.log("LibRaw JPEG 转换示例");
+  console.log("用法: node jpeg-conversion-example.js <RAW文件路径>");
   console.log("");
-  console.log("Examples:");
+  console.log("示例:");
   console.log("  node jpeg-conversion-example.js C:\\photos\\IMG_1234.CR2");
   console.log(
     "  node jpeg-conversion-example.js /home/user/photos/DSC_0001.NEF"
   );
   console.log("  node jpeg-conversion-example.js ./sample-images/photo.ARW");
   console.log("");
-  console.log("This example will create 5 different JPEG versions:");
-  console.log("  1. Basic quality (default settings)");
-  console.log("  2. High quality for print");
-  console.log("  3. Web-optimized with resize");
-  console.log("  4. Thumbnail version");
-  console.log("  5. AI-optimized settings");
+  console.log("此示例将创建 5 个不同的 JPEG 版本:");
+  console.log("  1. 基本质量（默认设置）");
+  console.log("  2. 用于打印的高质量");
+  console.log("  3. Web 优化带调整大小");
+  console.log("  4. 缩略图版本");
+  console.log("  5. AI 优化设置");
   process.exit(1);
 }
 

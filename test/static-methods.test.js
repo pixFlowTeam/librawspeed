@@ -1,7 +1,7 @@
 const LibRaw = require("../lib/index.js");
 
 /**
- * Test all static methods of LibRaw
+ * 测试 LibRaw 的所有静态方法
  */
 
 async function testStaticMethods() {
@@ -10,88 +10,88 @@ async function testStaticMethods() {
 
   console.log("\n📊 Library Information:");
 
-  // Test getVersion
+  // 测试 getVersion
   try {
     const version = LibRaw.getVersion();
     console.log(`   ✅ Version: ${version}`);
 
-    // Validate version format
+    // 验证版本格式
     if (typeof version !== "string" || version.length === 0) {
-      throw new Error("Invalid version format");
+      throw new Error("无效的版本格式");
     }
 
-    console.log(`   ✅ Version validation passed`);
+    console.log(`   ✅ 版本验证通过`);
   } catch (error) {
-    console.log(`   ❌ Version test failed: ${error.message}`);
+    console.log(`   ❌ 版本测试失败: ${error.message}`);
   }
 
-  // Test getCapabilities
+  // 测试 getCapabilities
   try {
     const capabilities = LibRaw.getCapabilities();
     console.log(
       `   ✅ Capabilities: 0x${capabilities.toString(16)} (${capabilities})`
     );
 
-    // Validate capabilities is a number
+    // 验证功能是数字
     if (typeof capabilities !== "number" || isNaN(capabilities)) {
-      throw new Error("Invalid capabilities format");
+      throw new Error("无效的功能格式");
     }
 
-    console.log(`   ✅ Capabilities validation passed`);
+    console.log(`   ✅ 功能验证通过`);
   } catch (error) {
-    console.log(`   ❌ Capabilities test failed: ${error.message}`);
+    console.log(`   ❌ 功能测试失败: ${error.message}`);
   }
 
-  // Test getCameraCount
+  // 测试 getCameraCount
   try {
     const count = LibRaw.getCameraCount();
     console.log(`   ✅ Camera Count: ${count}`);
 
-    // Validate count is a positive number
+    // 验证计数是正数
     if (typeof count !== "number" || count <= 0) {
-      throw new Error("Invalid camera count");
+      throw new Error("无效的相机计数");
     }
 
-    // Expect at least 1000 cameras in LibRaw 0.21.4
+    // 在 LibRaw 0.21.4 中期望至少 1000 个相机
     if (count < 1000) {
       console.log(
-        `   ⚠️ Warning: Camera count seems low (${count}), expected 1000+`
+        `   ⚠️ 警告: 相机计数似乎较低 (${count})，期望 1000+`
       );
     } else {
-      console.log(`   ✅ Camera count validation passed`);
+      console.log(`   ✅ 相机计数验证通过`);
     }
   } catch (error) {
-    console.log(`   ❌ Camera count test failed: ${error.message}`);
+    console.log(`   ❌ 相机计数测试失败: ${error.message}`);
   }
 
-  // Test getCameraList
+  // 测试 getCameraList
   try {
     const cameras = LibRaw.getCameraList();
     console.log(`   ✅ Camera List Length: ${cameras.length}`);
 
-    // Validate cameras is an array
+    // 验证相机是数组
     if (!Array.isArray(cameras)) {
-      throw new Error("Camera list is not an array");
+      throw new Error("相机列表不是数组");
     }
 
-    // Check array length matches count
+    // 检查数组长度与计数匹配
     const count = LibRaw.getCameraCount();
     if (cameras.length !== count) {
       throw new Error(
-        `Camera list length (${cameras.length}) doesn't match count (${count})`
+        `相机列表长度 (${cameras.length}) 与计数 (${count}) 不匹配`
       );
     }
 
-    // Check first few cameras
-    console.log(`   📷 First 10 cameras:`);
+    // 检查前几个相机
+    console.log(`   📷 前 10 个相机:`);
     for (let i = 0; i < Math.min(10, cameras.length); i++) {
       if (typeof cameras[i] !== "string" || cameras[i].length === 0) {
-        throw new Error(`Invalid camera name at index ${i}: ${cameras[i]}`);
+        throw new Error(`索引 ${i} 处的相机名称无效: ${cameras[i]}`);
       }
       console.log(`      ${i + 1}. ${cameras[i]}`);
     }
 
-    // Look for some well-known cameras
+    // 查找一些知名相机
     const testCameras = [
       "Canon EOS",
       "Nikon D",
@@ -103,62 +103,62 @@ async function testStaticMethods() {
       cameras.some((camera) => camera.includes(brand))
     );
 
-    console.log(`   ✅ Found major brands: ${foundCameras.join(", ")}`);
+    console.log(`   ✅ 找到主要品牌: ${foundCameras.join(", ")}`);
 
     if (foundCameras.length < 3) {
-      console.log(`   ⚠️ Warning: Few major camera brands found`);
+      console.log(`   ⚠️ 警告: 找到的主要相机品牌较少`);
     } else {
-      console.log(`   ✅ Camera list validation passed`);
+      console.log(`   ✅ 相机列表验证通过`);
     }
   } catch (error) {
-    console.log(`   ❌ Camera list test failed: ${error.message}`);
+    console.log(`   ❌ 相机列表测试失败: ${error.message}`);
   }
 
-  // Test specific camera searches
-  console.log("\n🔍 Camera Search Tests:");
+  // 测试特定相机搜索
+  console.log("\n🔍 相机搜索测试:");
 
   try {
     const cameras = LibRaw.getCameraList();
 
-    // Search for Canon cameras
+    // 搜索 Canon 相机
     const canonCameras = cameras.filter((camera) =>
       camera.toLowerCase().includes("canon")
     );
-    console.log(`   📷 Canon cameras found: ${canonCameras.length}`);
+    console.log(`   📷 找到 Canon 相机: ${canonCameras.length}`);
     if (canonCameras.length > 0) {
-      console.log(`      Examples: ${canonCameras.slice(0, 3).join(", ")}`);
+      console.log(`      示例: ${canonCameras.slice(0, 3).join(", ")}`);
     }
 
-    // Search for Nikon cameras
+    // 搜索 Nikon 相机
     const nikonCameras = cameras.filter((camera) =>
       camera.toLowerCase().includes("nikon")
     );
-    console.log(`   📷 Nikon cameras found: ${nikonCameras.length}`);
+    console.log(`   📷 找到 Nikon 相机: ${nikonCameras.length}`);
     if (nikonCameras.length > 0) {
-      console.log(`      Examples: ${nikonCameras.slice(0, 3).join(", ")}`);
+      console.log(`      示例: ${nikonCameras.slice(0, 3).join(", ")}`);
     }
 
-    // Search for Sony cameras
+    // 搜索 Sony 相机
     const sonyCameras = cameras.filter((camera) =>
       camera.toLowerCase().includes("sony")
     );
-    console.log(`   📷 Sony cameras found: ${sonyCameras.length}`);
+    console.log(`   📷 找到 Sony 相机: ${sonyCameras.length}`);
     if (sonyCameras.length > 0) {
-      console.log(`      Examples: ${sonyCameras.slice(0, 3).join(", ")}`);
+      console.log(`      示例: ${sonyCameras.slice(0, 3).join(", ")}`);
     }
 
-    console.log(`   ✅ Camera search tests passed`);
+    console.log(`   ✅ 相机搜索测试通过`);
   } catch (error) {
-    console.log(`   ❌ Camera search failed: ${error.message}`);
+    console.log(`   ❌ 相机搜索失败: ${error.message}`);
   }
 
-  // Test capability flags
-  console.log("\n🚩 Capability Flags Analysis:");
+  // 测试功能标志
+  console.log("\n🚩 功能标志分析:");
 
   try {
     const caps = LibRaw.getCapabilities();
 
-    // Define known capability flags (from libraw.h)
+    // 定义已知的功能标志（来自 libraw.h）
     const capabilityFlags = {
       LIBRAW_CAPS_RAWSPEED: 0x1,
       LIBRAW_CAPS_DNG: 0x2,
@@ -167,22 +167,22 @@ async function testStaticMethods() {
       LIBRAW_CAPS_CRXDEC: 0x10,
     };
 
-    console.log("   Available capabilities:");
+    console.log("   可用功能:");
     Object.entries(capabilityFlags).forEach(([name, flag]) => {
       const hasCapability = (caps & flag) !== 0;
-      console.log(`      ${name}: ${hasCapability ? "✅ Yes" : "❌ No"}`);
+      console.log(`      ${name}: ${hasCapability ? "✅ 是" : "❌ 否"}`);
     });
 
-    console.log(`   ✅ Capability analysis completed`);
+    console.log(`   ✅ 功能分析完成`);
   } catch (error) {
-    console.log(`   ❌ Capability analysis failed: ${error.message}`);
+    console.log(`   ❌ 功能分析失败: ${error.message}`);
   }
 
-  console.log("\n🎉 Static methods test completed!");
+  console.log("\n🎉 静态方法测试完成！");
   console.log("=".repeat(40));
 }
 
-// Run the test
+// 运行测试
 if (require.main === module) {
   testStaticMethods().catch(console.error);
 }

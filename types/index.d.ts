@@ -1,4 +1,4 @@
-// TypeScript definitions for LibRaw wrapper
+// LibRaw 包装器的 TypeScript 定义
 
 export interface ColorMatrix {
   [index: number]: number[];
@@ -23,7 +23,7 @@ export interface MemImageFormat {
 }
 
 export interface Params {
-  // Output options
+  // 输出选项
   output_color?: number;
   output_bps?: number;
   output_tiff?: number;
@@ -42,7 +42,7 @@ export interface Params {
   dark_frame?: string;
   output_bps?: number;
 
-  // Demosaic options
+  // 去马赛克选项
   half_size?: number;
   four_color_rgb?: number;
   highlight?: number;
@@ -51,7 +51,7 @@ export interface Params {
   dcb_enhance_fl?: number;
   fbdd_noiserd?: number;
 
-  // Color options
+  // 颜色选项
   bright?: number;
   threshold?: number;
   aber?: number[];
@@ -60,7 +60,7 @@ export interface Params {
   shot_select?: number;
   green_matching?: number;
 
-  // Advanced options
+  // 高级选项
   no_auto_bright?: number;
   no_interpolation?: number;
 
@@ -70,7 +70,7 @@ export interface Params {
 export declare class LibRaw {
   constructor();
 
-  // ============== CORE FUNCTIONALITY ==============
+  // ============== 核心功能 ==============
   openFile(path: string): Promise<boolean>;
   openBuffer(buffer: Buffer): Promise<boolean>;
   unpack(): Promise<boolean>;
@@ -79,45 +79,45 @@ export declare class LibRaw {
   getLastError(): string;
   strerror(errorCode: number): string;
 
-  // ============== IMAGE INFORMATION ==============
+  // ============== 图像信息 ==============
   getImageParams(): Promise<any>;
   getFileInfo(): Promise<any>;
   getThumbnail(): Promise<Buffer | null>;
   getExifMakerNote(): Promise<any>;
 
-  // ============== PROCESSING PARAMETERS ==============
+  // ============== 处理参数 ==============
   setParams(params: Params): Promise<boolean>;
   getParams(): Promise<Params>;
 
-  // ============== COLOR MANAGEMENT ==============
+  // ============== 色彩管理 ==============
   getCameraColorMatrix(): Promise<ColorMatrix>;
   getRGBCameraMatrix(): Promise<ColorMatrix>;
 
-  // ============== UTILITY ==============
+  // ============== 工具函数 ==============
   version(): string;
   versionNumber(): number[];
   getCameraList(): Promise<CameraList>;
   isValidFile(path: string): Promise<boolean>;
 
-  // ============== DATA ACCESS ==============
+  // ============== 数据访问 ==============
   getRawImageBuffer(): Promise<Buffer>;
   getProcessedImageBuffer(): Promise<Buffer>;
 
-  // ============== ADVANCED PROCESSING ==============
+  // ============== 高级处理 ==============
   raw2Image(): Promise<boolean>;
   dcrawClear(): Promise<boolean>;
   recycle(): Promise<boolean>;
 
-  // ============== ERROR HANDLING ==============
+  // ============== 错误处理 ==============
   checkLoaded(): Promise<boolean>;
 
-  // ============== MEMORY OPERATIONS ==============
+  // ============== 内存操作 ==============
   getMemoryRequirements(): Promise<number>;
 
-  // ============== QUALITY CONTROL ==============
+  // ============== 质量控制 ==============
   validateProcessing(): Promise<boolean>;
 
-  // ============== EXTENDED UTILITY FUNCTIONS ==============
+  // ============== 扩展工具函数 ==============
   isNikonSRAW(): Promise<boolean>;
   isCoolscanNEF(): Promise<boolean>;
   haveFPData(): Promise<boolean>;
@@ -126,24 +126,24 @@ export declare class LibRaw {
   unpackFunctionName(): Promise<string>;
   getDecoderInfo(): Promise<DecoderInfo>;
 
-  // ============== ADVANCED PROCESSING ==============
+  // ============== 高级处理 ==============
   raw2ImageEx(subtractBlack?: boolean): Promise<boolean>;
   adjustSizesInfoOnly(): Promise<boolean>;
   freeImage(): Promise<boolean>;
   convertFloatToInt(dmin?: number, dmax?: number, dtarget?: number): Promise<boolean>;
 
-  // ============== MEMORY OPERATIONS EXTENDED ==============
+  // ============== 扩展内存操作 ==============
   getMemImageFormat(): Promise<MemImageFormat>;
   copyMemImage(buffer: Buffer, stride: number, bgr?: boolean): Promise<boolean>;
 
-  // ============== COLOR OPERATIONS ==============
+  // ============== 颜色操作 ==============
   getColorAt(row: number, col: number): Promise<number>;
 
-  // ============== CANCELLATION SUPPORT ==============
+  // ============== 取消支持 ==============
   setCancelFlag(): Promise<boolean>;
   clearCancelFlag(): Promise<boolean>;
 
-  // ============== STATIC METHODS ==============
+  // ============== 静态方法 ==============
   static getVersion(): string;
   static getSupportedFormats(): string[];
   static isFormatSupported(extension: string): boolean;

@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Edge cases and memory management tests for buffer methods
+ * 缓冲区方法的边缘情况和内存管理测试
  */
 
 const sampleImagesDir = path.join(__dirname, "..", "raw-samples-repo");
@@ -27,14 +27,14 @@ function findTestFile() {
     }
   }
 
-  throw new Error("No RAW test file found");
+  throw new Error("未找到 RAW 测试文件");
 }
 
 /**
- * Test memory cleanup and multiple buffer creations
+ * 测试内存清理和多个缓冲区创建
  */
 async function testMemoryManagement() {
-  console.log("🧠 Testing Memory Management");
+  console.log("🧠 测试内存管理");
   console.log("-".repeat(40));
 
   const processor = new LibRaw();
@@ -45,9 +45,9 @@ async function testMemoryManagement() {
     await processor.loadFile(testFile);
     await processor.processImage();
 
-    console.log("  • Creating multiple buffers rapidly...");
+    console.log("  • 快速创建多个缓冲区...");
 
-    // Create multiple buffers rapidly to test memory management
+    // 快速创建多个缓冲区以测试内存管理
     for (let i = 0; i < 10; i++) {
       try {
         const jpegResult = await processor.createJPEGBuffer({
@@ -57,28 +57,28 @@ async function testMemoryManagement() {
         const pngResult = await processor.createPNGBuffer({ width: 300 });
 
         if (!jpegResult.success || !pngResult.success) {
-          console.log(`    ❌ Iteration ${i + 1}: Buffer creation failed`);
+          console.log(`    ❌ 迭代 ${i + 1}: 缓冲区创建失败`);
           errors++;
         } else if (i % 3 === 0) {
           console.log(
-            `    ✅ Iteration ${i + 1}: JPEG ${
+            `    ✅ 迭代 ${i + 1}: JPEG ${
               jpegResult.buffer.length
             }B, PNG ${pngResult.buffer.length}B`
           );
         }
 
-        // Clear references to help GC
+        // 清除引用以帮助垃圾回收
         jpegResult.buffer = null;
         pngResult.buffer = null;
       } catch (error) {
-        console.log(`    ❌ Iteration ${i + 1}: ${error.message}`);
+        console.log(`    ❌ 迭代 ${i + 1}: ${error.message}`);
         errors++;
       }
     }
 
-    console.log(`  • Completed ${10 - errors}/10 iterations successfully`);
+    console.log(`  • 成功完成 ${10 - errors}/10 次迭代`);
   } catch (error) {
-    console.log(`  ❌ Setup failed: ${error.message}`);
+    console.log(`  ❌ 设置失败: ${error.message}`);
     errors++;
   } finally {
     await processor.close();
@@ -88,10 +88,10 @@ async function testMemoryManagement() {
 }
 
 /**
- * Test extreme parameter values
+ * 测试极端参数值
  */
 async function testExtremeParameters() {
-  console.log("\n🔥 Testing Extreme Parameters");
+  console.log("\n🔥 测试极端参数");
   console.log("-".repeat(40));
 
   const processor = new LibRaw();
@@ -104,35 +104,35 @@ async function testExtremeParameters() {
 
     const extremeTests = [
       {
-        name: "Very small image (width: 1)",
+        name: "极小图像 (宽度: 1)",
         test: () => processor.createJPEGBuffer({ width: 1 }),
       },
       {
-        name: "Very small image (width: 10)",
+        name: "极小图像 (宽度: 10)",
         test: () => processor.createJPEGBuffer({ width: 10 }),
       },
       {
-        name: "Minimum quality JPEG",
+        name: "最低质量 JPEG",
         test: () => processor.createJPEGBuffer({ quality: 1 }),
       },
       {
-        name: "Maximum quality JPEG",
+        name: "最高质量 JPEG",
         test: () => processor.createJPEGBuffer({ quality: 100 }),
       },
       {
-        name: "No compression PNG",
+        name: "无压缩 PNG",
         test: () => processor.createPNGBuffer({ compressionLevel: 0 }),
       },
       {
-        name: "Maximum compression PNG",
+        name: "最大压缩 PNG",
         test: () => processor.createPNGBuffer({ compressionLevel: 9 }),
       },
       {
-        name: "Tiny thumbnail",
+        name: "极小缩略图",
         test: () => processor.createThumbnailJPEGBuffer({ maxSize: 16 }),
       },
       {
-        name: "Large thumbnail",
+        name: "大缩略图",
         test: () => processor.createThumbnailJPEGBuffer({ maxSize: 2000 }),
       },
     ];
@@ -147,22 +147,22 @@ async function testExtremeParameters() {
           Buffer.isBuffer(result.buffer) &&
           result.buffer.length > 0
         ) {
-          console.log(`    ✅ Success: ${result.buffer.length} bytes`);
+          console.log(`    ✅ 成功: ${result.buffer.length} 字节`);
           if (result.metadata?.outputDimensions) {
             const dims = result.metadata.outputDimensions;
             console.log(`    📐 ${dims.width}x${dims.height}`);
           }
         } else {
-          console.log(`    ❌ Invalid result`);
+          console.log(`    ❌ 无效结果`);
           errors++;
         }
       } catch (error) {
-        console.log(`    ⚠️ Expected failure: ${error.message}`);
-        // Some extreme parameters are expected to fail
+        console.log(`    ⚠️ 预期失败: ${error.message}`);
+        // 一些极端参数预期会失败
       }
     }
   } catch (error) {
-    console.log(`  ❌ Setup failed: ${error.message}`);
+    console.log(`  ❌ 设置失败: ${error.message}`);
     errors++;
   } finally {
     await processor.close();
@@ -172,17 +172,17 @@ async function testExtremeParameters() {
 }
 
 /**
- * Test multiple processors in parallel
+ * 测试多个处理器并行运行
  */
 async function testMultipleProcessors() {
-  console.log("\n👥 Testing Multiple Processors");
+  console.log("\n👥 测试多个处理器");
   console.log("-".repeat(40));
 
   const testFile = findTestFile();
   let errors = 0;
 
   try {
-    console.log("  • Creating 3 processors in parallel...");
+    console.log("  • 并行创建 3 个处理器...");
 
     const processorPromises = [1, 2, 3].map(async (id) => {
       const processor = new LibRaw();
@@ -196,14 +196,14 @@ async function testMultipleProcessors() {
         });
 
         if (result.success && result.buffer.length > 0) {
-          console.log(`    ✅ Processor ${id}: ${result.buffer.length} bytes`);
+          console.log(`    ✅ 处理器 ${id}: ${result.buffer.length} 字节`);
           return true;
         } else {
-          console.log(`    ❌ Processor ${id}: Invalid result`);
+          console.log(`    ❌ 处理器 ${id}: 无效结果`);
           return false;
         }
       } catch (error) {
-        console.log(`    ❌ Processor ${id}: ${error.message}`);
+        console.log(`    ❌ 处理器 ${id}: ${error.message}`);
         return false;
       } finally {
         await processor.close();
@@ -213,13 +213,13 @@ async function testMultipleProcessors() {
     const results = await Promise.all(processorPromises);
     const successCount = results.filter((success) => success).length;
 
-    console.log(`  📊 ${successCount}/3 processors succeeded`);
+    console.log(`  📊 ${successCount}/3 个处理器成功`);
 
     if (successCount < 3) {
       errors += 3 - successCount;
     }
   } catch (error) {
-    console.log(`  ❌ Test failed: ${error.message}`);
+    console.log(`  ❌ 测试失败: ${error.message}`);
     errors++;
   }
 
@@ -227,10 +227,10 @@ async function testMultipleProcessors() {
 }
 
 /**
- * Test buffer format validation
+ * 测试缓冲区格式验证
  */
 async function testBufferFormatValidation() {
-  console.log("\n🔍 Testing Buffer Format Validation");
+  console.log("\n🔍 测试缓冲区格式验证");
   console.log("-".repeat(40));
 
   const processor = new LibRaw();
@@ -243,7 +243,7 @@ async function testBufferFormatValidation() {
 
     const formatTests = [
       {
-        name: "JPEG magic bytes",
+        name: "JPEG 魔数",
         method: () => processor.createJPEGBuffer({ width: 400 }),
         validator: (buffer) => {
           const header = buffer.slice(0, 4);
@@ -251,7 +251,7 @@ async function testBufferFormatValidation() {
         },
       },
       {
-        name: "PNG magic bytes",
+        name: "PNG 魔数",
         method: () => processor.createPNGBuffer({ width: 400 }),
         validator: (buffer) => {
           const header = buffer.slice(0, 8);
@@ -264,7 +264,7 @@ async function testBufferFormatValidation() {
         },
       },
       {
-        name: "WebP magic bytes",
+        name: "WebP 魔数",
         method: () => processor.createWebPBuffer({ width: 400 }),
         validator: (buffer) => {
           const header = buffer.toString("ascii", 0, 4);
@@ -273,7 +273,7 @@ async function testBufferFormatValidation() {
         },
       },
       {
-        name: "PPM magic bytes",
+        name: "PPM 魔数",
         method: () => processor.createPPMBuffer(),
         validator: (buffer) => {
           const header = buffer.toString("ascii", 0, 2);
@@ -289,22 +289,22 @@ async function testBufferFormatValidation() {
 
         if (result.success && Buffer.isBuffer(result.buffer)) {
           if (test.validator(result.buffer)) {
-            console.log(`    ✅ Format validated`);
+            console.log(`    ✅ 格式验证通过`);
           } else {
-            console.log(`    ❌ Format validation failed`);
+            console.log(`    ❌ 格式验证失败`);
             errors++;
           }
         } else {
-          console.log(`    ❌ Buffer creation failed`);
+          console.log(`    ❌ 缓冲区创建失败`);
           errors++;
         }
       } catch (error) {
-        console.log(`    ❌ Test failed: ${error.message}`);
+        console.log(`    ❌ 测试失败: ${error.message}`);
         errors++;
       }
     }
   } catch (error) {
-    console.log(`  ❌ Setup failed: ${error.message}`);
+    console.log(`  ❌ 设置失败: ${error.message}`);
     errors++;
   } finally {
     await processor.close();

@@ -3,14 +3,14 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Test configuration and output parameters
+ * 测试配置和输出参数
  */
 
 async function testConfiguration() {
-  console.log("⚙️ LibRaw Configuration Test");
+  console.log("⚙️ LibRaw 配置测试");
   console.log("=".repeat(40));
 
-  // Create a dummy file for testing (since we need a loaded file for config tests)
+  // 创建用于测试的虚拟文件（因为我们需要加载文件进行配置测试）
   const testBuffer = Buffer.alloc(4096);
   testBuffer.fill(0x42);
 
@@ -22,12 +22,12 @@ async function testConfiguration() {
     const processor = new LibRaw();
 
     try {
-      // Try to load the dummy file (will likely fail, but we'll handle it)
+      // 尝试加载虚拟文件（可能会失败，但我们会处理）
       await processor.loadFile(tempFile);
-      console.log("   📁 Loaded test file (unexpected success)");
+      console.log("   📁 加载测试文件（意外成功）");
     } catch (loadError) {
       console.log(
-        "   ⚠️ Could not load dummy file (expected), testing configuration without file..."
+        "   ⚠️ 无法加载虚拟文件（预期），在没有文件的情况下测试配置..."
       );
     }
 
@@ -37,53 +37,53 @@ async function testConfiguration() {
 
     await processor.close();
   } catch (error) {
-    console.log(`   ❌ Configuration test setup error: ${error.message}`);
+    console.log(`   ❌ 配置测试设置错误: ${error.message}`);
   } finally {
-    // Clean up temp file
+    // 清理临时文件
     try {
       if (fs.existsSync(tempFile)) {
         fs.unlinkSync(tempFile);
       }
     } catch (e) {
-      // Ignore cleanup errors
+      // 忽略清理错误
     }
   }
 
-  // Test with real file if available
+  // 如果有真实文件，则进行测试
   await testWithRealFile();
 
-  console.log("\n🎉 Configuration test completed!");
+  console.log("\n🎉 配置测试完成！");
   console.log("=".repeat(40));
 }
 
 async function testOutputParameters(processor) {
-  console.log("\n📊 Output Parameters Tests:");
+  console.log("\n📊 输出参数测试:");
 
-  // Test default parameters (this requires a loaded file)
+  // 测试默认参数（这需要加载文件）
   try {
     const defaultParams = await processor.getOutputParams();
-    console.log("   ✅ Retrieved default parameters:");
+    console.log("   ✅ 检索到默认参数:");
     console.log(
-      `      Gamma: [${defaultParams.gamma[0]}, ${defaultParams.gamma[1]}]`
+      `      伽马: [${defaultParams.gamma[0]}, ${defaultParams.gamma[1]}]`
     );
-    console.log(`      Brightness: ${defaultParams.bright}`);
-    console.log(`      Output Color: ${defaultParams.output_color}`);
-    console.log(`      Output BPS: ${defaultParams.output_bps}`);
-    console.log(`      Auto Brightness: ${!defaultParams.no_auto_bright}`);
-    console.log(`      Highlight Mode: ${defaultParams.highlight}`);
-    console.log(`      Output TIFF: ${defaultParams.output_tiff}`);
+    console.log(`      亮度: ${defaultParams.bright}`);
+    console.log(`      输出颜色: ${defaultParams.output_color}`);
+    console.log(`      输出 BPS: ${defaultParams.output_bps}`);
+    console.log(`      自动亮度: ${!defaultParams.no_auto_bright}`);
+    console.log(`      高光模式: ${defaultParams.highlight}`);
+    console.log(`      输出 TIFF: ${defaultParams.output_tiff}`);
   } catch (error) {
     if (error.message.includes("No file loaded")) {
-      console.log("   ℹ️ Default parameters require a loaded file (expected behavior)");
+      console.log("   ℹ️ 默认参数需要加载文件（预期行为）");
     } else {
-      console.log(`   ⚠️ Could not get default parameters: ${error.message}`);
+      console.log(`   ⚠️ 无法获取默认参数: ${error.message}`);
     }
   }
 
-  // Test setting parameters
+  // 测试设置参数
   const testConfigs = [
     {
-      name: "Standard sRGB",
+      name: "标准 sRGB",
       params: {
         gamma: [2.2, 4.5],
         bright: 1.0,

@@ -1,7 +1,7 @@
 /**
- * Extract Thumbnails from RAW Files
- * Extracts thumbnails from all RAW files in sample-images directory
- * and saves them in sample-images/thumbnails folder
+ * 从 RAW 文件提取缩略图
+ * 从 sample-images 目录中的所有 RAW 文件提取缩略图
+ * 并保存到 sample-images/thumbnails 文件夹
  */
 
 const LibRaw = require("../lib/index");
@@ -35,7 +35,7 @@ class ThumbnailExtractor {
     if (!fs.existsSync(this.thumbnailsDir)) {
       fs.mkdirSync(this.thumbnailsDir, { recursive: true });
       this.log(
-        `Created thumbnails directory: ${this.thumbnailsDir}`,
+        `已创建缩略图目录: ${this.thumbnailsDir}`,
         "success"
       );
     }
@@ -43,7 +43,7 @@ class ThumbnailExtractor {
 
   findRawFiles() {
     if (!fs.existsSync(this.sampleDir)) {
-      this.log(`Sample images directory not found: ${this.sampleDir}`, "error");
+      this.log(`未找到示例图像目录: ${this.sampleDir}`, "error");
       return [];
     }
 
@@ -77,62 +77,62 @@ class ThumbnailExtractor {
     const processor = new LibRaw();
 
     try {
-      this.log(`Processing: ${rawFile.fileName}`, "processing");
+      this.log(`处理中: ${rawFile.fileName}`, "processing");
 
-      // Load the RAW file
+      // 加载 RAW 文件
       await processor.loadFile(rawFile.fullPath);
 
-      // Check if thumbnail exists
+      // 检查缩略图是否存在
       const thumbOK = await processor.thumbOK();
       if (!thumbOK) {
-        this.log(`  No thumbnail available in ${rawFile.fileName}`, "warning");
+        this.log(`  ${rawFile.fileName} 中没有可用的缩略图`, "warning");
         this.results.skipped++;
         return false;
       }
 
-      // Unpack thumbnail
+      // 解包缩略图
       const unpacked = await processor.unpackThumbnail();
       if (!unpacked) {
         this.log(
-          `  Failed to unpack thumbnail from ${rawFile.fileName}`,
+          `  从 ${rawFile.fileName} 解包缩略图失败`,
           "error"
         );
         this.results.failed++;
         return false;
       }
 
-      // Create memory thumbnail to get information
+      // 创建内存缩略图以获取信息
       const memThumb = await processor.createMemoryThumbnail();
       if (!memThumb || !memThumb.data) {
         this.log(
-          `  Failed to create memory thumbnail from ${rawFile.fileName}`,
+          `  从 ${rawFile.fileName} 创建内存缩略图失败`,
           "error"
         );
         this.results.failed++;
         return false;
       }
 
-      // Generate thumbnail filename
+      // 生成缩略图文件名
       const thumbnailFileName = `${rawFile.baseName}_thumb.jpg`;
       const thumbnailPath = path.join(this.thumbnailsDir, thumbnailFileName);
 
-      // Write thumbnail file
+      // 写入缩略图文件
       await processor.writeThumbnail(thumbnailPath);
 
-      // Verify the file was created
+      // 验证文件是否已创建
       if (fs.existsSync(thumbnailPath)) {
         const stats = fs.statSync(thumbnailPath);
         this.log(
-          `  ✓ Extracted: ${thumbnailFileName} (${this.formatFileSize(
+          `  ✓ 已提取: ${thumbnailFileName} (${this.formatFileSize(
             stats.size
           )})`,
           "success"
         );
 
-        // Log thumbnail details
+        // 记录缩略图详情
         if (memThumb.width && memThumb.height) {
           this.log(
-            `    Dimensions: ${memThumb.width}x${memThumb.height}`,
+            `    尺寸: ${memThumb.width}x${memThumb.height}`,
             "info"
           );
         }
@@ -140,13 +140,13 @@ class ThumbnailExtractor {
         this.results.extracted++;
         return true;
       } else {
-        this.log(`  Failed to write thumbnail file: ${thumbnailPath}`, "error");
+        this.log(`  写入缩略图文件失败: ${thumbnailPath}`, "error");
         this.results.failed++;
         return false;
       }
     } catch (error) {
       this.log(
-        `  Error processing ${rawFile.fileName}: ${error.message}`,
+        `  处理 ${rawFile.fileName} 时出错: ${error.message}`,
         "error"
       );
       this.results.failed++;
@@ -165,23 +165,23 @@ class ThumbnailExtractor {
   }
 
   generateReport() {
-    console.log("\n📊 Thumbnail Extraction Report");
+    console.log("\n📊 缩略图提取报告");
     console.log("===============================");
-    console.log(`Total RAW files found: ${this.results.total}`);
-    console.log(`✅ Successfully extracted: ${this.results.extracted}`);
-    console.log(`⚠️  Skipped (no thumbnail): ${this.results.skipped}`);
-    console.log(`❌ Failed: ${this.results.failed}`);
+    console.log(`找到的 RAW 文件总数: ${this.results.total}`);
+    console.log(`✅ 成功提取: ${this.results.extracted}`);
+    console.log(`⚠️  跳过 (无缩略图): ${this.results.skipped}`);
+    console.log(`❌ 失败: ${this.results.failed}`);
 
     if (this.results.total > 0) {
       const successRate = (
         (this.results.extracted / this.results.total) *
         100
       ).toFixed(1);
-      console.log(`📈 Success rate: ${successRate}%`);
+      console.log(`📈 成功率: ${successRate}%`);
     }
 
     if (this.results.extracted > 0) {
-      console.log(`\n📁 Thumbnails saved to: ${this.thumbnailsDir}`);
+      console.log(`\n📁 缩略图已保存到: ${this.thumbnailsDir}`);
 
       // List generated thumbnails
       try {
@@ -190,7 +190,7 @@ class ThumbnailExtractor {
           .filter((file) => file.endsWith("_thumb.jpg"));
 
         if (thumbnails.length > 0) {
-          console.log("\n📋 Generated thumbnails:");
+          console.log("\n📋 生成的缩略图:");
           thumbnails.forEach((thumb) => {
             const thumbPath = path.join(this.thumbnailsDir, thumb);
             const stats = fs.statSync(thumbPath);
@@ -198,36 +198,36 @@ class ThumbnailExtractor {
           });
         }
       } catch (error) {
-        this.log(`Error listing thumbnails: ${error.message}`, "warning");
+        this.log(`列出缩略图时出错: ${error.message}`, "warning");
       }
     }
   }
 
   async extractAllThumbnails() {
-    console.log("🖼️  LibRaw Thumbnail Extractor");
+    console.log("🖼️  LibRaw 缩略图提取器");
     console.log("===============================");
 
-    // Ensure thumbnails directory exists
+    // 确保缩略图目录存在
     this.ensureThumbnailsDir();
 
-    // Find all RAW files
+    // 查找所有 RAW 文件
     const rawFiles = this.findRawFiles();
     this.results.total = rawFiles.length;
 
     if (rawFiles.length === 0) {
-      this.log("No RAW files found in sample-images directory", "warning");
-      this.log("Supported formats: CR2, CR3, NEF, ARW, DNG, RAF, RW2", "info");
+      this.log("在 sample-images 目录中未找到 RAW 文件", "warning");
+      this.log("支持的格式: CR2, CR3, NEF, ARW, DNG, RAF, RW2", "info");
       return false;
     }
 
-    this.log(`Found ${rawFiles.length} RAW files to process`, "success");
+    this.log(`找到 ${rawFiles.length} 个 RAW 文件需要处理`, "success");
 
-    // Process each RAW file
+    // 处理每个 RAW 文件
     for (const rawFile of rawFiles) {
       await this.extractThumbnail(rawFile);
     }
 
-    // Generate final report
+    // 生成最终报告
     this.generateReport();
 
     return this.results.extracted > 0;
@@ -241,14 +241,14 @@ async function main() {
     const success = await extractor.extractAllThumbnails();
 
     if (success) {
-      console.log("\n🎉 Thumbnail extraction completed successfully!");
+      console.log("\n🎉 缩略图提取成功完成!");
       process.exit(0);
     } else {
-      console.log("\n⚠️  No thumbnails were extracted");
+      console.log("\n⚠️  未提取到任何缩略图");
       process.exit(1);
     }
   } catch (error) {
-    console.error("❌ Thumbnail extraction failed:", error.message);
+    console.error("❌ 缩略图提取失败:", error.message);
     console.error(error.stack);
     process.exit(1);
   }

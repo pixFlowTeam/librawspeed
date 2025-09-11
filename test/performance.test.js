@@ -3,13 +3,13 @@ const path = require("path");
 const fs = require("fs");
 
 async function performanceBenchmark() {
-  console.log("⚡ LibRaw Node.js - Performance Benchmark");
+  console.log("⚡ LibRaw Node.js - 性能基准测试");
   console.log("=========================================\n");
 
   const sampleDir = path.join(__dirname, "../raw-samples-repo");
 
   try {
-    // Get all RAW files
+    // 获取所有 RAW 文件
     const rawFiles = fs
       .readdirSync(sampleDir, { withFileTypes: true })
       .filter((file) => {
@@ -19,11 +19,11 @@ async function performanceBenchmark() {
       .sort();
 
     if (rawFiles.length === 0) {
-      console.log("❌ No RAW files found for benchmarking");
+      console.log("❌ 未找到用于基准测试的 RAW 文件");
       return;
     }
 
-    console.log(`🎯 Benchmarking with ${rawFiles.length} files\n`);
+    console.log(`🎯 使用 ${rawFiles.length} 个文件进行基准测试\n`);
 
     const results = [];
     let totalTime = 0;
@@ -44,22 +44,22 @@ async function performanceBenchmark() {
       const startTime = process.hrtime.bigint();
 
       try {
-        // Measure loading time
+        // 测量加载时间
         const loadStart = process.hrtime.bigint();
         await processor.loadFile(filepath);
-        const loadTime = Number(process.hrtime.bigint() - loadStart) / 1000000; // Convert to ms
+        const loadTime = Number(process.hrtime.bigint() - loadStart) / 1000000; // 转换为毫秒
 
-        // Measure metadata extraction time
+        // 测量元数据提取时间
         const metaStart = process.hrtime.bigint();
         const metadata = await processor.getMetadata();
         const metaTime = Number(process.hrtime.bigint() - metaStart) / 1000000;
 
-        // Measure size extraction time
+        // 测量尺寸提取时间
         const sizeStart = process.hrtime.bigint();
         const size = await processor.getImageSize();
         const sizeTime = Number(process.hrtime.bigint() - sizeStart) / 1000000;
 
-        // Measure close time
+        // 测量关闭时间
         const closeStart = process.hrtime.bigint();
         await processor.close();
         const closeTime =
@@ -69,7 +69,7 @@ async function performanceBenchmark() {
           Number(process.hrtime.bigint() - startTime) / 1000000;
         totalTime += totalOperationTime;
 
-        // Calculate throughput
+        // 计算吞吐量
         const throughputMBps = fileSizeMB / (totalOperationTime / 1000);
         const pixelCount = size.width * size.height;
         const pixelThroughput = pixelCount / (totalOperationTime / 1000);
@@ -86,27 +86,27 @@ async function performanceBenchmark() {
           closeTime,
           totalTime: totalOperationTime,
           throughputMBps,
-          pixelThroughput: pixelThroughput / 1000000, // Megapixels per second
+          pixelThroughput: pixelThroughput / 1000000, // 每秒百万像素
           camera: `${metadata.make} ${metadata.model}`,
         });
 
         console.log(
-          `   ⏱️  Load: ${loadTime.toFixed(1)}ms | Meta: ${metaTime.toFixed(
+          `   ⏱️  加载: ${loadTime.toFixed(1)}ms | 元数据: ${metaTime.toFixed(
             1
-          )}ms | Size: ${sizeTime.toFixed(1)}ms | Close: ${closeTime.toFixed(
+          )}ms | 尺寸: ${sizeTime.toFixed(1)}ms | 关闭: ${closeTime.toFixed(
             1
           )}ms`
         );
         console.log(
-          `   🚀 Total: ${totalOperationTime.toFixed(
+          `   🚀 总计: ${totalOperationTime.toFixed(
             1
-          )}ms | Throughput: ${throughputMBps.toFixed(1)} MB/s | ${(
+          )}ms | 吞吐量: ${throughputMBps.toFixed(1)} MB/s | ${(
             pixelThroughput / 1000000
           ).toFixed(1)} MP/s`
         );
-        console.log("   ✅ Success\n");
+        console.log("   ✅ 成功\n");
       } catch (error) {
-        console.log(`   ❌ Error: ${error.message}\n`);
+        console.log(`   ❌ 错误: ${error.message}\n`);
         results.push({
           filename,
           format: path.extname(filename).toUpperCase().substring(1),
@@ -116,29 +116,29 @@ async function performanceBenchmark() {
       }
     }
 
-    // Calculate statistics
+    // 计算统计数据
     const successfulResults = results.filter((r) => !r.error);
     if (successfulResults.length === 0) {
-      console.log("❌ No successful operations for statistics");
+      console.log("❌ 没有成功的操作用于统计");
       return;
     }
 
-    console.log("📈 PERFORMANCE STATISTICS");
+    console.log("📈 性能统计");
     console.log("═".repeat(50));
     console.log(
-      `🎯 Success Rate: ${successfulResults.length}/${results.length} (${(
+      `🎯 成功率: ${successfulResults.length}/${results.length} (${(
         (successfulResults.length / results.length) *
         100
       ).toFixed(1)}%)`
     );
-    console.log(`⏱️  Total Processing Time: ${totalTime.toFixed(1)}ms`);
+    console.log(`⏱️  总处理时间: ${totalTime.toFixed(1)}ms`);
     console.log(
-      `📊 Average per File: ${(totalTime / successfulResults.length).toFixed(
+      `📊 平均每文件: ${(totalTime / successfulResults.length).toFixed(
         1
       )}ms`
     );
 
-    // Timing breakdown
+    // 时间分解
     const avgLoad =
       successfulResults.reduce((sum, r) => sum + r.loadTime, 0) /
       successfulResults.length;
@@ -152,13 +152,13 @@ async function performanceBenchmark() {
       successfulResults.reduce((sum, r) => sum + r.closeTime, 0) /
       successfulResults.length;
 
-    console.log("\n⚡ OPERATION BREAKDOWN (Average):");
-    console.log(`   • File Loading: ${avgLoad.toFixed(1)}ms`);
-    console.log(`   • Metadata Extraction: ${avgMeta.toFixed(1)}ms`);
-    console.log(`   • Size Detection: ${avgSize.toFixed(1)}ms`);
-    console.log(`   • Cleanup: ${avgClose.toFixed(1)}ms`);
+    console.log("\n⚡ 操作分解（平均值）:");
+    console.log(`   • 文件加载: ${avgLoad.toFixed(1)}ms`);
+    console.log(`   • 元数据提取: ${avgMeta.toFixed(1)}ms`);
+    console.log(`   • 尺寸检测: ${avgSize.toFixed(1)}ms`);
+    console.log(`   • 清理: ${avgClose.toFixed(1)}ms`);
 
-    // Throughput statistics
+    // 吞吐量统计
     const avgThroughput =
       successfulResults.reduce((sum, r) => sum + r.throughputMBps, 0) /
       successfulResults.length;
@@ -169,12 +169,12 @@ async function performanceBenchmark() {
       ...successfulResults.map((r) => r.throughputMBps)
     );
 
-    console.log("\n🚀 THROUGHPUT ANALYSIS:");
-    console.log(`   • Average: ${avgThroughput.toFixed(1)} MB/s`);
-    console.log(`   • Peak: ${maxThroughput.toFixed(1)} MB/s`);
-    console.log(`   • Minimum: ${minThroughput.toFixed(1)} MB/s`);
+    console.log("\n🚀 吞吐量分析:");
+    console.log(`   • 平均: ${avgThroughput.toFixed(1)} MB/s`);
+    console.log(`   • 峰值: ${maxThroughput.toFixed(1)} MB/s`);
+    console.log(`   • 最低: ${minThroughput.toFixed(1)} MB/s`);
 
-    // Format comparison
+    // 格式对比
     const formatStats = {};
     successfulResults.forEach((r) => {
       if (!formatStats[r.format]) {
@@ -185,26 +185,26 @@ async function performanceBenchmark() {
       formatStats[r.format].totalSize += r.fileSizeMB;
     });
 
-    console.log("\n📁 FORMAT PERFORMANCE:");
+    console.log("\n📁 格式性能:");
     Object.entries(formatStats).forEach(([format, stats]) => {
       const avgTime = stats.totalTime / stats.count;
       const avgSize = stats.totalSize / stats.count;
       const avgThroughput = avgSize / (avgTime / 1000);
       console.log(
-        `   • ${format}: ${avgTime.toFixed(1)}ms avg (${avgThroughput.toFixed(
+        `   • ${format}: ${avgTime.toFixed(1)}ms 平均 (${avgThroughput.toFixed(
           1
         )} MB/s)`
       );
     });
 
-    // Resolution impact
-    console.log("\n📐 RESOLUTION IMPACT:");
+    // 分辨率影响
+    console.log("\n📐 分辨率影响:");
     const resolutionGroups = {
-      "Low (< 16MP)": successfulResults.filter((r) => r.megapixels < 16),
-      "Medium (16-24MP)": successfulResults.filter(
+      "低分辨率 (< 16MP)": successfulResults.filter((r) => r.megapixels < 16),
+      "中等分辨率 (16-24MP)": successfulResults.filter(
         (r) => r.megapixels >= 16 && r.megapixels < 24
       ),
-      "High (≥ 24MP)": successfulResults.filter((r) => r.megapixels >= 24),
+      "高分辨率 (≥ 24MP)": successfulResults.filter((r) => r.megapixels >= 24),
     };
 
     Object.entries(resolutionGroups).forEach(([group, files]) => {
@@ -216,44 +216,44 @@ async function performanceBenchmark() {
         console.log(
           `   • ${group}: ${avgTime.toFixed(
             1
-          )}ms avg (${avgPixelThroughput.toFixed(1)} MP/s)`
+          )}ms 平均 (${avgPixelThroughput.toFixed(1)} MP/s)`
         );
       }
     });
 
-    // Performance recommendations
-    console.log("\n💡 PERFORMANCE INSIGHTS:");
+    // 性能建议
+    console.log("\n💡 性能洞察:");
     if (avgLoad > avgMeta * 2) {
-      console.log("   • File loading is the primary bottleneck");
+      console.log("   • 文件加载是主要瓶颈");
     }
     if (maxThroughput > avgThroughput * 1.5) {
-      console.log("   • Performance varies significantly by format/size");
+      console.log("   • 性能因格式/尺寸差异很大");
     }
     if (avgThroughput > 50) {
       console.log(
-        "   • ✅ Excellent throughput - suitable for batch processing"
+        "   • ✅ 优秀吞吐量 - 适合批量处理"
       );
     } else if (avgThroughput > 20) {
       console.log(
-        "   • ✅ Good throughput - suitable for real-time applications"
+        "   • ✅ 良好吞吐量 - 适合实时应用"
       );
     } else {
-      console.log("   • ⚠️  Consider optimization for high-volume scenarios");
+      console.log("   • ⚠️  考虑针对高容量场景进行优化");
     }
 
     console.log(
-      `\n🎉 Benchmark complete! Processed ${totalTime.toFixed(1)}ms total`
+      `\n🎉 基准测试完成！总共处理了 ${totalTime.toFixed(1)}ms`
     );
   } catch (error) {
-    console.error("❌ Benchmark Error:", error.message);
+    console.error("❌ 基准测试错误:", error.message);
     process.exit(1);
   }
 }
 
-// Export for use in other tests
+// 导出供其他测试使用
 module.exports = performanceBenchmark;
 
-// Run the benchmark if executed directly
+// 如果直接执行则运行基准测试
 if (require.main === module) {
   performanceBenchmark().catch(console.error);
 }

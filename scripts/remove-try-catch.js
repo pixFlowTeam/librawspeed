@@ -30,4 +30,4 @@ content = content.replace(librawErrorPattern, (match, indent1, indent2, indent3,
 });
 
 fs.writeFileSync(filePath, content);
-console.log('Successfully removed try-catch statements from libraw_wrapper.cpp');
+console.log('成功从 libraw_wrapper.cpp 中移除 try-catch 语句');

@@ -6,22 +6,22 @@ async function testBasicFunctionality(processor, testFile) {
   console.log("\n📁 Testing Basic Functionality");
   console.log("================================");
 
-  console.log(`Loading file: ${testFile}`);
+  console.log(`加载文件: ${testFile}`);
   const loaded = await processor.loadFile(testFile);
-  console.log("✓ File loaded successfully:", loaded);
+  console.log("✓ 文件加载成功:", loaded);
 
-  console.log("\nChecking if loaded...");
+  console.log("\n检查是否已加载...");
   const isLoaded = await processor.checkLoaded();
-  console.log("✓ File is loaded:", isLoaded);
+  console.log("✓ 文件已加载:", isLoaded);
 
-  console.log("\nGetting file info...");
+  console.log("\n获取文件信息...");
   const fileInfo = await processor.getFileInfo();
-  console.log("✓ File info extracted");
+  console.log("✓ 文件信息已提取");
   console.log(JSON.stringify(fileInfo, null, 2));
 
-  console.log("\nGetting image params...");
+  console.log("\n获取图像参数...");
   const imageParams = await processor.getImageParams();
-  console.log("✓ Image params extracted");
+  console.log("✓ 图像参数已提取");
   console.log(JSON.stringify(imageParams, null, 2));
 
   return true;
@@ -32,33 +32,33 @@ async function testExtendedUtility(processor) {
   console.log("=====================================");
 
   try {
-    console.log("Checking if Nikon sRAW...");
+    console.log("检查是否为 Nikon sRAW...");
     const isNikonSRAW = await processor.isNikonSRAW();
-    console.log("✓ Nikon sRAW check:", isNikonSRAW);
+    console.log("✓ Nikon sRAW 检查:", isNikonSRAW);
 
-    console.log("Checking if Coolscan NEF...");
+    console.log("检查是否为 Coolscan NEF...");
     const isCoolscanNEF = await processor.isCoolscanNEF();
-    console.log("✓ Coolscan NEF check:", isCoolscanNEF);
+    console.log("✓ Coolscan NEF 检查:", isCoolscanNEF);
 
-    console.log("Checking for floating point data...");
+    console.log("检查浮点数据...");
     const haveFPData = await processor.haveFPData();
-    console.log("✓ FP data available:", haveFPData);
+    console.log("✓ FP 数据可用:", haveFPData);
 
-    console.log("Getting sRAW midpoint...");
+    console.log("获取 sRAW 中点...");
     const srawMidpoint = await processor.srawMidpoint();
-    console.log("✓ sRAW midpoint:", srawMidpoint);
+    console.log("✓ sRAW 中点:", srawMidpoint);
 
-    console.log("Checking thumbnail...");
+    console.log("检查缩略图...");
     const thumbOK = await processor.thumbOK();
-    console.log("✓ Thumbnail status:", thumbOK);
+    console.log("✓ 缩略图状态:", thumbOK);
 
-    console.log("Getting unpacker function name...");
+    console.log("获取解包函数名称...");
     const unpackFunctionName = await processor.unpackFunctionName();
-    console.log("✓ Unpacker function:", unpackFunctionName);
+    console.log("✓ 解包函数:", unpackFunctionName);
 
-    console.log("Getting decoder info...");
+    console.log("获取解码器信息...");
     const decoderInfo = await processor.getDecoderInfo();
-    console.log("✓ Decoder info:", decoderInfo);
+    console.log("✓ 解码器信息:", decoderInfo);
 
     return true;
   } catch (error) {
@@ -72,21 +72,21 @@ async function testAdvancedProcessing(processor) {
   console.log("===============================");
 
   try {
-    console.log("Unpacking RAW data...");
+    console.log("解包 RAW 数据...");
     const unpacked = await processor.unpack();
-    console.log("✓ RAW data unpacked:", unpacked);
+    console.log("✓ RAW 数据已解包:", unpacked);
 
-    console.log("Converting RAW to image...");
+    console.log("转换 RAW 为图像...");
     const raw2image = await processor.raw2Image();
-    console.log("✓ RAW to image conversion:", raw2image);
+    console.log("✓ RAW 到图像转换:", raw2image);
 
-    console.log("Getting memory image format...");
+    console.log("获取内存图像格式...");
     const memFormat = await processor.getMemImageFormat();
-    console.log("✓ Memory image format:", memFormat);
+    console.log("✓ 内存图像格式:", memFormat);
 
-    console.log("Adjusting sizes (info only)...");
+    console.log("调整尺寸（仅信息）...");
     const adjustedSizes = await processor.adjustSizesInfoOnly();
-    console.log("✓ Sizes adjusted:", adjustedSizes);
+    console.log("✓ 尺寸已调整:", adjustedSizes);
 
     return true;
   } catch (error) {
@@ -100,17 +100,17 @@ async function testColorOperations(processor) {
   console.log("===========================");
 
   try {
-    console.log("Getting color matrices...");
+    console.log("获取颜色矩阵...");
     const cameraMatrix = await processor.getCameraColorMatrix();
-    console.log("✓ Camera color matrix retrieved");
+    console.log("✓ 相机颜色矩阵已获取");
 
     const rgbMatrix = await processor.getRGBCameraMatrix();
-    console.log("✓ RGB camera matrix retrieved");
+    console.log("✓ RGB 相机矩阵已获取");
 
-    // Test color at specific position (if image is loaded)
-    console.log("Getting color at position (0,0)...");
+    // 测试特定位置的颜色（如果图像已加载）
+    console.log("获取位置 (0,0) 的颜色...");
     const colorAt = await processor.getColorAt(0, 0);
-    console.log("✓ Color at (0,0):", colorAt);
+    console.log("✓ (0,0) 位置的颜色:", colorAt);
 
     return true;
   } catch (error) {
@@ -124,13 +124,13 @@ async function testCancellationSupport(processor) {
   console.log("===============================");
 
   try {
-    console.log("Setting cancel flag...");
+    console.log("设置取消标志...");
     const setCancelResult = await processor.setCancelFlag();
-    console.log("✓ Cancel flag set:", setCancelResult);
+    console.log("✓ 取消标志已设置:", setCancelResult);
 
-    console.log("Clearing cancel flag...");
+    console.log("清除取消标志...");
     const clearCancelResult = await processor.clearCancelFlag();
-    console.log("✓ Cancel flag cleared:", clearCancelResult);
+    console.log("✓ 取消标志已清除:", clearCancelResult);
 
     return true;
   } catch (error) {
@@ -147,24 +147,24 @@ async function testMemoryOperations(processor) {
   console.log("============================");
 
   try {
-    console.log("Getting memory requirements...");
+    console.log("获取内存需求...");
     const memReq = await processor.getMemoryRequirements();
-    console.log("✓ Memory requirements:", memReq, "bytes");
+    console.log("✓ 内存需求:", memReq, "字节");
 
-    console.log("Getting RAW image buffer...");
+    console.log("获取 RAW 图像缓冲区...");
     const rawBuffer = await processor.getRawImageBuffer();
     console.log(
-      "✓ RAW buffer size:",
+      "✓ RAW 缓冲区大小:",
       rawBuffer ? rawBuffer.length : "null",
-      "bytes"
+      "字节"
     );
 
-    console.log("Getting processed image buffer...");
+    console.log("获取已处理图像缓冲区...");
     const processedBuffer = await processor.getProcessedImageBuffer();
     console.log(
-      "✓ Processed buffer size:",
+      "✓ 已处理缓冲区大小:",
       processedBuffer ? processedBuffer.length : "null",
-      "bytes"
+      "字节"
     );
 
     return true;
@@ -179,21 +179,21 @@ async function testStaticMethods() {
   console.log("=========================");
 
   try {
-    console.log("Getting version...");
+    console.log("获取版本...");
     const version = LibRaw.getVersion();
-    console.log("✓ LibRaw version:", version);
+    console.log("✓ LibRaw 版本:", version);
 
-    console.log("Getting camera list...");
+    console.log("获取相机列表...");
     const cameraList = LibRaw.getCameraList();
-    console.log("✓ Camera list length:", cameraList.length);
+    console.log("✓ 相机列表长度:", cameraList.length);
 
-    console.log("Getting camera count...");
+    console.log("获取相机计数...");
     const cameraCount = LibRaw.getCameraCount();
-    console.log("✓ Camera count:", cameraCount);
+    console.log("✓ 相机计数:", cameraCount);
 
-    console.log("Getting capabilities...");
+    console.log("获取功能...");
     const capabilities = LibRaw.getCapabilities();
-    console.log("✓ Capabilities:", capabilities);
+    console.log("✓ 功能:", capabilities);
 
     return true;
   } catch (error) {
@@ -207,12 +207,12 @@ async function testThumbnailExtraction(processor) {
   console.log("=================================");
 
   try {
-    console.log("Extracting thumbnail...");
+    console.log("提取缩略图...");
     const thumbnail = await processor.getThumbnail();
     console.log(
-      "✓ Thumbnail extracted, size:",
+      "✓ 缩略图已提取，大小:",
       thumbnail ? thumbnail.length : "null",
-      "bytes"
+      "字节"
     );
 
     return true;
@@ -230,19 +230,19 @@ async function testErrorHandling(processor) {
   console.log("=========================");
 
   try {
-    // Test invalid file
-    console.log("Testing invalid file...");
+    // 测试无效文件
+    console.log("测试无效文件...");
     try {
       await processor.loadFile("nonexistent.raw");
-      console.log("⚠️  Expected error not thrown");
+      console.log("⚠️  预期错误未抛出");
     } catch (error) {
-      console.log("✓ Invalid file error caught:", error.message);
+      console.log("✓ 无效文件错误已捕获:", error.message);
     }
 
-    // Test error string conversion
-    console.log("Testing error messages...");
+    // 测试错误字符串转换
+    console.log("测试错误消息...");
     const errorStr = processor.getLastError();
-    console.log("✓ Last error:", errorStr);
+    console.log("✓ 最后错误:", errorStr);
 
     return true;
   } catch (error) {
@@ -252,9 +252,9 @@ async function testErrorHandling(processor) {
 }
 
 async function testLibRaw() {
-  console.log("LibRaw Node.js Comprehensive Test Suite");
+  console.log("LibRaw Node.js 综合测试套件");
   console.log("=======================================");
-  console.log("LibRaw version:", LibRaw.getVersion());
+  console.log("LibRaw 版本:", LibRaw.getVersion());
 
   const processor = new LibRaw();
   let testResults = {
@@ -268,11 +268,11 @@ async function testLibRaw() {
     const testFile = process.argv[2];
 
     if (!testFile) {
-      console.log("\nUsage: node test.js <path-to-raw-file>");
-      console.log("Example: node test.js sample.cr2");
-      console.log("\nRunning static tests only...\n");
+      console.log("\n用法: node test.js <raw文件路径>");
+      console.log("示例: node test.js sample.cr2");
+      console.log("\n仅运行静态测试...\n");
 
-      // Run only static tests
+      // 仅运行静态测试
       const staticResult = await testStaticMethods();
       testResults.total++;
       if (staticResult) testResults.passed++;
@@ -283,13 +283,13 @@ async function testLibRaw() {
       if (errorResult) testResults.passed++;
       else testResults.failed++;
     } else {
-      // Check if file exists
+      // 检查文件是否存在
       if (!fs.existsSync(testFile)) {
-        console.log(`❌ File not found: ${testFile}`);
+        console.log(`❌ 文件未找到: ${testFile}`);
         return;
       }
 
-      // Run all tests
+      // 运行所有测试
       const tests = [
         () => testBasicFunctionality(processor, testFile),
         () => testExtendedUtility(processor),
@@ -309,47 +309,47 @@ async function testLibRaw() {
           if (result) testResults.passed++;
           else testResults.failed++;
         } catch (error) {
-          console.log(`❌ Test failed with error: ${error.message}`);
+          console.log(`❌ 测试失败，错误: ${error.message}`);
           testResults.failed++;
         }
       }
     }
 
-    // Cleanup
+    // 清理
     try {
       await processor.close();
-      console.log("\n🧹 Cleanup completed");
+      console.log("\n🧹 清理完成");
     } catch (error) {
-      console.log("⚠️  Cleanup warning:", error.message);
+      console.log("⚠️  清理警告:", error.message);
     }
 
-    // Results summary
-    console.log("\n📊 Test Results Summary");
+    // 结果总结
+    console.log("\n📊 测试结果总结");
     console.log("=======================");
-    console.log(`Total tests: ${testResults.total}`);
-    console.log(`Passed: ${testResults.passed}`);
-    console.log(`Failed: ${testResults.failed}`);
+    console.log(`总测试数: ${testResults.total}`);
+    console.log(`通过: ${testResults.passed}`);
+    console.log(`失败: ${testResults.failed}`);
     console.log(
-      `Success rate: ${((testResults.passed / testResults.total) * 100).toFixed(
+      `成功率: ${((testResults.passed / testResults.total) * 100).toFixed(
         1
       )}%`
     );
 
     if (testResults.failed === 0) {
-      console.log("\n🎉 All tests passed!");
+      console.log("\n🎉 所有测试通过！");
     } else {
       console.log(
-        "\n⚠️  Some tests failed - this may be normal for certain file types or LibRaw versions"
+        "\n⚠️  部分测试失败 - 这对于某些文件类型或 LibRaw 版本可能是正常的"
       );
     }
   } catch (error) {
-    console.error("❌ Fatal error:", error.message);
+    console.error("❌ 致命错误:", error.message);
     console.error(error.stack);
     process.exit(1);
   }
 }
 
-// Run tests if this file is executed directly
+// 如果直接执行此文件则运行测试
 if (require.main === module) {
   testLibRaw().catch(console.error);
 }

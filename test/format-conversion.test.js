@@ -1,6 +1,6 @@
 /**
- * Format Conversion & Color Space Test Suite
- * Tests various output formats, color spaces, and bit depths
+ * 格式转换和色彩空间测试套件
+ * 测试各种输出格式、色彩空间和位深度
  */
 
 const LibRaw = require("../lib/index");
@@ -34,7 +34,7 @@ class FormatConversionTests {
   findTestFiles() {
     const sampleDir = path.join(__dirname, "..", "raw-samples-repo");
     if (!fs.existsSync(sampleDir)) {
-      this.log("Sample images directory not found", "warning");
+      this.log("未找到示例图像目录", "warning");
       return [];
     }
 

@@ -1,6 +1,6 @@
 /**
- * Thumbnail Extraction Test Suite
- * Comprehensive testing of thumbnail operations
+ * 缩略图提取测试套件
+ * 缩略图操作的综合测试
  */
 
 const LibRaw = require("../lib/index");
@@ -37,7 +37,7 @@ class ThumbnailExtractionTests {
   findTestFiles() {
     const sampleDir = path.join(__dirname, "..", "raw-samples-repo");
     if (!fs.existsSync(sampleDir)) {
-      this.log("Sample images directory not found", "warning");
+      this.log("未找到示例图像目录", "warning");
       return [];
     }
 
@@ -57,7 +57,7 @@ class ThumbnailExtractionTests {
         rawExtensions.some((ext) => file.toLowerCase().endsWith(ext))
       )
       .map((file) => path.join(sampleDir, file))
-      .slice(0, 5); // Test with up to 5 files
+      .slice(0, 5); // 最多测试 5 个文件
   }
 
   ensureOutputDir() {
@@ -67,11 +67,11 @@ class ThumbnailExtractionTests {
   }
 
   async testThumbnailDetection() {
-    console.log("\n🔍 Testing Thumbnail Detection");
+    console.log("\n🔍 测试缩略图检测");
     console.log("==============================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for thumbnail detection", "warning");
+      this.log("没有可用于缩略图检测的测试文件", "warning");
       return false;
     }
 
@@ -85,40 +85,40 @@ class ThumbnailExtractionTests {
 
       try {
         const fileName = path.basename(testFile);
-        this.log(`Detecting thumbnails in: ${fileName}`, "test");
+        this.log(`检测缩略图: ${fileName}`, "test");
 
         await processor.loadFile(testFile);
 
-        // Check if thumbnail exists
+        // 检查缩略图是否存在
         const thumbOK = await processor.thumbOK();
         this.log(
-          `  Thumbnail available: ${thumbOK ? "Yes" : "No"}`,
+          `  缩略图可用: ${thumbOK ? "是" : "否"}`,
           thumbOK ? "success" : "warning"
         );
 
         if (thumbOK) {
-          // Try to get thumbnail info using available LibRaw API
+          // 尝试使用可用的 LibRaw API 获取缩略图信息
           try {
             const thumbInfo = processor.thumbnail || processor.thumb || {};
             if (thumbInfo && thumbInfo.width > 0 && thumbInfo.height > 0) {
               this.log(
-                `  Found thumbnail: ${thumbInfo.width}x${
+                `  找到缩略图: ${thumbInfo.width}x${
                   thumbInfo.height
-                }, format: ${thumbInfo.format || "unknown"}, size: ${
-                  thumbInfo.size || "unknown"
-                } bytes`,
+                }, 格式: ${thumbInfo.format || "未知"}, 大小: ${
+                  thumbInfo.size || "未知"
+                } 字节`,
                 "data"
               );
             } else {
               this.log(
-                `  Thumbnail detected but detailed info not available`,
+                `  检测到缩略图但详细信息不可用`,
                 "info"
               );
             }
-            passedTests++; // Count as success if thumbnail is available
+            passedTests++; // 如果缩略图可用则计为成功
           } catch (listError) {
-            this.log(`  Thumbnail info error: ${listError.message}`, "warning");
-            passedTests++; // Still count as success since thumbOK returned true
+            this.log(`  缩略图信息错误: ${listError.message}`, "warning");
+            passedTests++; // 由于 thumbOK 返回 true，仍计为成功
           }
 
           detectionResults.push({
@@ -134,12 +134,12 @@ class ThumbnailExtractionTests {
           });
         }
       } catch (error) {
-        this.log(`  Detection failed: ${error.message}`, "error");
+        this.log(`  检测失败: ${error.message}`, "error");
         await processor.close();
       }
     }
 
-    // Clean up processors for files without thumbnails
+    // 清理没有缩略图的文件的处理器
     for (const result of detectionResults) {
       if (!result.hasThumb) {
         await result.processor.close();
@@ -155,7 +155,7 @@ class ThumbnailExtractionTests {
     };
 
     this.log(
-      `Thumbnail detection results: ${passedTests}/${totalTests} passed (${this.results.extraction.successRate}%)`,
+      `缩略图检测结果: ${passedTests}/${totalTests} 通过 (${this.results.extraction.successRate}%)`,
       passedTests > 0 ? "success" : "warning"
     );
 
@@ -163,14 +163,14 @@ class ThumbnailExtractionTests {
   }
 
   async testThumbnailExtraction(detectionResults) {
-    console.log("\n📤 Testing Thumbnail Extraction");
+    console.log("\n📤 测试缩略图提取");
     console.log("===============================");
 
     const filesWithThumbs = detectionResults.filter((r) => r.hasThumb);
 
     if (filesWithThumbs.length === 0) {
       this.log(
-        "No files with thumbnails available for extraction testing",
+        "没有可用于提取测试的缩略图文件",
         "warning"
       );
       return false;
@@ -187,34 +187,34 @@ class ThumbnailExtractionTests {
 
       try {
         totalTests++;
-        this.log(`Extracting thumbnail from: ${result.file}`, "test");
+        this.log(`从以下文件提取缩略图: ${result.file}`, "test");
 
-        // Unpack thumbnail
+        // 解包缩略图
         const startTime = Date.now();
         const unpacked = await processor.unpackThumbnail();
         const unpackTime = Date.now() - startTime;
 
         if (unpacked) {
-          this.log(`  ✓ Thumbnail unpacked in ${unpackTime}ms`, "success");
+          this.log(`  ✓ 缩略图在 ${unpackTime}ms 内解包`, "success");
 
-          // Test memory thumbnail creation
+          // 测试内存缩略图创建
           const memThumb = await processor.createMemoryThumbnail();
           if (memThumb && memThumb.data) {
             this.log(
-              `  ✓ Memory thumbnail: ${memThumb.width}x${memThumb.height}, ${memThumb.dataSize} bytes`,
+              `  ✓ 内存缩略图: ${memThumb.width}x${memThumb.height}, ${memThumb.dataSize} 字节`,
               "success"
             );
 
-            // Validate thumbnail data
+            // 验证缩略图数据
             const validation = this.validateThumbnailData(memThumb);
             this.log(
-              `  Validation: ${validation.valid ? "Passed" : "Failed"} - ${
+              `  验证: ${validation.valid ? "通过" : "失败"} - ${
                 validation.message
               }`,
               validation.valid ? "success" : "warning"
             );
 
-            // Test file writing
+            // 测试文件写入
             const outputPath = path.join(
               this.outputDir,
               `${fileName}_thumb.jpg`
@@ -226,15 +226,15 @@ class ThumbnailExtractionTests {
               if (fs.existsSync(outputPath)) {
                 const stats = fs.statSync(outputPath);
                 this.log(
-                  `  ✓ Thumbnail file written: ${stats.size} bytes`,
+                  `  ✓ 缩略图文件已写入: ${stats.size} 字节`,
                   "success"
                 );
 
-                // Verify file format
+                // 验证文件格式
                 const formatValidation = this.validateThumbnailFile(outputPath);
                 this.log(
-                  `  File format: ${formatValidation.format} (${
-                    formatValidation.valid ? "Valid" : "Invalid"
+                  `  文件格式: ${formatValidation.format} (${
+                    formatValidation.valid ? "有效" : "无效"
                   })`,
                   formatValidation.valid ? "success" : "warning"
                 );
@@ -243,24 +243,24 @@ class ThumbnailExtractionTests {
                   passedTests++;
                 }
               } else {
-                this.log(`  ✗ Thumbnail file not created`, "error");
+                this.log(`  ✗ 缩略图文件未创建`, "error");
               }
             } catch (writeError) {
               this.log(
-                `  ✗ Thumbnail write failed: ${writeError.message}`,
+                `  ✗ 缩略图写入失败: ${writeError.message}`,
                 "error"
               );
             }
           } else {
-            this.log(`  ✗ Memory thumbnail creation failed`, "error");
+            this.log(`  ✗ 内存缩略图创建失败`, "error");
           }
         } else {
-          this.log(`  ✗ Thumbnail unpack failed`, "error");
+          this.log(`  ✗ 缩略图解包失败`, "error");
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  ✗ Extraction failed: ${error.message}`, "error");
+        this.log(`  ✗ 提取失败: ${error.message}`, "error");
         await processor.close();
       }
     }
@@ -273,7 +273,7 @@ class ThumbnailExtractionTests {
     };
 
     this.log(
-      `Thumbnail extraction results: ${passedTests}/${totalTests} passed (${this.results.memory.successRate}%)`,
+      `缩略图提取结果: ${passedTests}/${totalTests} 通过 (${this.results.memory.successRate}%)`,
       passedTests > 0 ? "success" : "warning"
     );
 
@@ -282,20 +282,20 @@ class ThumbnailExtractionTests {
 
   validateThumbnailData(thumbnail) {
     try {
-      // Check basic properties
+      // 检查基本属性
       if (!thumbnail.data || thumbnail.data.length === 0) {
-        return { valid: false, message: "No thumbnail data" };
+        return { valid: false, message: "无缩略图数据" };
       }
 
-      // Note: Some LibRaw builds may not return correct dimensions in memory thumbnail
-      // This is a known limitation and doesn't affect the actual thumbnail data quality
+      // 注意：某些 LibRaw 构建可能不会在内存缩略图中返回正确的尺寸
+      // 这是已知限制，不会影响实际缩略图数据质量
       if (
         (thumbnail.width <= 0 || thumbnail.height <= 0) &&
         thumbnail.dataSize > 1000
       ) {
         return {
           valid: true,
-          message: `Thumbnail data present (${thumbnail.dataSize} bytes) - dimensions not reported by LibRaw`,
+          message: `缩略图数据存在 (${thumbnail.dataSize} 字节) - LibRaw 未报告尺寸`,
         };
       }
 
@@ -306,11 +306,11 @@ class ThumbnailExtractionTests {
       ) {
         return {
           valid: false,
-          message: `Size mismatch: ${thumbnail.dataSize} vs ${thumbnail.data.length}`,
+          message: `大小不匹配: ${thumbnail.dataSize} vs ${thumbnail.data.length}`,
         };
       }
 
-      // Check for JPEG signature if format indicates JPEG
+      // 如果格式指示 JPEG，检查 JPEG 签名
       const header = thumbnail.data.slice(0, 10);
       const hasJPEGHeader = header[0] === 0xff && header[1] === 0xd8;
 
@@ -319,26 +319,26 @@ class ThumbnailExtractionTests {
           valid: true,
           message:
             thumbnail.width > 0
-              ? `JPEG thumbnail ${thumbnail.width}x${thumbnail.height}`
-              : `JPEG thumbnail (${thumbnail.dataSize} bytes)`,
+              ? `JPEG 缩略图 ${thumbnail.width}x${thumbnail.height}`
+              : `JPEG 缩略图 (${thumbnail.dataSize} 字节)`,
         };
       }
 
-      // Check for other formats or raw data
+      // 检查其他格式或原始数据
       const isNonZero = header.some((byte) => byte !== 0);
       if (isNonZero) {
         return {
           valid: true,
           message:
             thumbnail.width > 0
-              ? `Raw thumbnail data ${thumbnail.width}x${thumbnail.height}`
-              : `Raw thumbnail data (${thumbnail.dataSize} bytes)`,
+              ? `原始缩略图数据 ${thumbnail.width}x${thumbnail.height}`
+              : `原始缩略图数据 (${thumbnail.dataSize} 字节)`,
         };
       }
 
-      return { valid: false, message: "Thumbnail data appears to be empty" };
+      return { valid: false, message: "缩略图数据似乎为空" };
     } catch (error) {
-      return { valid: false, message: `Validation error: ${error.message}` };
+      return { valid: false, message: `验证错误: ${error.message}` };
     }
   }
 
@@ -348,41 +348,41 @@ class ThumbnailExtractionTests {
 
       // Check JPEG signature
       if (buffer[0] === 0xff && buffer[1] === 0xd8) {
-        // Look for JFIF or Exif markers
+        // 查找 JFIF 或 Exif 标记
         const restBuffer = fs.readFileSync(filePath, { start: 2, end: 20 });
         const hasJFIF = restBuffer.includes(Buffer.from("JFIF"));
         const hasExif = restBuffer.includes(Buffer.from("Exif"));
 
         if (hasJFIF || hasExif) {
-          return { valid: true, format: "JPEG with metadata" };
+          return { valid: true, format: "带元数据的 JPEG" };
         } else {
           return { valid: true, format: "JPEG" };
         }
       }
 
-      // Check TIFF signature
+      // 检查 TIFF 签名
       const tiffMagic = buffer.toString("hex", 0, 4);
       if (tiffMagic === "49492a00" || tiffMagic === "4d4d002a") {
         return { valid: true, format: "TIFF" };
       }
 
-      // Check PNG signature
+      // 检查 PNG 签名
       if (buffer.toString("hex", 0, 8) === "89504e470d0a1a0a") {
         return { valid: true, format: "PNG" };
       }
 
-      return { valid: false, format: "Unknown format" };
+      return { valid: false, format: "未知格式" };
     } catch (error) {
-      return { valid: false, format: `Validation error: ${error.message}` };
+      return { valid: false, format: `验证错误: ${error.message}` };
     }
   }
 
   async testThumbnailFormats() {
-    console.log("\n🎨 Testing Thumbnail Format Variations");
+    console.log("\n🎨 测试缩略图格式变化");
     console.log("======================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for format testing", "warning");
+      this.log("没有可用于格式测试的测试文件", "warning");
       return false;
     }
 
@@ -402,13 +402,13 @@ class ThumbnailExtractionTests {
       try {
         totalTests++;
         const fileName = path.basename(testFile);
-        this.log(`Analyzing thumbnail format: ${fileName}`, "test");
+        this.log(`分析缩略图格式: ${fileName}`, "test");
 
         await processor.loadFile(testFile);
 
         const thumbOK = await processor.thumbOK();
         if (!thumbOK) {
-          this.log(`  No thumbnail available`, "warning");
+          this.log(`  无缩略图可用`, "warning");
           await processor.close();
           continue;
         }
@@ -420,11 +420,11 @@ class ThumbnailExtractionTests {
           if (memThumb && memThumb.data && memThumb.data.length > 0) {
             const format = this.detectThumbnailFormat(memThumb.data);
             this.log(
-              `  ✓ Format: ${format.name} (${format.confidence}% confidence)`,
+              `  ✓ 格式: ${format.name} (${format.confidence}% 置信度)`,
               "success"
             );
 
-            // Test different thumbnail extraction methods
+            // 测试不同的缩略图提取方法
             const extractionResults = await this.testThumbnailExtractionMethods(
               processor,
               fileName
@@ -441,25 +441,25 @@ class ThumbnailExtractionTests {
             formatStats[format.type]++;
             passedTests++;
 
-            // Additional format-specific tests
+            // 额外的格式特定测试
             if (format.type === "jpeg") {
               const jpegInfo = this.analyzeJPEGThumbnail(memThumb.data);
               this.log(
-                `    JPEG quality: ~${jpegInfo.quality}%, subsampling: ${jpegInfo.subsampling}`,
+                `    JPEG 质量: ~${jpegInfo.quality}%, 子采样: ${jpegInfo.subsampling}`,
                 "data"
               );
               result.jpegInfo = jpegInfo;
             } else if (format.type === "tiff") {
               const tiffInfo = this.analyzeTIFFThumbnail(memThumb.data);
               this.log(
-                `    TIFF endianness: ${tiffInfo.endianness}, compression: ${tiffInfo.compression}`,
+                `    TIFF 字节序: ${tiffInfo.endianness}, 压缩: ${tiffInfo.compression}`,
                 "data"
               );
               result.tiffInfo = tiffInfo;
             } else if (format.type === "raw") {
               const rawInfo = this.analyzeRawThumbnail(memThumb);
               this.log(
-                `    Raw format: ${rawInfo.channels} channels, ${rawInfo.bitsPerChannel} bits/channel`,
+                `    原始格式: ${rawInfo.channels} 通道, ${rawInfo.bitsPerChannel} 位/通道`,
                 "data"
               );
               result.rawInfo = rawInfo;
@@ -467,20 +467,20 @@ class ThumbnailExtractionTests {
 
             detailedResults.push(result);
           } else {
-            this.log(`  ✗ No thumbnail data available`, "error");
+            this.log(`  ✗ 无缩略图数据可用`, "error");
           }
         } else {
-          this.log(`  ✗ Thumbnail unpack failed`, "error");
+          this.log(`  ✗ 缩略图解包失败`, "error");
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  ✗ Format analysis failed: ${error.message}`, "error");
+        this.log(`  ✗ 格式分析失败: ${error.message}`, "error");
         await processor.close();
       }
     }
 
-    // Test format conversion capabilities
+    // 测试格式转换功能
     await this.testThumbnailFormatConversions(detailedResults);
 
     this.results.formats = {
@@ -493,14 +493,14 @@ class ThumbnailExtractionTests {
     };
 
     this.log(
-      `Format analysis results: ${passedTests}/${totalTests} passed (${this.results.formats.successRate}%)`,
+      `格式分析结果: ${passedTests}/${totalTests} 通过 (${this.results.formats.successRate}%)`,
       passedTests > 0 ? "success" : "warning"
     );
 
-    this.log(`Format distribution:`, "data");
+    this.log(`格式分布:`, "data");
     Object.entries(formatStats).forEach(([format, count]) => {
       if (count > 0) {
-        this.log(`  ${format.toUpperCase()}: ${count} files`, "data");
+        this.log(`  ${format.toUpperCase()}: ${count} 个文件`, "data");
       }
     });
 
@@ -511,7 +511,7 @@ class ThumbnailExtractionTests {
     const methods = {};
 
     try {
-      // Method 1: Direct file writing
+      // 方法 1: 直接文件写入
       const outputPath1 = path.join(this.outputDir, `${fileName}_direct.jpg`);
       const start1 = Date.now();
       await processor.writeThumbnail(outputPath1);
@@ -525,17 +525,17 @@ class ThumbnailExtractionTests {
           size: stats1.size,
           path: outputPath1,
         };
-        this.log(`    Direct write: ${time1}ms, ${stats1.size} bytes`, "data");
+        this.log(`    直接写入: ${time1}ms, ${stats1.size} 字节`, "data");
       } else {
-        methods.directWrite = { success: false, error: "File not created" };
+        methods.directWrite = { success: false, error: "文件未创建" };
       }
     } catch (error) {
       methods.directWrite = { success: false, error: error.message };
-      this.log(`    Direct write failed: ${error.message}`, "warning");
+      this.log(`    直接写入失败: ${error.message}`, "warning");
     }
 
     try {
-      // Method 2: Memory extraction + manual write
+      // 方法 2: 内存提取 + 手动写入
       const start2 = Date.now();
       const memThumb = await processor.createMemoryThumbnail();
       const time2 = Date.now() - start2;
@@ -552,22 +552,22 @@ class ThumbnailExtractionTests {
           path: outputPath2,
         };
         this.log(
-          `    Memory extraction: ${time2}ms, ${memThumb.dataSize} bytes`,
+          `    内存提取: ${time2}ms, ${memThumb.dataSize} 字节`,
           "data"
         );
       } else {
-        methods.memoryExtraction = { success: false, error: "No memory data" };
+        methods.memoryExtraction = { success: false, error: "无内存数据" };
       }
     } catch (error) {
       methods.memoryExtraction = { success: false, error: error.message };
-      this.log(`    Memory extraction failed: ${error.message}`, "warning");
+      this.log(`    内存提取失败: ${error.message}`, "warning");
     }
 
     return methods;
   }
 
   async testThumbnailFormatConversions(detailedResults) {
-    console.log("\n🔄 Testing Thumbnail Format Conversions");
+    console.log("\n🔄 测试缩略图格式转换");
     console.log("=======================================");
 
     const conversionTests = [];
@@ -576,10 +576,10 @@ class ThumbnailExtractionTests {
       if (!result.extractionMethods.memoryExtraction?.success) continue;
 
       const fileName = path.parse(result.file).name;
-      this.log(`Testing conversions for: ${result.file}`, "test");
+      this.log(`测试转换: ${result.file}`, "test");
 
       try {
-        // Test different output formats
+        // 测试不同的输出格式
         const conversions = await this.testMultipleOutputFormats(
           result.extractionMethods.memoryExtraction.path,
           fileName
@@ -592,11 +592,11 @@ class ThumbnailExtractionTests {
         });
 
         this.log(
-          `  ✓ Tested ${Object.keys(conversions).length} format conversions`,
+          `  ✓ 测试了 ${Object.keys(conversions).length} 种格式转换`,
           "success"
         );
       } catch (error) {
-        this.log(`  ✗ Conversion test failed: ${error.message}`, "error");
+        this.log(`  ✗ 转换测试失败: ${error.message}`, "error");
       }
     }
 
@@ -607,13 +607,13 @@ class ThumbnailExtractionTests {
     const sharp = require("sharp");
     const conversions = {};
 
-    // Test different output formats
+    // 测试不同的输出格式
     const formats = [
       { ext: "png", options: { compressionLevel: 6 } },
       { ext: "webp", options: { quality: 80 } },
       { ext: "tiff", options: { compression: "lzw" } },
       { ext: "jpeg", options: { quality: 90, progressive: true } },
-      { ext: "avif", options: { quality: 50 } }, // Modern format
+      { ext: "avif", options: { quality: 50 } }, // 现代格式
     ];
 
     for (const format of formats) {
@@ -626,7 +626,7 @@ class ThumbnailExtractionTests {
 
         let sharpInstance = sharp(sourcePath);
 
-        // Apply format-specific processing
+        // 应用格式特定的处理
         switch (format.ext) {
           case "png":
             await sharpInstance.png(format.options).toFile(outputPath);
@@ -662,15 +662,15 @@ class ThumbnailExtractionTests {
         } else {
           conversions[format.ext] = {
             success: false,
-            error: "File not created",
+            error: "文件未创建",
           };
         }
       } catch (error) {
         conversions[format.ext] = { success: false, error: error.message };
         if (!error.message.includes("avif")) {
-          // AVIF might not be supported
+          // AVIF 可能不受支持
           this.log(
-            `    ${format.ext.toUpperCase()} conversion failed: ${
+            `    ${format.ext.toUpperCase()} 转换失败: ${
               error.message
             }`,
             "warning"
@@ -684,14 +684,14 @@ class ThumbnailExtractionTests {
 
   analyzeTIFFThumbnail(data) {
     try {
-      // Check endianness
+      // 检查字节序
       const endianness =
         data[0] === 0x49 && data[1] === 0x49 ? "little" : "big";
 
-      // Look for compression information
+      // 查找压缩信息
       let compression = "unknown";
 
-      // Simple heuristic - look for common TIFF compression markers
+      // 简单启发式 - 查找常见的 TIFF 压缩标记
       if (data.includes(0x01)) compression = "uncompressed";
       else if (data.includes(0x05)) compression = "LZW";
       else if (data.includes(0x07)) compression = "JPEG";
@@ -704,7 +704,7 @@ class ThumbnailExtractionTests {
 
   analyzeRawThumbnail(thumbnail) {
     try {
-      // Analyze raw thumbnail data
+      // 分析原始缩略图数据
       const channels = thumbnail.colors || 3;
       const bitsPerChannel = thumbnail.bits || 8;
       const pixelCount = thumbnail.width * thumbnail.height;
@@ -728,9 +728,9 @@ class ThumbnailExtractionTests {
   }
 
   detectThumbnailFormat(data) {
-    // JPEG detection
+    // JPEG 检测
     if (data[0] === 0xff && data[1] === 0xd8) {
-      // Check for JPEG variants
+      // 检查 JPEG 变体
       const hasJFIF =
         data.includes(Buffer.from("JFIF")[0]) &&
         data.includes(Buffer.from("JFIF")[1]);
@@ -762,7 +762,7 @@ class ThumbnailExtractionTests {
       }
     }
 
-    // TIFF detection (including embedded JPEG in TIFF)
+    // TIFF 检测（包括 TIFF 中的嵌入式 JPEG）
     const tiffMagic = data.slice(0, 4);
     if (
       (tiffMagic[0] === 0x49 &&
@@ -774,7 +774,7 @@ class ThumbnailExtractionTests {
         tiffMagic[2] === 0x00 &&
         tiffMagic[3] === 0x2a)
     ) {
-      // Check if it's TIFF with JPEG compression
+      // 检查是否为带 JPEG 压缩的 TIFF
       const hasJPEGCompression = this.checkTIFFForJPEGCompression(data);
       return {
         name: hasJPEGCompression ? "TIFF/JPEG" : "TIFF",
@@ -784,13 +784,13 @@ class ThumbnailExtractionTests {
       };
     }
 
-    // PNG detection
+    // PNG 检测
     const pngSignature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
     if (data.length >= 8 && pngSignature.every((byte, i) => data[i] === byte)) {
       return { name: "PNG", type: "png", confidence: 100, variant: "Standard" };
     }
 
-    // WebP detection
+    // WebP 检测
     if (
       data.length >= 12 &&
       data[0] === 0x52 &&
@@ -810,29 +810,29 @@ class ThumbnailExtractionTests {
       };
     }
 
-    // BMP detection
+    // BMP 检测
     if (data.length >= 2 && data[0] === 0x42 && data[1] === 0x4d) {
       return { name: "BMP", type: "bmp", confidence: 100, variant: "Standard" };
     }
 
-    // Raw RGB data detection (heuristic)
+    // 原始 RGB 数据检测（启发式）
     const nonZeroBytes = data
       .slice(0, Math.min(100, data.length))
       .filter((b) => b !== 0).length;
 
     if (nonZeroBytes > 10) {
-      // Try to determine if it's RGB, YUV, or other raw format
+      // 尝试确定是 RGB、YUV 还是其他原始格式
       const variance = this.calculateDataVariance(data.slice(0, 300));
       if (variance > 1000) {
         return {
-          name: "Raw RGB Data",
+          name: "原始 RGB 数据",
           type: "raw",
           confidence: 70,
           variant: "RGB",
         };
       } else {
         return {
-          name: "Raw YUV Data",
+          name: "原始 YUV 数据",
           type: "raw",
           confidence: 60,
           variant: "YUV",
@@ -841,7 +841,7 @@ class ThumbnailExtractionTests {
     }
 
     return {
-      name: "Unknown Format",
+      name: "未知格式",
       type: "unknown",
       confidence: 0,
       variant: "Unknown",
@@ -849,16 +849,16 @@ class ThumbnailExtractionTests {
   }
 
   checkTIFFForJPEGCompression(data) {
-    // Look for TIFF compression tag (0x0103) with JPEG value (0x0007)
+    // 查找 TIFF 压缩标签 (0x0103) 和 JPEG 值 (0x0007)
     try {
       for (let i = 0; i < Math.min(data.length - 10, 1000); i++) {
         if (
           data[i] === 0x03 &&
-          data[i + 1] === 0x01 && // Tag 0x0103
+          data[i + 1] === 0x01 && // 标签 0x0103
           data[i + 8] === 0x07 &&
           data[i + 9] === 0x00
         ) {
-          // JPEG compression
+          // JPEG 压缩
           return true;
         }
       }
@@ -878,11 +878,11 @@ class ThumbnailExtractionTests {
   }
 
   async testThumbnailTypesAndSizes() {
-    console.log("\n📏 Testing Thumbnail Types and Sizes");
+    console.log("\n📏 测试缩略图类型和尺寸");
     console.log("====================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for size testing", "warning");
+      this.log("没有可用于尺寸测试的测试文件", "warning");
       return false;
     }
 
@@ -913,13 +913,13 @@ class ThumbnailExtractionTests {
       try {
         totalTests++;
         const fileName = path.basename(testFile);
-        this.log(`Analyzing thumbnail size: ${fileName}`, "test");
+        this.log(`分析缩略图尺寸: ${fileName}`, "test");
 
         await processor.loadFile(testFile);
 
         const thumbOK = await processor.thumbOK();
         if (!thumbOK) {
-          this.log(`  No thumbnail available`, "warning");
+          this.log(`  无缩略图可用`, "warning");
           await processor.close();
           continue;
         }
@@ -931,7 +931,7 @@ class ThumbnailExtractionTests {
           if (memThumb && memThumb.data && memThumb.data.length > 0) {
             passedTests++;
 
-            // Categorize by file size
+            // 按文件大小分类
             const size = memThumb.dataSize;
             for (const [category, range] of Object.entries(sizeCategories)) {
               if (size >= range.min && size < range.max) {
@@ -940,7 +940,7 @@ class ThumbnailExtractionTests {
               }
             }
 
-            // Categorize by dimensions
+            // 按尺寸分类
             const maxDimension = Math.max(memThumb.width, memThumb.height);
             for (const [category, range] of Object.entries(
               dimensionCategories
@@ -951,19 +951,19 @@ class ThumbnailExtractionTests {
               }
             }
 
-            // Calculate aspect ratio
+            // 计算宽高比
             const aspectRatio = (memThumb.width / memThumb.height).toFixed(2);
             aspectRatios[aspectRatio] = (aspectRatios[aspectRatio] || 0) + 1;
 
             this.log(
-              `  ✓ Size: ${size} bytes, Dimensions: ${memThumb.width}x${memThumb.height}, Aspect: ${aspectRatio}`,
+              `  ✓ 大小: ${size} 字节, 尺寸: ${memThumb.width}x${memThumb.height}, 宽高比: ${aspectRatio}`,
               "success"
             );
 
-            // Test thumbnail quality estimation
+            // 测试缩略图质量估计
             const qualityInfo = await this.estimateThumbnailQuality(memThumb);
             this.log(
-              `    Quality estimate: ${qualityInfo.estimation}, Compression: ${qualityInfo.compression}`,
+              `    质量估计: ${qualityInfo.estimation}, 压缩: ${qualityInfo.compression}`,
               "data"
             );
           }
@@ -971,13 +971,13 @@ class ThumbnailExtractionTests {
 
         await processor.close();
       } catch (error) {
-        this.log(`  ✗ Size analysis failed: ${error.message}`, "error");
+        this.log(`  ✗ 尺寸分析失败: ${error.message}`, "error");
         await processor.close();
       }
     }
 
-    // Report results
-    this.log("\nSize Distribution:", "data");
+    // 报告结果
+    this.log("\n大小分布:", "data");
     Object.entries(sizeCategories).forEach(([category, range]) => {
       if (range.count > 0) {
         const sizeRange =
@@ -990,7 +990,7 @@ class ThumbnailExtractionTests {
       }
     });
 
-    this.log("\nDimension Distribution:", "data");
+    this.log("\n尺寸分布:", "data");
     Object.entries(dimensionCategories).forEach(([category, range]) => {
       if (range.count > 0) {
         const dimRange =
@@ -999,12 +999,12 @@ class ThumbnailExtractionTests {
       }
     });
 
-    this.log("\nAspect Ratios:", "data");
+    this.log("\n宽高比:", "data");
     Object.entries(aspectRatios)
       .sort(([a], [b]) => parseFloat(b) - parseFloat(a))
       .slice(0, 5)
       .forEach(([ratio, count]) => {
-        this.log(`  ${ratio}: ${count} files`, "data");
+        this.log(`  ${ratio}: ${count} 个文件`, "data");
       });
 
     this.results.sizes = {
@@ -1024,20 +1024,20 @@ class ThumbnailExtractionTests {
     try {
       const data = thumbnail.data;
 
-      // Calculate compression ratio
-      const uncompressedSize = thumbnail.width * thumbnail.height * 3; // Assume RGB
+      // 计算压缩比
+      const uncompressedSize = thumbnail.width * thumbnail.height * 3; // 假设 RGB
       const compressionRatio = (uncompressedSize / thumbnail.dataSize).toFixed(
         1
       );
 
-      // Estimate quality based on compression ratio and size
+      // 基于压缩比和大小估计质量
       let qualityEstimate = "Unknown";
       if (compressionRatio > 10) qualityEstimate = "Low (High compression)";
       else if (compressionRatio > 5) qualityEstimate = "Medium";
       else if (compressionRatio > 2) qualityEstimate = "High";
       else qualityEstimate = "Very High (Low compression)";
 
-      // Additional analysis for JPEG thumbnails
+      // JPEG 缩略图的额外分析
       if (data[0] === 0xff && data[1] === 0xd8) {
         const jpegQuality = this.estimateJPEGQuality(data);
         qualityEstimate = `JPEG Q~${jpegQuality}`;
@@ -1051,8 +1051,8 @@ class ThumbnailExtractionTests {
       };
     } catch (error) {
       return {
-        estimation: "Error",
-        compression: "Unknown",
+        estimation: "错误",
+        compression: "未知",
         error: error.message,
       };
     }
@@ -1060,13 +1060,13 @@ class ThumbnailExtractionTests {
 
   estimateJPEGQuality(data) {
     try {
-      // Look for quantization tables to estimate quality
-      let quality = 75; // Default
+      // 查找量化表以估计质量
+      let quality = 75; // 默认值
 
-      // Find DQT (Define Quantization Table) marker
+      // 查找 DQT（定义量化表）标记
       for (let i = 0; i < data.length - 10; i++) {
         if (data[i] === 0xff && data[i + 1] === 0xdb) {
-          // Found DQT marker, analyze quantization values
+          // 找到 DQT 标记，分析量化值
           const qtLength = (data[i + 2] << 8) | data[i + 3];
           if (qtLength > 4 && i + qtLength < data.length) {
             const qtValues = data.slice(
@@ -1076,7 +1076,7 @@ class ThumbnailExtractionTests {
             const avgQt =
               qtValues.reduce((sum, val) => sum + val, 0) / qtValues.length;
 
-            // Rough quality estimation based on average quantization table values
+            // 基于平均量化表值的粗略质量估计
             if (avgQt < 10) quality = 95;
             else if (avgQt < 20) quality = 85;
             else if (avgQt < 40) quality = 75;
@@ -1091,20 +1091,20 @@ class ThumbnailExtractionTests {
 
       return quality;
     } catch (error) {
-      return 75; // Default fallback
+      return 75; // 默认回退
     }
   }
 
   analyzeJPEGThumbnail(data) {
     try {
-      // Look for quantization tables to estimate quality
-      let quality = 75; // Default assumption
+      // 查找量化表以估计质量
+      let quality = 75; // 默认假设
       let subsampling = "Unknown";
 
-      // Find SOF (Start of Frame) marker
+      // 查找 SOF（帧开始）标记
       for (let i = 0; i < data.length - 10; i++) {
         if (data[i] === 0xff && data[i + 1] === 0xc0) {
-          // Found SOF0 marker, read sampling factors
+          // 找到 SOF0 标记，读取采样因子
           const components = data[i + 9];
           if (components === 3) {
             const y_sampling = data[i + 11];
@@ -1137,16 +1137,16 @@ class ThumbnailExtractionTests {
 
       return { quality, subsampling };
     } catch (error) {
-      return { quality: "Unknown", subsampling: "Unknown" };
+      return { quality: "未知", subsampling: "未知" };
     }
   }
 
   async testThumbnailPerformance() {
-    console.log("\n⚡ Testing Thumbnail Performance");
+    console.log("\n⚡ 测试缩略图性能");
     console.log("===============================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for performance testing", "warning");
+      this.log("没有可用于性能测试的测试文件", "warning");
       return false;
     }
 
@@ -1159,7 +1159,7 @@ class ThumbnailExtractionTests {
 
       try {
         const fileName = path.basename(testFile);
-        this.log(`Performance test: ${fileName}`, "test");
+        this.log(`性能测试: ${fileName}`, "test");
 
         const startTime = Date.now();
 
@@ -1168,7 +1168,7 @@ class ThumbnailExtractionTests {
 
         const thumbOK = await processor.thumbOK();
         if (!thumbOK) {
-          this.log(`  No thumbnail - skipping`, "warning");
+          this.log(`  无缩略图 - 跳过`, "warning");
           await processor.close();
           continue;
         }
@@ -1201,18 +1201,18 @@ class ThumbnailExtractionTests {
           performanceResults.push(result);
 
           this.log(
-            `  ✓ Total: ${totalTestTime}ms (load: ${loadTime}ms, unpack: ${unpackTime}ms, memory: ${memTime}ms)`,
+            `  ✓ 总计: ${totalTestTime}ms (加载: ${loadTime}ms, 解包: ${unpackTime}ms, 内存: ${memTime}ms)`,
             "success"
           );
           this.log(
-            `    Thumbnail: ${result.thumbDimensions}, ${result.thumbSize} bytes`,
+            `    缩略图: ${result.thumbDimensions}, ${result.thumbSize} 字节`,
             "data"
           );
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  ✗ Performance test failed: ${error.message}`, "error");
+        this.log(`  ✗ 性能测试失败: ${error.message}`, "error");
         await processor.close();
       }
     }
@@ -1224,14 +1224,14 @@ class ThumbnailExtractionTests {
           totalTime) *
         1000; // bytes per second
 
-      this.log(`\nPerformance Summary:`, "data");
-      this.log(`  Average processing time: ${avgTime}ms`, "data");
+      this.log(`\n性能总结:`, "data");
+      this.log(`  平均处理时间: ${avgTime}ms`, "data");
       this.log(
-        `  Thumbnail throughput: ${(avgThroughput / 1024).toFixed(2)} KB/s`,
+        `  缩略图吞吐量: ${(avgThroughput / 1024).toFixed(2)} KB/s`,
         "data"
       );
       this.log(
-        `  Successful extractions: ${successfulTests}/${this.testFiles.length}`,
+        `  成功提取: ${successfulTests}/${this.testFiles.length}`,
         "data"
       );
 
@@ -1261,11 +1261,11 @@ class ThumbnailExtractionTests {
   }
 
   async testMultiSizeJPEGGeneration() {
-    console.log("\n📐 Testing Multi-Size JPEG Generation from RAW");
+    console.log("\n📐 测试从 RAW 生成多尺寸 JPEG");
     console.log("==============================================");
 
     if (this.testFiles.length === 0) {
-      this.log("No test files available for multi-size testing", "warning");
+      this.log("没有可用于多尺寸测试的测试文件", "warning");
       return false;
     }
 
@@ -1274,35 +1274,35 @@ class ThumbnailExtractionTests {
       fs.mkdirSync(multiSizeOutputDir, { recursive: true });
     }
 
-    // Define different size configurations
+    // 定义不同的尺寸配置
     const sizeConfigs = [
       {
         name: "thumbnail",
         width: 200,
         height: 150,
         quality: 85,
-        description: "Small thumbnail",
+        description: "小缩略图",
       },
       {
         name: "small",
         width: 400,
         height: 300,
         quality: 85,
-        description: "Small preview",
+        description: "小预览",
       },
       {
         name: "medium",
         width: 800,
         height: 600,
         quality: 85,
-        description: "Medium preview",
+        description: "中等预览",
       },
       {
         name: "large",
         width: 1200,
         height: 900,
         quality: 90,
-        description: "Large preview",
+        description: "大预览",
       },
       {
         name: "web_hd",
@@ -1321,9 +1321,9 @@ class ThumbnailExtractionTests {
       {
         name: "full_quality",
         quality: 95,
-        description: "Full size, high quality",
+        description: "全尺寸，高质量",
       },
-      { name: "archive", quality: 100, description: "Archive quality" },
+      { name: "archive", quality: 100, description: "归档质量" },
     ];
 
     let totalTests = 0;
@@ -1331,21 +1331,21 @@ class ThumbnailExtractionTests {
     const generationResults = [];
 
     for (const testFile of this.testFiles.slice(0, 2)) {
-      // Test with first 2 files for speed
+      // 使用前 2 个文件进行速度测试
       const processor = new LibRaw();
 
       try {
         totalTests++;
         const fileName = path.basename(testFile, path.extname(testFile));
-        this.log(`Generating multi-size JPEGs from: ${fileName}`, "test");
+        this.log(`从以下文件生成多尺寸 JPEG: ${fileName}`, "test");
 
         const startTime = Date.now();
         await processor.loadFile(testFile);
 
-        // Get original image metadata
+        // 获取原始图像元数据
         const metadata = await processor.getMetadata();
         this.log(
-          `  Original: ${metadata.width}x${metadata.height} (${(
+          `  原始: ${metadata.width}x${metadata.height} (${(
             (metadata.width * metadata.height) /
             1000000
           ).toFixed(1)}MP)`,
@@ -1363,14 +1363,14 @@ class ThumbnailExtractionTests {
             );
             const sizeStartTime = Date.now();
 
-            // Use the JPEG conversion method with size parameters
+            // 使用带尺寸参数的 JPEG 转换方法
             const conversionOptions = {
               quality: config.quality,
               fastMode: true,
               effort: 3,
             };
 
-            // Add size constraints if specified
+            // 如果指定了尺寸约束，则添加
             if (config.width) conversionOptions.width = config.width;
             if (config.height) conversionOptions.height = config.height;
 
@@ -1390,7 +1390,7 @@ class ThumbnailExtractionTests {
                 targetSize:
                   config.width && config.height
                     ? `${config.width}x${config.height}`
-                    : "Original",
+                    : "原始",
                 actualSize: `${outputDimensions.width}x${outputDimensions.height}`,
                 fileSize: stats.size,
                 fileSizeKB: (stats.size / 1024).toFixed(1),
@@ -1411,9 +1411,9 @@ class ThumbnailExtractionTests {
               sizeResults.push({
                 name: config.name,
                 success: false,
-                error: "File not created",
+                error: "文件未创建",
               });
-              this.log(`    ✗ ${config.name}: File not created`, "error");
+              this.log(`    ✗ ${config.name}: 文件未创建`, "error");
             }
           } catch (sizeError) {
             sizeResults.push({
@@ -1443,28 +1443,28 @@ class ThumbnailExtractionTests {
         if (successfulSizes > 0) {
           passedTests++;
           this.log(
-            `  ✓ Generated ${successfulSizes}/${sizeConfigs.length} sizes in ${totalTime}ms`,
+            `  ✓ 生成了 ${successfulSizes}/${sizeConfigs.length} 个尺寸，用时 ${totalTime}ms`,
             "success"
           );
 
-          // Generate size comparison report
+          // 生成尺寸比较报告
           await this.generateSizeComparisonReport(
             fileName,
             sizeResults,
             multiSizeOutputDir
           );
         } else {
-          this.log(`  ✗ Failed to generate any sizes`, "error");
+          this.log(`  ✗ 未能生成任何尺寸`, "error");
         }
 
         await processor.close();
       } catch (error) {
-        this.log(`  ✗ Multi-size generation failed: ${error.message}`, "error");
+        this.log(`  ✗ 多尺寸生成失败: ${error.message}`, "error");
         await processor.close();
       }
     }
 
-    // Generate comprehensive results
+    // 生成综合结果
     this.results.multiSize = {
       tested: totalTests,
       passed: passedTests,
@@ -1473,11 +1473,11 @@ class ThumbnailExtractionTests {
       generationResults: generationResults,
     };
 
-    // Print detailed results
+    // 打印详细结果
     this.printMultiSizeResults(generationResults);
 
     this.log(
-      `Multi-size JPEG generation results: ${passedTests}/${totalTests} passed (${this.results.multiSize.successRate}%)`,
+      `多尺寸 JPEG 生成结果: ${passedTests}/${totalTests} 通过 (${this.results.multiSize.successRate}%)`,
       passedTests > 0 ? "success" : "warning"
     );
 
@@ -1492,7 +1492,7 @@ class ThumbnailExtractionTests {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Multi-Size JPEG Report - ${fileName}</title>
+    <title>多尺寸 JPEG 报告 - ${fileName}</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
         .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -1512,8 +1512,8 @@ class ThumbnailExtractionTests {
 </head>
 <body>
     <div class="container">
-        <h1>Multi-Size JPEG Generation Report</h1>
-        <h2>Source: ${fileName}</h2>
+        <h1>多尺寸 JPEG 生成报告</h1>
+        <h2>源文件: ${fileName}</h2>
         
         <div class="stats">
             ${sizeResults
@@ -1523,10 +1523,10 @@ class ThumbnailExtractionTests {
                 <div class="stat-card">
                     <h3>${result.name}</h3>
                     <p>${result.description}</p>
-                    <p><strong>Size:</strong> ${result.actualSize}</p>
-                    <p><strong>File Size:</strong> <span class="file-size">${result.fileSizeKB}KB</span></p>
-                    <p><strong>Quality:</strong> ${result.quality}%</p>
-                    <p><strong>Time:</strong> ${result.processingTime}ms</p>
+                    <p><strong>尺寸:</strong> ${result.actualSize}</p>
+                    <p><strong>文件大小:</strong> <span class="file-size">${result.fileSizeKB}KB</span></p>
+                    <p><strong>质量:</strong> ${result.quality}%</p>
+                    <p><strong>时间:</strong> ${result.processingTime}ms</p>
                 </div>
             `
               )
@@ -1536,15 +1536,15 @@ class ThumbnailExtractionTests {
         <table>
             <thead>
                 <tr>
-                    <th>Size Name</th>
-                    <th>Description</th>
-                    <th>Target Size</th>
-                    <th>Actual Size</th>
-                    <th>File Size</th>
-                    <th>Quality</th>
-                    <th>Compression</th>
-                    <th>Processing Time</th>
-                    <th>Status</th>
+                    <th>尺寸名称</th>
+                    <th>描述</th>
+                    <th>目标尺寸</th>
+                    <th>实际尺寸</th>
+                    <th>文件大小</th>
+                    <th>质量</th>
+                    <th>压缩比</th>
+                    <th>处理时间</th>
+                    <th>状态</th>
                 </tr>
             </thead>
             <tbody>
@@ -1565,8 +1565,8 @@ class ThumbnailExtractionTests {
                         <td class="${result.success ? "success" : "error"}">
                             ${
                               result.success
-                                ? "✓ Success"
-                                : "✗ " + (result.error || "Failed")
+                                ? "✓ 成功"
+                                : "✗ " + (result.error || "失败")
                             }
                         </td>
                     </tr>
@@ -1577,7 +1577,7 @@ class ThumbnailExtractionTests {
         </table>
 
         <div style="margin-top: 30px; text-align: center; color: #666; font-size: 12px;">
-            Generated on ${new Date().toLocaleString()} by LibRaw Multi-Size JPEG Test
+            由 LibRaw 多尺寸 JPEG 测试于 ${new Date().toLocaleString()} 生成
         </div>
     </div>
 </body>
@@ -1585,38 +1585,38 @@ class ThumbnailExtractionTests {
 
       fs.writeFileSync(reportPath, htmlContent);
       this.log(
-        `    📋 Size comparison report generated: ${reportPath}`,
+        `    📋 尺寸比较报告已生成: ${reportPath}`,
         "data"
       );
     } catch (error) {
-      this.log(`    ⚠️ Failed to generate report: ${error.message}`, "warning");
+      this.log(`    ⚠️ 生成报告失败: ${error.message}`, "warning");
     }
   }
 
   printMultiSizeResults(generationResults) {
-    console.log("\n📊 Multi-Size JPEG Generation Results");
+    console.log("\n📊 多尺寸 JPEG 生成结果");
     console.log("=====================================");
 
     for (const result of generationResults) {
       this.log(
-        `File: ${result.file} (${result.originalDimensions}, ${result.originalSize})`,
+        `文件: ${result.file} (${result.originalDimensions}, ${result.originalSize})`,
         "data"
       );
       this.log(
-        `Total processing time: ${result.totalProcessingTime}ms`,
+        `总处理时间: ${result.totalProcessingTime}ms`,
         "data"
       );
       this.log(
-        `Successful sizes: ${result.successfulSizes}/${result.totalSizes}`,
+        `成功尺寸: ${result.successfulSizes}/${result.totalSizes}`,
         "data"
       );
 
-      // Group results by success/failure
+      // 按成功/失败分组结果
       const successful = result.sizeResults.filter((r) => r.success);
       const failed = result.sizeResults.filter((r) => !r.success);
 
       if (successful.length > 0) {
-        this.log(`  Successful generations:`, "success");
+        this.log(`  成功生成:`, "success");
         successful.forEach((size) => {
           this.log(
             `    ${size.name}: ${size.actualSize} → ${size.fileSizeKB}KB (Q${size.quality}%, ${size.processingTime}ms)`,
@@ -1626,13 +1626,13 @@ class ThumbnailExtractionTests {
       }
 
       if (failed.length > 0) {
-        this.log(`  Failed generations:`, "error");
+        this.log(`  失败生成:`, "error");
         failed.forEach((size) => {
           this.log(`    ${size.name}: ${size.error}`, "error");
         });
       }
 
-      // Size efficiency analysis
+      // 尺寸效率分析
       if (successful.length >= 2) {
         const sizes = successful.sort((a, b) => a.fileSize - b.fileSize);
         const smallest = sizes[0];
@@ -1642,7 +1642,7 @@ class ThumbnailExtractionTests {
         );
 
         this.log(
-          `  Size range: ${smallest.fileSizeKB}KB to ${largest.fileSizeKB}KB (${compressionRange}x difference)`,
+          `  尺寸范围: ${smallest.fileSizeKB}KB 到 ${largest.fileSizeKB}KB (${compressionRange}x 差异)`,
           "data"
         );
       }
@@ -1669,24 +1669,24 @@ class ThumbnailExtractionTests {
         };
 
         removeDir(this.outputDir);
-        this.log("Test output files and directories cleaned up", "info");
+        this.log("测试输出文件和目录已清理", "info");
       }
     } catch (error) {
-      this.log(`Cleanup failed: ${error.message}`, "warning");
+      this.log(`清理失败: ${error.message}`, "warning");
     }
   }
 
   printSummary() {
-    console.log("\n📊 Thumbnail Extraction Test Summary");
+    console.log("\n📊 缩略图提取测试总结");
     console.log("====================================");
 
     const categories = [
-      { name: "Thumbnail Detection", result: this.results.extraction },
-      { name: "Memory Operations", result: this.results.memory },
-      { name: "Format Analysis", result: this.results.formats },
-      { name: "Size & Type Analysis", result: this.results.sizes },
-      { name: "Performance Testing", result: this.results.performance },
-      { name: "Multi-Size JPEG Generation", result: this.results.multiSize },
+      { name: "缩略图检测", result: this.results.extraction },
+      { name: "内存操作", result: this.results.memory },
+      { name: "格式分析", result: this.results.formats },
+      { name: "尺寸和类型分析", result: this.results.sizes },
+      { name: "性能测试", result: this.results.performance },
+      { name: "多尺寸 JPEG 生成", result: this.results.multiSize },
     ];
 
     let totalTests = 0;
@@ -1705,13 +1705,13 @@ class ThumbnailExtractionTests {
 
     if (this.results.extraction.withThumbnails !== undefined) {
       this.log(
-        `Files with thumbnails: ${this.results.extraction.withThumbnails}/${this.testFiles.length}`,
+        `有缩略图的文件: ${this.results.extraction.withThumbnails}/${this.testFiles.length}`,
         "data"
       );
     }
 
     if (this.results.formats.formatStats) {
-      this.log(`Format distribution:`, "data");
+      this.log(`格式分布:`, "data");
       Object.entries(this.results.formats.formatStats).forEach(
         ([format, count]) => {
           if (count > 0) {
@@ -1721,9 +1721,9 @@ class ThumbnailExtractionTests {
       );
     }
 
-    // Add detailed format analysis if available
+    // 如果可用，添加详细格式分析
     if (this.results.formats.detailedResults) {
-      this.log(`\nDetailed Format Analysis:`, "data");
+      this.log(`\n详细格式分析:`, "data");
       this.results.formats.detailedResults.forEach((result) => {
         this.log(
           `  ${result.file}: ${result.format.name} (${result.dimensions})`,
@@ -1737,7 +1737,7 @@ class ThumbnailExtractionTests {
         }
         if (result.tiffInfo) {
           this.log(
-            `    TIFF: ${result.tiffInfo.endianness} endian, ${result.tiffInfo.compression}`,
+            `    TIFF: ${result.tiffInfo.endianness} 字节序, ${result.tiffInfo.compression}`,
             "data"
           );
         }
@@ -1747,68 +1747,68 @@ class ThumbnailExtractionTests {
     if (totalTests > 0) {
       const overallSuccessRate = ((passedTests / totalTests) * 100).toFixed(1);
       this.log(
-        `\nOverall Success Rate: ${passedTests}/${totalTests} (${overallSuccessRate}%)`,
+        `\n总体成功率: ${passedTests}/${totalTests} (${overallSuccessRate}%)`,
         passedTests === totalTests ? "success" : "warning"
       );
     }
   }
 
   async runAllTests() {
-    console.log("🧪 LibRaw Thumbnail Extraction Test Suite");
+    console.log("🧪 LibRaw 缩略图提取测试套件");
     console.log("==========================================");
 
-    // Find test files
+    // 查找测试文件
     this.testFiles = this.findTestFiles();
 
     if (this.testFiles.length === 0) {
-      this.log("No RAW test files found in raw-samples-repo directory", "error");
+      this.log("在 raw-samples-repo 目录中未找到 RAW 测试文件", "error");
       this.log(
-        "Please add some RAW files (CR2, CR3, NEF, ARW, DNG, RAF, RW2) to raw-samples-repo/",
+        "请将一些 RAW 文件（CR2、CR3、NEF、ARW、DNG、RAF、RW2）添加到 raw-samples-repo/",
         "info"
       );
       return false;
     }
 
-    this.log(`Found ${this.testFiles.length} test files`, "success");
+    this.log(`找到 ${this.testFiles.length} 个测试文件`, "success");
 
-    // Run all test categories
+    // 运行所有测试类别
     const results = [];
 
-    // 1. Basic thumbnail detection
+    // 1. 基本缩略图检测
     const detectionResult = await this.testThumbnailDetection();
     results.push(detectionResult.success);
 
     if (detectionResult.success) {
-      // 2. Thumbnail extraction methods
+      // 2. 缩略图提取方法
       results.push(await this.testThumbnailExtraction(detectionResult.results));
 
-      // 3. Comprehensive format analysis
+      // 3. 综合格式分析
       results.push(await this.testThumbnailFormats());
 
-      // 4. Size and type analysis
+      // 4. 尺寸和类型分析
       results.push(await this.testThumbnailTypesAndSizes());
 
-      // 5. Performance testing
+      // 5. 性能测试
       results.push(await this.testThumbnailPerformance());
 
-      // 6. Multi-size JPEG generation testing
+      // 6. 多尺寸 JPEG 生成测试
       results.push(await this.testMultiSizeJPEGGeneration());
     }
 
     this.printSummary();
 
-    // Clean up test files
+    // 清理测试文件
     this.cleanupOutputFiles();
 
     const allPassed = results.every((result) => result);
 
     if (allPassed) {
       console.log(
-        "\n🎉 All thumbnail extraction tests completed successfully!"
+        "\n🎉 所有缩略图提取测试成功完成！"
       );
     } else {
       console.log(
-        "\n⚠️  Some thumbnail extraction tests failed or had warnings"
+        "\n⚠️  某些缩略图提取测试失败或有警告"
       );
     }
 
@@ -1823,7 +1823,7 @@ async function main() {
     const success = await tester.runAllTests();
     process.exit(success ? 0 : 1);
   } catch (error) {
-    console.error("❌ Test suite failed:", error.message);
+    console.error("❌ 测试套件失败:", error.message);
     console.error(error.stack);
     process.exit(1);
   }

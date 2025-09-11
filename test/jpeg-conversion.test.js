@@ -1,6 +1,6 @@
 /**
- * JPEG Conversion Test Suite
- * Tests RAW to JPEG conversion with various quality settings, sizes, and optimizations
+ * JPEG 转换测试套件
+ * 测试具有各种质量设置、尺寸和优化的 RAW 到 JPEG 转换
  */
 
 const LibRaw = require("../lib/index");
@@ -38,7 +38,7 @@ class JPEGConversionTests {
   findTestFiles() {
     const sampleDir = path.join(__dirname, "..", "raw-samples-repo");
     if (!fs.existsSync(sampleDir)) {
-      this.log("Sample images directory not found", "warning");
+      this.log("未找到示例图像目录", "warning");
       return [];
     }
 

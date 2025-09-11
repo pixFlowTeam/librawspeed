@@ -9,49 +9,49 @@ Napi::Object LibRawWrapper::Init(Napi::Env env, Napi::Object exports)
 {
     Napi::HandleScope scope(env);
 
-    Napi::Function func = DefineClass(env, "LibRawWrapper", {// File Operations
+    Napi::Function func = DefineClass(env, "LibRawWrapper", {// 文件操作
                                                              InstanceMethod("loadFile", &LibRawWrapper::LoadFile), InstanceMethod("loadBuffer", &LibRawWrapper::LoadBuffer), InstanceMethod("close", &LibRawWrapper::Close),
 
-                                                             // Error Handling
+                                                             // 错误处理
                                                              InstanceMethod("getLastError", &LibRawWrapper::GetLastError), InstanceMethod("strerror", &LibRawWrapper::Strerror),
 
-                                                             // Metadata & Information
+                                                             // 元数据和信息
                                                              InstanceMethod("getMetadata", &LibRawWrapper::GetMetadata), InstanceMethod("getImageSize", &LibRawWrapper::GetImageSize), InstanceMethod("getAdvancedMetadata", &LibRawWrapper::GetAdvancedMetadata), InstanceMethod("getLensInfo", &LibRawWrapper::GetLensInfo), InstanceMethod("getColorInfo", &LibRawWrapper::GetColorInfo),
 
-                                                             // Image Processing
+                                                             // 图像处理
                                                              InstanceMethod("unpackThumbnail", &LibRawWrapper::UnpackThumbnail), InstanceMethod("processImage", &LibRawWrapper::ProcessImage), InstanceMethod("subtractBlack", &LibRawWrapper::SubtractBlack), InstanceMethod("raw2Image", &LibRawWrapper::Raw2Image), InstanceMethod("adjustMaximum", &LibRawWrapper::AdjustMaximum),
 
-                                                             // Memory Image Creation
+                                                             // 内存图像创建
                                                              InstanceMethod("createMemoryImage", &LibRawWrapper::CreateMemoryImage), InstanceMethod("createMemoryThumbnail", &LibRawWrapper::CreateMemoryThumbnail),
 
-                                                             // File Writers
+                                                             // 文件写入器
                                                              InstanceMethod("writePPM", &LibRawWrapper::WritePPM), InstanceMethod("writeTIFF", &LibRawWrapper::WriteTIFF), InstanceMethod("writeThumbnail", &LibRawWrapper::WriteThumbnail),
 
-                                                             // Configuration & Settings
+                                                             // 配置和设置
                                                              InstanceMethod("setOutputParams", &LibRawWrapper::SetOutputParams), InstanceMethod("getOutputParams", &LibRawWrapper::GetOutputParams),
 
-                                                             // Utility Functions
+                                                             // 实用函数
                                                              InstanceMethod("isFloatingPoint", &LibRawWrapper::IsFloatingPoint), InstanceMethod("isFujiRotated", &LibRawWrapper::IsFujiRotated), InstanceMethod("isSRAW", &LibRawWrapper::IsSRAW), InstanceMethod("isJPEGThumb", &LibRawWrapper::IsJPEGThumb), InstanceMethod("errorCount", &LibRawWrapper::ErrorCount),
 
-                                                             // Extended Utility Functions
+                                                             // 扩展实用函数
                                                              InstanceMethod("isNikonSRAW", &LibRawWrapper::IsNikonSRAW), InstanceMethod("isCoolscanNEF", &LibRawWrapper::IsCoolscanNEF), InstanceMethod("haveFPData", &LibRawWrapper::HaveFPData), InstanceMethod("srawMidpoint", &LibRawWrapper::SrawMidpoint), InstanceMethod("thumbOK", &LibRawWrapper::ThumbOK), InstanceMethod("unpackFunctionName", &LibRawWrapper::UnpackFunctionName), InstanceMethod("getDecoderInfo", &LibRawWrapper::GetDecoderInfo),
 
-                                                             // Advanced Processing
+                                                             // 高级处理
                                                              InstanceMethod("unpack", &LibRawWrapper::Unpack), InstanceMethod("raw2ImageEx", &LibRawWrapper::Raw2ImageEx), InstanceMethod("adjustSizesInfoOnly", &LibRawWrapper::AdjustSizesInfoOnly), InstanceMethod("freeImage", &LibRawWrapper::FreeImage), InstanceMethod("convertFloatToInt", &LibRawWrapper::ConvertFloatToInt),
 
-                                                             // Memory Operations Extended
+                                                             // 扩展内存操作
                                                              InstanceMethod("getMemImageFormat", &LibRawWrapper::GetMemImageFormat), InstanceMethod("copyMemImage", &LibRawWrapper::CopyMemImage),
 
-                                                             // Color Operations
+                                                             // 颜色操作
                                                              InstanceMethod("getColorAt", &LibRawWrapper::GetColorAt),
 
-                                                             // Cancellation Support
+                                                             // 取消支持
                                                              InstanceMethod("setCancelFlag", &LibRawWrapper::SetCancelFlag), InstanceMethod("clearCancelFlag", &LibRawWrapper::ClearCancelFlag),
 
-                                                             // Version Information (Instance Methods)
+                                                             // 版本信息（实例方法）
                                                              InstanceMethod("version", &LibRawWrapper::Version), InstanceMethod("versionNumber", &LibRawWrapper::VersionNumber),
 
-                                                             // Static Methods
+                                                             // 静态方法
                                                              StaticMethod("getVersion", &LibRawWrapper::GetVersion), StaticMethod("getCapabilities", &LibRawWrapper::GetCapabilities), StaticMethod("getCameraList", &LibRawWrapper::GetCameraList), StaticMethod("getCameraCount", &LibRawWrapper::GetCameraCount)});
 
     constructor = Napi::Persistent(func);
@@ -92,7 +92,7 @@ bool LibRawWrapper::CheckLoaded(Napi::Env env)
     return true;
 }
 
-// ============== FILE OPERATIONS ==============
+// ============== 文件操作 ==============
 
 Napi::Value LibRawWrapper::LoadFile(const Napi::CallbackInfo &info)
 {
@@ -179,7 +179,7 @@ Napi::Value LibRawWrapper::Close(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== METADATA & INFORMATION ==============
+// ============== 元数据和信息 ==============
 
 Napi::Value LibRawWrapper::GetMetadata(const Napi::CallbackInfo &info)
 {
@@ -188,7 +188,7 @@ Napi::Value LibRawWrapper::GetMetadata(const Napi::CallbackInfo &info)
         return env.Null();
 
     Napi::Object metadata = Napi::Object::New(env);
-    // Camera info
+    // 相机信息
     if (processor->imgdata.idata.make[0])
     {
         metadata.Set("make", Napi::String::New(env, processor->imgdata.idata.make));
@@ -202,17 +202,17 @@ Napi::Value LibRawWrapper::GetMetadata(const Napi::CallbackInfo &info)
         metadata.Set("software", Napi::String::New(env, processor->imgdata.idata.software));
     }
 
-    // Image dimensions
+    // 图像尺寸
     metadata.Set("width", Napi::Number::New(env, processor->imgdata.sizes.width));
     metadata.Set("height", Napi::Number::New(env, processor->imgdata.sizes.height));
     metadata.Set("rawWidth", Napi::Number::New(env, processor->imgdata.sizes.raw_width));
     metadata.Set("rawHeight", Napi::Number::New(env, processor->imgdata.sizes.raw_height));
 
-    // Color info
+    // 颜色信息
     metadata.Set("colors", Napi::Number::New(env, processor->imgdata.idata.colors));
     metadata.Set("filters", Napi::Number::New(env, processor->imgdata.idata.filters));
 
-    // ISO and exposure
+    // ISO 和曝光
     if (processor->imgdata.other.iso_speed > 0)
     {
         metadata.Set("iso", Napi::Number::New(env, processor->imgdata.other.iso_speed));
@@ -230,7 +230,7 @@ Napi::Value LibRawWrapper::GetMetadata(const Napi::CallbackInfo &info)
         metadata.Set("focalLength", Napi::Number::New(env, processor->imgdata.other.focal_len));
     }
 
-    // Timestamp
+    // 时间戳
     if (processor->imgdata.other.timestamp > 0)
     {
         metadata.Set("timestamp", Napi::Number::New(env, processor->imgdata.other.timestamp));
@@ -265,7 +265,7 @@ Napi::Value LibRawWrapper::GetAdvancedMetadata(const Napi::CallbackInfo &info)
         return env.Null();
 
     Napi::Object metadata = Napi::Object::New(env);
-    // Camera details
+    // 相机详情
     if (processor->imgdata.idata.normalized_make[0])
     {
         metadata.Set("normalizedMake", Napi::String::New(env, processor->imgdata.idata.normalized_make));
@@ -279,7 +279,7 @@ Napi::Value LibRawWrapper::GetAdvancedMetadata(const Napi::CallbackInfo &info)
     metadata.Set("dngVersion", Napi::Number::New(env, processor->imgdata.idata.dng_version));
     metadata.Set("is_foveon", Napi::Number::New(env, processor->imgdata.idata.is_foveon));
 
-    // Color matrix and calibration
+    // 颜色矩阵和校准
     Napi::Array colorMatrix = Napi::Array::New(env);
     for (int i = 0; i < 4; i++)
     {
@@ -292,7 +292,7 @@ Napi::Value LibRawWrapper::GetAdvancedMetadata(const Napi::CallbackInfo &info)
     }
     metadata.Set("colorMatrix", colorMatrix);
 
-    // White balance
+    // 白平衡
     Napi::Array camMul = Napi::Array::New(env);
     for (int i = 0; i < 4; i++)
     {
@@ -307,7 +307,7 @@ Napi::Value LibRawWrapper::GetAdvancedMetadata(const Napi::CallbackInfo &info)
     }
     metadata.Set("preMul", preMul);
 
-    // Additional sensor info
+    // 附加传感器信息
     metadata.Set("blackLevel", Napi::Number::New(env, processor->imgdata.color.black));
     metadata.Set("dataMaximum", Napi::Number::New(env, processor->imgdata.color.data_maximum));
     metadata.Set("whiteLevel", Napi::Number::New(env, processor->imgdata.color.maximum));
@@ -339,7 +339,7 @@ Napi::Value LibRawWrapper::GetLensInfo(const Napi::CallbackInfo &info)
         lensInfo.Set("internalLensSerial", Napi::String::New(env, processor->imgdata.lens.InternalLensSerial));
     }
 
-    // Focal length info
+    // 焦距信息
     if (processor->imgdata.lens.MinFocal > 0)
     {
         lensInfo.Set("minFocal", Napi::Number::New(env, processor->imgdata.lens.MinFocal));
@@ -375,22 +375,22 @@ Napi::Value LibRawWrapper::GetColorInfo(const Napi::CallbackInfo &info)
         return env.Null();
 
     Napi::Object colorInfo = Napi::Object::New(env);
-    // Basic color info
+    // 基本颜色信息
     colorInfo.Set("colors", Napi::Number::New(env, processor->imgdata.idata.colors));
     colorInfo.Set("filters", Napi::Number::New(env, processor->imgdata.idata.filters));
 
-    // Color data
+    // 颜色数据
     colorInfo.Set("blackLevel", Napi::Number::New(env, processor->imgdata.color.black));
     colorInfo.Set("dataMaximum", Napi::Number::New(env, processor->imgdata.color.data_maximum));
     colorInfo.Set("whiteLevel", Napi::Number::New(env, processor->imgdata.color.maximum));
 
-    // Color profile
+    // 颜色配置文件
     if (processor->imgdata.color.profile_length > 0)
     {
         colorInfo.Set("profileLength", Napi::Number::New(env, processor->imgdata.color.profile_length));
     }
 
-    // Color matrices
+    // 颜色矩阵
     Napi::Array rgbCam = Napi::Array::New(env);
     for (int i = 0; i < 3; i++)
     {
@@ -403,7 +403,7 @@ Napi::Value LibRawWrapper::GetColorInfo(const Napi::CallbackInfo &info)
     }
     colorInfo.Set("rgbCam", rgbCam);
 
-    // Camera multipliers
+    // 相机乘数
     Napi::Array camMul = Napi::Array::New(env);
     for (int i = 0; i < 4; i++)
     {
@@ -414,7 +414,7 @@ Napi::Value LibRawWrapper::GetColorInfo(const Napi::CallbackInfo &info)
     return colorInfo;
 }
 
-// ============== IMAGE PROCESSING ==============
+// ============== 图像处理 ==============
 
 Napi::Value LibRawWrapper::UnpackThumbnail(const Napi::CallbackInfo &info)
 {
@@ -502,7 +502,7 @@ Napi::Value LibRawWrapper::AdjustMaximum(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== MEMORY IMAGE CREATION ==============
+// ============== 内存图像创建 ==============
 
 Napi::Object LibRawWrapper::CreateImageDataObject(Napi::Env env, libraw_processed_image_t *img)
 {
@@ -520,7 +520,7 @@ Napi::Object LibRawWrapper::CreateImageDataObject(Napi::Env env, libraw_processe
     result.Set("bits", Napi::Number::New(env, img->bits));
     result.Set("dataSize", Napi::Number::New(env, img->data_size));
 
-    // Create buffer with the image data
+    // 创建包含图像数据的缓冲区
     Napi::Buffer<uint8_t> buffer = Napi::Buffer<uint8_t>::Copy(env, img->data, img->data_size);
     result.Set("data", buffer);
 
@@ -585,7 +585,7 @@ Napi::Value LibRawWrapper::CreateMemoryThumbnail(const Napi::CallbackInfo &info)
     return result;
 }
 
-// ============== FILE WRITERS ==============
+// ============== 文件写入器 ==============
 
 Napi::Value LibRawWrapper::WritePPM(const Napi::CallbackInfo &info)
 {
@@ -625,7 +625,7 @@ Napi::Value LibRawWrapper::WriteTIFF(const Napi::CallbackInfo &info)
     }
 
     std::string filename = info[0].As<Napi::String>().Utf8Value();
-    // Set output format to TIFF
+    // 设置输出格式为 TIFF
     processor->imgdata.params.output_tiff = 1;
 
     int ret = processor->dcraw_ppm_tiff_writer(filename.c_str());
@@ -665,7 +665,7 @@ Napi::Value LibRawWrapper::WriteThumbnail(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== CONFIGURATION & SETTINGS ==============
+// ============== 配置和设置 ==============
 
 Napi::Value LibRawWrapper::SetOutputParams(const Napi::CallbackInfo &info)
 {
@@ -680,7 +680,7 @@ Napi::Value LibRawWrapper::SetOutputParams(const Napi::CallbackInfo &info)
     }
 
     Napi::Object params = info[0].As<Napi::Object>();
-    // Gamma settings
+    // Gamma 设置
     if (params.Has("gamma") && params.Get("gamma").IsArray())
     {
         Napi::Array gamma = params.Get("gamma").As<Napi::Array>();
@@ -691,25 +691,25 @@ Napi::Value LibRawWrapper::SetOutputParams(const Napi::CallbackInfo &info)
         }
     }
 
-    // Brightness
+    // 亮度
     if (params.Has("bright") && params.Get("bright").IsNumber())
     {
         processor->imgdata.params.bright = params.Get("bright").As<Napi::Number>().FloatValue();
     }
 
-    // Output color space
+    // 输出色彩空间
     if (params.Has("output_color") && params.Get("output_color").IsNumber())
     {
         processor->imgdata.params.output_color = params.Get("output_color").As<Napi::Number>().Int32Value();
     }
 
-    // Output bits per sample
+    // 每样本输出位数
     if (params.Has("output_bps") && params.Get("output_bps").IsNumber())
     {
         processor->imgdata.params.output_bps = params.Get("output_bps").As<Napi::Number>().Int32Value();
     }
 
-    // User multipliers
+    // 用户乘数
     if (params.Has("user_mul") && params.Get("user_mul").IsArray())
     {
         Napi::Array userMul = params.Get("user_mul").As<Napi::Array>();
@@ -719,19 +719,19 @@ Napi::Value LibRawWrapper::SetOutputParams(const Napi::CallbackInfo &info)
         }
     }
 
-    // Auto bright
+    // 自动亮度
     if (params.Has("no_auto_bright") && params.Get("no_auto_bright").IsBoolean())
     {
         processor->imgdata.params.no_auto_bright = params.Get("no_auto_bright").As<Napi::Boolean>().Value() ? 1 : 0;
     }
 
-    // Highlight mode
+    // 高光模式
     if (params.Has("highlight") && params.Get("highlight").IsNumber())
     {
         processor->imgdata.params.highlight = params.Get("highlight").As<Napi::Number>().Int32Value();
     }
 
-    // Output TIFF
+    // 输出 TIFF
     if (params.Has("output_tiff") && params.Get("output_tiff").IsBoolean())
     {
         processor->imgdata.params.output_tiff = params.Get("output_tiff").As<Napi::Boolean>().Value() ? 1 : 0;
@@ -753,7 +753,7 @@ Napi::Value LibRawWrapper::GetOutputParams(const Napi::CallbackInfo &info)
     gamma.Set(1u, Napi::Number::New(env, processor->imgdata.params.gamm[1]));
     params.Set("gamma", gamma);
 
-    // Other parameters
+    // 其他参数
     params.Set("bright", Napi::Number::New(env, processor->imgdata.params.bright));
     params.Set("output_color", Napi::Number::New(env, processor->imgdata.params.output_color));
     params.Set("output_bps", Napi::Number::New(env, processor->imgdata.params.output_bps));
@@ -761,7 +761,7 @@ Napi::Value LibRawWrapper::GetOutputParams(const Napi::CallbackInfo &info)
     params.Set("highlight", Napi::Number::New(env, processor->imgdata.params.highlight));
     params.Set("output_tiff", Napi::Boolean::New(env, processor->imgdata.params.output_tiff));
 
-    // User multipliers
+    // 用户乘数
     Napi::Array userMul = Napi::Array::New(env);
     for (int i = 0; i < 4; i++)
     {
@@ -772,7 +772,7 @@ Napi::Value LibRawWrapper::GetOutputParams(const Napi::CallbackInfo &info)
     return params;
 }
 
-// ============== UTILITY FUNCTIONS ==============
+// ============== 实用函数 ==============
 
 Napi::Value LibRawWrapper::IsFloatingPoint(const Napi::CallbackInfo &info)
 {
@@ -824,7 +824,7 @@ Napi::Value LibRawWrapper::ErrorCount(const Napi::CallbackInfo &info)
     return Napi::Number::New(env, errors);
 }
 
-// ============== STATIC METHODS ==============
+// ============== 静态方法 ==============
 
 Napi::Value LibRawWrapper::GetVersion(const Napi::CallbackInfo &info)
 {
@@ -870,7 +870,7 @@ Napi::Value LibRawWrapper::GetCameraCount(const Napi::CallbackInfo &info)
     return Napi::Number::New(env, count);
 }
 
-// ============== EXTENDED UTILITY FUNCTIONS ==============
+// ============== 扩展实用函数 ==============
 
 Napi::Value LibRawWrapper::IsNikonSRAW(const Napi::CallbackInfo &info)
 {
@@ -917,7 +917,7 @@ Napi::Value LibRawWrapper::ThumbOK(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     if (!CheckLoaded(env))
         return env.Null();
-    // thumbOK can take a max size parameter, default -1 for no limit
+    // thumbOK 可以接受最大尺寸参数，默认为 -1 表示无限制
     INT64 maxSize = -1;
     if (info.Length() > 0 && info[0].IsNumber())
     {
@@ -961,7 +961,7 @@ Napi::Value LibRawWrapper::GetDecoderInfo(const Napi::CallbackInfo &info)
     return result;
 }
 
-// ============== ADVANCED PROCESSING ==============
+// ============== 高级处理 ==============
 
 Napi::Value LibRawWrapper::Unpack(const Napi::CallbackInfo &info)
 {
@@ -985,7 +985,7 @@ Napi::Value LibRawWrapper::Raw2ImageEx(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     if (!CheckLoaded(env))
         return env.Null();
-    // Default to subtract black, can be overridden
+    // 默认为减去黑色，可以被覆盖
     int do_subtract_black = 1;
     if (info.Length() > 0 && info[0].IsBoolean())
     {
@@ -1036,7 +1036,7 @@ Napi::Value LibRawWrapper::ConvertFloatToInt(const Napi::CallbackInfo &info)
     Napi::Env env = info.Env();
     if (!CheckLoaded(env))
         return env.Null();
-    // Default values from LibRaw
+    // 来自 LibRaw 的默认值
     float dmin = 4096.0f;
     float dmax = 32767.0f;
     float dtarget = 16383.0f;
@@ -1058,7 +1058,7 @@ Napi::Value LibRawWrapper::ConvertFloatToInt(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== MEMORY OPERATIONS EXTENDED ==============
+// ============== 扩展内存操作 ==============
 
 Napi::Value LibRawWrapper::GetMemImageFormat(const Napi::CallbackInfo &info)
 {
@@ -1104,7 +1104,7 @@ Napi::Value LibRawWrapper::CopyMemImage(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== COLOR OPERATIONS ==============
+// ============== 颜色操作 ==============
 
 Napi::Value LibRawWrapper::GetColorAt(const Napi::CallbackInfo &info)
 {
@@ -1124,7 +1124,7 @@ Napi::Value LibRawWrapper::GetColorAt(const Napi::CallbackInfo &info)
     return Napi::Number::New(env, color);
 }
 
-// ============== CANCELLATION SUPPORT ==============
+// ============== 取消支持 ==============
 
 Napi::Value LibRawWrapper::SetCancelFlag(const Napi::CallbackInfo &info)
 {
@@ -1142,7 +1142,7 @@ Napi::Value LibRawWrapper::ClearCancelFlag(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(env, true);
 }
 
-// ============== VERSION INFORMATION (INSTANCE METHODS) ==============
+// ============== 版本信息（实例方法） ==============
 
 Napi::Value LibRawWrapper::Version(const Napi::CallbackInfo &info)
 {
@@ -1158,7 +1158,7 @@ Napi::Value LibRawWrapper::VersionNumber(const Napi::CallbackInfo &info)
 
     int versionNum = processor->versionNumber();
 
-    // LibRaw version number is encoded as XXYYZZ where XX.YY.ZZ is the version
+    // LibRaw 版本号编码为 XXYYZZ，其中 XX.YY.ZZ 是版本
     int major = versionNum / 10000;
     int minor = (versionNum % 10000) / 100;
     int patch = versionNum % 100;
@@ -1171,13 +1171,13 @@ Napi::Value LibRawWrapper::VersionNumber(const Napi::CallbackInfo &info)
     return result;
 }
 
-// ============== ERROR HANDLING ==============
+// ============== 错误处理 ==============
 
 Napi::Value LibRawWrapper::GetLastError(const Napi::CallbackInfo &info)
 {
     Napi::Env env = info.Env();
 
-    // LibRaw doesn't store the last error, so we return a generic message
+    // LibRaw 不存储最后一个错误，所以我们返回一个通用消息
     // In practice, errors are thrown as exceptions
     return Napi::String::New(env, "No error information available");
 }

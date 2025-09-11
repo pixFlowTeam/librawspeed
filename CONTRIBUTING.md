@@ -1,145 +1,145 @@
-# Contributing to LibRaw Node.js
+# 为 LibRaw Node.js 贡献
 
-Thank you for your interest in contributing to LibRaw Node.js! This document provides guidelines for contributing to the project.
+感谢您对为 LibRaw Node.js 贡献感兴趣！本文档提供了为项目贡献的指南。
 
-## Development Setup
+## 开发设置
 
-1. **Fork and Clone**
+1. **Fork 和克隆**
 
    ```bash
    git clone https://github.com/pixFlowTeam/librawspeed.git
    cd librawspeed
    ```
 
-2. **Install Dependencies**
+2. **安装依赖项**
 
    ```bash
    npm install
    ```
 
-3. **Build the Project**
+3. **构建项目**
 
    ```bash
    npm run build
    ```
 
-4. **Run Tests**
+4. **运行测试**
    ```bash
    npm run test:quick
    ```
 
-## Development Guidelines
+## 开发指南
 
-### Code Style
+### 代码风格
 
-- Use consistent indentation (2 spaces)
-- Follow existing naming conventions
-- Add comments for complex logic
-- Keep functions focused and small
+- 使用一致的缩进（2 个空格）
+- 遵循现有的命名约定
+- 为复杂逻辑添加注释
+- 保持函数专注和小巧
 
-### C++ Guidelines
+### C++ 指南
 
-- Use RAII for resource management
-- Handle all LibRaw error codes
-- Provide meaningful error messages
-- Clean up resources in destructors
+- 使用 RAII 进行资源管理
+- 处理所有 LibRaw 错误代码
+- 提供有意义的错误消息
+- 在析构函数中清理资源
 
-### JavaScript Guidelines
+### JavaScript 指南
 
-- Use modern async/await syntax
-- Provide comprehensive error handling
-- Write clear, self-documenting code
-- Add JSDoc comments for public APIs
+- 使用现代 async/await 语法
+- 提供全面的错误处理
+- 编写清晰、自文档化的代码
+- 为公共 API 添加 JSDoc 注释
 
-## Testing
+## 测试
 
-### Adding Tests
+### 添加测试
 
-- Add unit tests for new features
-- Test error conditions
-- Include integration tests with sample files
-- Verify memory cleanup
+- 为新功能添加单元测试
+- 测试错误条件
+- 包含使用示例文件的集成测试
+- 验证内存清理
 
-### Running Tests
+### 运行测试
 
 ```bash
-npm run test:quick    # Basic functionality
-npm run test:samples  # Sample file processing
-npm run test:compare  # Comparison analysis
-npm test path/to/raw  # Custom file test
+npm run test:quick    # 基本功能
+npm run test:samples  # 示例文件处理
+npm run test:compare  # 比较分析
+npm test path/to/raw  # 自定义文件测试
 ```
 
-## Submitting Changes
+## 提交更改
 
-1. **Create a Branch**
+1. **创建分支**
 
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
-2. **Make Changes**
+2. **进行更改**
 
-   - Write code following the guidelines
-   - Add tests for new functionality
-   - Update documentation as needed
+   - 按照指南编写代码
+   - 为新功能添加测试
+   - 根据需要更新文档
 
-3. **Test Your Changes**
+3. **测试您的更改**
 
    ```bash
    npm run build
    npm run test:quick
    ```
 
-4. **Commit Your Changes**
+4. **提交您的更改**
 
    ```bash
    git add .
    git commit -m "feat: add your feature description"
    ```
 
-5. **Push and Create PR**
+5. **推送并创建 PR**
    ```bash
    git push origin feature/your-feature-name
    ```
 
-## Commit Message Format
+## 提交消息格式
 
-Use conventional commits format:
+使用约定式提交格式:
 
-- `feat:` new feature
-- `fix:` bug fix
-- `docs:` documentation changes
-- `test:` test additions or modifications
-- `refactor:` code refactoring
-- `perf:` performance improvements
+- `feat:` 新功能
+- `fix:` 错误修复
+- `docs:` 文档更改
+- `test:` 测试添加或修改
+- `refactor:` 代码重构
+- `perf:` 性能改进
 
-## Areas for Contribution
+## 贡献领域
 
-### High Priority
+### 高优先级
 
-- Cross-platform build support (macOS, Linux)
-- Asynchronous processing with worker threads
-- Image processing and export capabilities
-- TypeScript definitions
+- 跨平台构建支持（macOS、Linux）
+- 使用工作线程的异步处理
+- 图像处理和导出功能
+- TypeScript 定义
 
-### Medium Priority
+### 中优先级
 
-- Additional metadata extraction
-- Performance optimizations
-- Better error handling
-- Documentation improvements
+- 额外的元数据提取
+- 性能优化
+- 更好的错误处理
+- 文档改进
 
-### Low Priority
+### 低优先级
 
-- Advanced color management
-- Batch processing features
-- Plugin system
-- Additional export formats
+- 高级颜色管理
+- 批量处理功能
+- 插件系统
+- 额外的导出格式
 
-## Questions?
+## 有问题？
 
-- Open an issue for bugs or feature requests
-- Start a discussion for questions or ideas
-- Check existing issues before creating new ones
+- 为错误或功能请求开启 issue
+- 为问题或想法开始讨论
+- 在创建新 issue 之前检查现有问题
 
-Thank you for contributing!
+感谢您的贡献！

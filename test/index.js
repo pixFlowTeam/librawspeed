@@ -4,7 +4,7 @@ const { runAllBufferTests } = require("./buffer-operations.test.js");
 const { testConfiguration } = require("./configuration.test.js");
 
 /**
- * Master test runner for all LibRaw tests
+ * 所有 LibRaw 测试的主测试运行器
  */
 
 async function runAllTests() {

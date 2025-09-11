@@ -3,13 +3,13 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * Batch RAW Processing Example
+ * 批量 RAW 处理示例
  *
- * Processes multiple RAW files in a directory with:
- * - Progress tracking
- * - Error handling per file
- * - Parallel processing with concurrency control
- * - Summary statistics
+ * 处理目录中的多个 RAW 文件，具有：
+ * - 进度跟踪
+ * - 每个文件的错误处理
+ * - 带并发控制的并行处理
+ * - 汇总统计
  */
 
 async function processFile(inputPath, outputDir, options = {}) {
@@ -20,19 +20,19 @@ async function processFile(inputPath, outputDir, options = {}) {
   try {
     await processor.loadFile(inputPath);
 
-    // Configure processing
+    // 配置处理
     if (options.outputParams) {
       await processor.setOutputParams(options.outputParams);
     }
 
-    // Process image
+    // 处理图像
     await processor.raw2Image();
     await processor.processImage();
 
-    // Get metadata for summary
+    // 获取元数据用于汇总
     const metadata = await processor.getMetadata();
 
-    // Save outputs based on options
+    // 根据选项保存输出
     const outputs = [];
 
     if (options.outputFormats?.includes("tiff")) {
@@ -55,7 +55,7 @@ async function processFile(inputPath, outputDir, options = {}) {
       const thumbPath = path.join(outputDir, `${baseName}_thumb.jpg`);
       await processor.writeThumbnail(thumbPath);
       outputs.push(
-        `Thumb: ${(fs.statSync(thumbPath).size / 1024).toFixed(1)}KB`
+        `缩略图: ${(fs.statSync(thumbPath).size / 1024).toFixed(1)}KB`
       );
     }
 
@@ -65,7 +65,7 @@ async function processFile(inputPath, outputDir, options = {}) {
       success: true,
       file: inputPath,
       metadata: {
-        camera: `${metadata.make || "Unknown"} ${metadata.model || "Unknown"}`,
+        camera: `${metadata.make || "未知"} ${metadata.model || "未知"}`,
         resolution: `${metadata.width}×${metadata.height}`,
         iso: metadata.iso,
         aperture: metadata.aperture,
@@ -101,16 +101,16 @@ async function processFilesInBatches(files, outputDir, options = {}) {
   };
 
   console.log(
-    `🚀 Starting batch processing: ${files.length} files with concurrency ${concurrency}`
+    `🚀 开始批量处理: ${files.length} 个文件，并发数 ${concurrency}`
   );
 
-  // Process files in batches
+  // 分批处理文件
   for (let i = 0; i < files.length; i += concurrency) {
     const batch = files.slice(i, i + concurrency);
     console.log(
-      `\n📦 Processing batch ${Math.floor(i / concurrency) + 1}/${Math.ceil(
+      `\n📦 处理批次 ${Math.floor(i / concurrency) + 1}/${Math.ceil(
         files.length / concurrency
-      )} (${batch.length} files)`
+      )} (${batch.length} 个文件)`
     );
 
     const batchPromises = batch.map((file) =>
@@ -118,7 +118,7 @@ async function processFilesInBatches(files, outputDir, options = {}) {
     );
     const batchResults = await Promise.all(batchPromises);
 
-    // Update stats and display results
+    // 更新统计信息并显示结果
     for (const result of batchResults) {
       results.push(result);
       stats.processed++;
@@ -148,10 +148,10 @@ async function processFilesInBatches(files, outputDir, options = {}) {
       }
     }
 
-    // Progress update
+    // 进度更新
     const progress = ((stats.processed / stats.total) * 100).toFixed(1);
     console.log(
-      `\n📊 Progress: ${stats.processed}/${stats.total} (${progress}%) | ✅ ${stats.successful} | ❌ ${stats.failed}`
+      `\n📊 进度: ${stats.processed}/${stats.total} (${progress}%) | ✅ ${stats.successful} | ❌ ${stats.failed}`
     );
   }
 
@@ -159,12 +159,12 @@ async function processFilesInBatches(files, outputDir, options = {}) {
 }
 
 async function batchProcess(inputDir, outputDir, options = {}) {
-  console.log("🎯 Batch RAW Processing");
+  console.log("🎯 批量 RAW 处理");
   console.log("=======================");
 
   const startTime = Date.now();
 
-  // Default options
+  // 默认选项
   const defaultOptions = {
     outputFormats: ["tiff", "thumbnail"],
     concurrency: 3,
@@ -190,17 +190,17 @@ async function batchProcess(inputDir, outputDir, options = {}) {
 
   const config = { ...defaultOptions, ...options };
 
-  console.log(`📁 Input Directory: ${inputDir}`);
-  console.log(`📂 Output Directory: ${outputDir}`);
-  console.log(`🔧 Formats: ${config.outputFormats.join(", ")}`);
-  console.log(`⚙️ Concurrency: ${config.concurrency}`);
+  console.log(`📁 输入目录: ${inputDir}`);
+  console.log(`📂 输出目录: ${outputDir}`);
+  console.log(`🔧 格式: ${config.outputFormats.join(", ")}`);
+  console.log(`⚙️ 并发数: ${config.concurrency}`);
 
-  // Ensure output directory exists
+  // 确保输出目录存在
   if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Find RAW files
+  // 查找 RAW 文件
   const allFiles = fs.readdirSync(inputDir);
   const rawFiles = allFiles
     .filter((file) => {
@@ -210,41 +210,41 @@ async function batchProcess(inputDir, outputDir, options = {}) {
     .map((file) => path.join(inputDir, file));
 
   if (rawFiles.length === 0) {
-    console.log(`❌ No RAW files found in ${inputDir}`);
-    console.log(`   Supported extensions: ${config.extensions.join(", ")}`);
+    console.log(`❌ 在 ${inputDir} 中未找到 RAW 文件`);
+    console.log(`   支持的扩展名: ${config.extensions.join(", ")}`);
     return;
   }
 
-  console.log(`📸 Found ${rawFiles.length} RAW files`);
+  console.log(`📸 找到 ${rawFiles.length} 个 RAW 文件`);
 
-  // Process files
+  // 处理文件
   const { results, stats } = await processFilesInBatches(
     rawFiles,
     outputDir,
     config
   );
 
-  // Final summary
+  // 最终汇总
   const totalTime = Date.now() - startTime;
-  console.log("\n🎉 Batch Processing Complete!");
+  console.log("\n🎉 批量处理完成！");
   console.log("===============================");
   console.log(
-    `📊 Files: ${stats.successful}/${stats.total} successful (${(
+    `📊 文件: ${stats.successful}/${stats.total} 成功 (${(
       (stats.successful / stats.total) *
       100
     ).toFixed(1)}%)`
   );
   console.log(
-    `⏱️ Total Time: ${(totalTime / 1000).toFixed(1)}s (avg: ${(
+    `⏱️ 总时间: ${(totalTime / 1000).toFixed(1)}s (平均: ${(
       stats.totalTime / stats.successful
-    ).toFixed(0)}ms per file)`
+    ).toFixed(0)}ms 每文件)`
   );
   console.log(
-    `💽 Total Input: ${(stats.totalInputSize / 1024 / 1024).toFixed(1)} MB`
+    `💽 总输入: ${(stats.totalInputSize / 1024 / 1024).toFixed(1)} MB`
   );
-  console.log(`📷 Cameras: ${Array.from(stats.cameras).join(", ")}`);
+  console.log(`📷 相机: ${Array.from(stats.cameras).join(", ")}`);
   console.log(
-    `🚀 Throughput: ${(
+    `🚀 吞吐量: ${(
       stats.totalInputSize /
       1024 /
       1024 /
@@ -253,7 +253,7 @@ async function batchProcess(inputDir, outputDir, options = {}) {
   );
 
   if (stats.failed > 0) {
-    console.log("\n❌ Failed Files:");
+    console.log("\n❌ 失败的文件:");
     results
       .filter((r) => !r.success)
       .forEach((r) => {
@@ -262,28 +262,28 @@ async function batchProcess(inputDir, outputDir, options = {}) {
   }
 }
 
-// Main execution
+// 主执行函数
 async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
     console.log(
-      "Usage: node batch-example.js <input-directory> <output-directory> [options]"
+      "用法: node batch-example.js <输入目录> <输出目录> [选项]"
     );
     console.log("");
-    console.log("Options:");
+    console.log("选项:");
     console.log(
-      "  --formats tiff,ppm,thumbnail  Output formats (default: tiff,thumbnail)"
+      "  --formats tiff,ppm,thumbnail  输出格式 (默认: tiff,thumbnail)"
     );
     console.log(
-      "  --concurrency 3               Parallel processing limit (default: 3)"
+      "  --concurrency 3               并行处理限制 (默认: 3)"
     );
     console.log(
-      "  --bright 1.1                  Brightness adjustment (default: 1.0)"
+      "  --bright 1.1                  亮度调整 (默认: 1.0)"
     );
     console.log("");
     console.log(
-      "Example: node batch-example.js ./input ./output --formats tiff,thumbnail --concurrency 2"
+      "示例: node batch-example.js ./input ./output --formats tiff,thumbnail --concurrency 2"
     );
     return;
   }
@@ -292,11 +292,11 @@ async function main() {
   const outputDir = args[1];
 
   if (!fs.existsSync(inputDir)) {
-    console.error(`❌ Input directory not found: ${inputDir}`);
+    console.error(`❌ 输入目录未找到: ${inputDir}`);
     return;
   }
 
-  // Parse options
+  // 解析选项
   const options = {};
   for (let i = 2; i < args.length; i += 2) {
     const flag = args[i];
@@ -318,18 +318,18 @@ async function main() {
   try {
     await batchProcess(inputDir, outputDir, options);
   } catch (error) {
-    console.error(`❌ Fatal error: ${error.message}`);
+    console.error(`❌ 致命错误: ${error.message}`);
     console.error(error.stack);
   }
 }
 
-// Export for use as a module
+// 导出供模块使用
 module.exports = {
   batchProcess,
   processFile,
 };
 
-// Run if called directly
+// 如果直接调用则运行
 if (require.main === module) {
   main().catch(console.error);
 }

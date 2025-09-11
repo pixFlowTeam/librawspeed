@@ -2,93 +2,93 @@ const fs = require("fs");
 const path = require("path");
 
 function generateAPIDocumentation() {
-  console.log("📚 Generating API Documentation...\n");
+  console.log("📚 生成 API 文档...\n");
 
-  const apiDocs = `# API Documentation
+  const apiDocs = `# API 文档
 
-## LibRaw Class
+## LibRaw 类
 
-The main class for processing RAW image files.
+用于处理 RAW 图像文件的主类。
 
-### Constructor
+### 构造函数
 
 \`\`\`javascript
 const LibRaw = require('librawspeed');
 const processor = new LibRaw();
 \`\`\`
 
-### Methods
+### 方法
 
 #### loadFile(filepath)
 
-Loads a RAW image file for processing.
+加载 RAW 图像文件进行处理。
 
-**Parameters:**
-- \`filepath\` (string): Absolute path to the RAW image file
+**参数:**
+- \`filepath\` (string): RAW 图像文件的绝对路径
 
-**Returns:** \`Promise<void>\`
+**返回:** \`Promise<void>\`
 
-**Throws:** Error if file cannot be loaded or is not supported
+**抛出:** 如果文件无法加载或不支持则抛出错误
 
-**Example:**
+**示例:**
 \`\`\`javascript
 await processor.loadFile('/path/to/image.nef');
 \`\`\`
 
 #### getMetadata()
 
-Extracts metadata from the loaded RAW image.
+从已加载的 RAW 图像中提取元数据。
 
-**Returns:** \`Promise<LibRawMetadata>\`
+**返回:** \`Promise<LibRawMetadata>\`
 
-**Example:**
+**示例:**
 \`\`\`javascript
 const metadata = await processor.getMetadata();
-console.log(\`Camera: \${metadata.make} \${metadata.model}\`);
+console.log(\`相机: \${metadata.make} \${metadata.model}\`);
 console.log(\`ISO: \${metadata.iso}, f/\${metadata.aperture}, 1/\${Math.round(1/metadata.shutterSpeed)}s\`);
 \`\`\`
 
 #### getImageSize()
 
-Gets the dimensions of the loaded RAW image.
+获取已加载 RAW 图像的尺寸。
 
-**Returns:** \`Promise<LibRawImageSize>\`
+**返回:** \`Promise<LibRawImageSize>\`
 
-**Example:**
+**示例:**
 \`\`\`javascript
 const size = await processor.getImageSize();
-console.log(\`Resolution: \${size.width}x\${size.height}\`);
+console.log(\`分辨率: \${size.width}x\${size.height}\`);
 \`\`\`
 
 #### close()
 
-Closes the processor and frees resources.
+关闭处理器并释放资源。
 
-**Returns:** \`Promise<void>\`
+**返回:** \`Promise<void>\`
 
-**Example:**
+**示例:**
 \`\`\`javascript
 await processor.close();
 \`\`\`
 
-## Interfaces
+## 接口
 
 ### LibRawMetadata
 
 \`\`\`typescript
 interface LibRawMetadata {
-  make: string;           // Camera manufacturer
-  model: string;          // Camera model  
-  iso: number;            // ISO sensitivity
-  aperture: number;       // Aperture f-number
-  shutterSpeed: number;   // Shutter speed in seconds
-  focalLength: number;    // Focal length in mm
-  timestamp: number;      // Unix timestamp
-  colors: number;         // Number of color channels
-  filters: number;        // Color filter pattern
-  description?: string;   // Camera description
-  artist?: string;        // Photographer name
-  copyright?: string;     // Copyright info
+  make: string;           // 相机制造商
+  model: string;          // 相机型号  
+  iso: number;            // ISO 感光度
+  aperture: number;       // 光圈 f 值
+  shutterSpeed: number;   // 快门速度（秒）
+  focalLength: number;    // 焦距（毫米）
+  timestamp: number;      // Unix 时间戳
+  colors: number;         // 颜色通道数
+  filters: number;        // 颜色滤镜模式
+  description?: string;   // 相机描述
+  artist?: string;        // 摄影师姓名
+  copyright?: string;     // 版权信息
 }
 \`\`\`
 
@@ -96,12 +96,12 @@ interface LibRawMetadata {
 
 \`\`\`typescript
 interface LibRawImageSize {
-  width: number;   // Image width in pixels
-  height: number;  // Image height in pixels
+  width: number;   // 图像宽度（像素）
+  height: number;  // 图像高度（像素）
 }
 \`\`\`
 
-## Supported Formats
+## 支持的格式
 
 | Format | Extension | Manufacturer | Description |
 |--------|-----------|--------------|-------------|
@@ -112,9 +112,9 @@ interface LibRawImageSize {
 | RW2    | .rw2      | Panasonic    | Panasonic RAW version 2 |
 | DNG    | .dng      | Adobe/Various| Digital Negative (Adobe) |
 
-## Error Handling
+## 错误处理
 
-All methods return Promises and may throw errors. Always use try-catch or .catch():
+所有方法都返回 Promise 并可能抛出错误。始终使用 try-catch 或 .catch():
 
 \`\`\`javascript
 try {
@@ -122,13 +122,13 @@ try {
   const metadata = await processor.getMetadata();
   console.log(metadata);
 } catch (error) {
-  console.error('Processing failed:', error.message);
+  console.error('处理失败:', error.message);
 } finally {
   await processor.close();
 }
 \`\`\`
 
-## Complete Example
+## 完整示例
 
 \`\`\`javascript
 const LibRaw = require('librawspeed');
@@ -137,16 +137,16 @@ async function processRAWFile(filepath) {
   const processor = new LibRaw();
   
   try {
-    // Load the RAW file
+    // 加载 RAW 文件
     await processor.loadFile(filepath);
     
-    // Extract metadata
+    // 提取元数据
     const metadata = await processor.getMetadata();
     const size = await processor.getImageSize();
     
-    // Display information
-    console.log(\`Camera: \${metadata.make} \${metadata.model}\`);
-    console.log(\`Resolution: \${size.width}x\${size.height}\`);
+    // 显示信息
+    console.log(\`相机: \${metadata.make} \${metadata.model}\`);
+    console.log(\`分辨率: \${size.width}x\${size.height}\`);
     console.log(\`Settings: ISO \${metadata.iso}, f/\${metadata.aperture}, 1/\${Math.round(1/metadata.shutterSpeed)}s\`);
     
     return { metadata, size };
@@ -552,22 +552,22 @@ Our test suite covers these sample formats:
 | RW2 | 15-40 MB | Fast | Compact format |
 | DNG | 20-100 MB | Medium | Varies by source |
 
-## Adding New Format Support
+## 添加新格式支持
 
-LibRaw regularly adds support for new cameras. To update:
+LibRaw 定期添加对新相机的支持。要更新:
 
-1. Download newer LibRaw version
-2. Replace library files in \`deps/\`
-3. Rebuild the native addon
-4. Test with new format samples
+1. 下载更新的 LibRaw 版本
+2. 替换 \`deps/\` 中的库文件
+3. 重新构建原生插件
+4. 使用新格式样本进行测试
 
-See the upgrade guide for detailed instructions.
+有关详细说明，请参阅升级指南。
 `;
 
   fs.writeFileSync(path.join(docsDir, "FORMATS.md"), formats);
-  console.log("✅ Generated FORMATS.md");
+  console.log("✅ 已生成 FORMATS.md");
 
-  console.log("\n📚 Documentation generation complete!");
+  console.log("\n📚 文档生成完成!");
 }
 
 // Export the function

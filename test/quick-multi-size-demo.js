@@ -10,7 +10,7 @@ async function quickMultiSizeDemo() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  // Find a test file
+  // 查找测试文件
   const testFiles = fs
     .readdirSync(sampleDir, { withFileTypes: true })
     .filter((file) =>
@@ -19,22 +19,22 @@ async function quickMultiSizeDemo() {
     .slice(0, 1);
 
   if (testFiles.length === 0) {
-    console.log("No RAW files found for demo");
+    console.log("未找到用于演示的 RAW 文件");
     return;
   }
 
   const testFile = path.join(sampleDir, testFiles[0]);
   const fileName = path.basename(testFile, path.extname(testFile));
 
-  console.log(`🚀 Multi-Size JPEG Demo: ${fileName}`);
+  console.log(`🚀 多尺寸 JPEG 演示: ${fileName}`);
 
   const processor = new LibRaw();
   await processor.loadFile(testFile);
 
   const metadata = await processor.getMetadata();
-  console.log(`Original: ${metadata.width}x${metadata.height}`);
+  console.log(`原始: ${metadata.width}x${metadata.height}`);
 
-  // Define some different sizes
+  // 定义一些不同的尺寸
   const sizes = [
     { name: "thumb", width: 200, height: 150, quality: 85 },
     { name: "web", width: 800, height: 600, quality: 85 },
@@ -79,12 +79,12 @@ async function quickMultiSizeDemo() {
 
   await processor.close();
 
-  console.log("\n📊 Summary:");
+  console.log("\n📊 总结:");
   results.forEach((r) => {
     console.log(`  ${r.name}: ${r.size} → ${r.fileSize} (${r.time})`);
   });
 
-  console.log(`\n📁 Files saved to: ${outputDir}`);
+  console.log(`\n📁 文件已保存到: ${outputDir}`);
 }
 
 quickMultiSizeDemo().catch(console.error);
