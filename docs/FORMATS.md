@@ -1,6 +1,6 @@
 # 支持的 RAW 格式
 
-**版本 1.0.18** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
+**版本 1.0.20** - 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ## 概述
 
