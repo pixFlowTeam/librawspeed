@@ -1,0 +1,18 @@
+{
+  "files": [
+    "package.json",
+    "lib/index.d.ts"
+  ],
+  "scripts": {
+    "beforeBump": "npm run test && npm run build",
+    "afterBump": "npm run docs:generate",
+    "beforeRelease": "npm run publish:check",
+    "afterRelease": "echo 'Release completed successfully!'"
+  },
+  "commit": {
+    "message": "chore: release v{{version}}",
+    "tag": "v{{version}}"
+  },
+  "push": true,
+  "publish": true
+}
