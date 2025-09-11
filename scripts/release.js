@@ -10,7 +10,6 @@ const steps = [
   { name: '验证产物', command: 'npm run cross-compile:verify' },
   { name: '生成文档', command: 'npm run docs:generate' },
   { name: '暂存文档文件', command: 'git add docs/API.md docs/EXAMPLES.md docs/FORMATS.md' },
-  { name: '提交文档文件', command: 'git commit -m "docs: 更新文档到最新版本"' },
 ];
 
 try {

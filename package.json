@@ -46,7 +46,7 @@
     "extract:thumbnails": "node scripts/extract-thumbnails.js",
     "convert:jpeg": "node scripts/batch-jpeg-conversion.js",
     "version:check": "node -e \"console.log('Package:', require('./package.json').version); console.log('Node:', process.version);\"",
-    "release": "bumpp --execute \"node scripts/release.js\" && npm publish",
+    "release": "bumpp --execute \"node scripts/release.js\" --all && npm publish",
     "release:dry": "bumpp --dry-run"
   },
   "dependencies": {
