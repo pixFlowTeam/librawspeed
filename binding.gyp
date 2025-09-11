@@ -12,7 +12,9 @@
         "deps/LibRaw-Source/LibRaw-0.21.4",
         "deps/LibRaw-Source/LibRaw-0.21.4/build/win32/include",
         "deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-x64/include",
-        "deps/LibRaw-Source/LibRaw-0.21.4/build/linux-x64/include"
+        "deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-arm64/include",
+        "deps/LibRaw-Source/LibRaw-0.21.4/build/linux-x64/include",
+        "deps/LibRaw-Source/LibRaw-0.21.4/build/linux-arm64/include"
       ],
       "defines": [
         "NAPI_DISABLE_CPP_EXCEPTIONS",
