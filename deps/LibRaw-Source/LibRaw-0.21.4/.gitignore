@@ -1,0 +1,7 @@
+
+# LibRaw 中间构建文件
+deps/LibRaw-Source/LibRaw-0.21.4/**/*.o
+deps/LibRaw-Source/LibRaw-0.21.4/**/*.lo
+deps/LibRaw-Source/LibRaw-0.21.4/**/*.la
+deps/LibRaw-Source/LibRaw-0.21.4/**/.deps/
+deps/LibRaw-Source/LibRaw-0.21.4/**/.libs/
