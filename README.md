@@ -57,7 +57,7 @@ LibRaw 支持 100+ RAW 格式，包括：
 npm install librawspeed
 ```
 
-**版本 1.0.2** 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
+**版本 1.0.4** 现已在 [npmjs.com](https://www.npmjs.com/package/librawspeed) 上可用！🎉
 
 ### 🛠️ 构建要求
 
@@ -1311,7 +1311,7 @@ npm run build  # 重新构建并复制 DLL
 
 **✅ 已发布到 NPM 注册表！**
 
-- **包**：[`librawspeed@1.0.2`](https://www.npmjs.com/package/librawspeed)
+- **包**：[`librawspeed@1.0.4`](https://www.npmjs.com/package/librawspeed)
 - **发布日期**：2025年8月30日
 - **总文件数**：487 个文件（4.0 MB 包，18.1 MB 解压后）
 - **注册表**：[npmjs.com](https://www.npmjs.com/package/librawspeed)
