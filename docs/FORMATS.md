@@ -1,33 +1,33 @@
-# 支持的 RAW 格式
+# Supported RAW Formats
 
-## 概述
+## Overview
 
-该库通过 LibRaw 支持 100+ 种 RAW 图像格式。以下是最常见的格式：
+This library supports 100+ RAW image formats through LibRaw. Below are the most common formats:
 
-## 主要相机制造商
+## Major Camera Manufacturers
 
 ### Canon
-- **CR2** - Canon RAW 版本 2（较旧型号）
-- **CR3** - Canon RAW 版本 3（较新型号如 EOS R、EOS M50）
-- **CRW** - Canon RAW（非常旧的型号）
+- **CR2** - Canon RAW version 2 (older models)
+- **CR3** - Canon RAW version 3 (newer models like EOS R, EOS M50)
+- **CRW** - Canon RAW (very old models)
 
 ### Nikon  
-- **NEF** - Nikon 电子格式（所有 Nikon 单反和无反相机）
+- **NEF** - Nikon Electronic Format (all Nikon DSLRs and mirrorless)
 
 ### Sony
-- **ARW** - Sony Alpha RAW（α 系列相机）
-- **SR2** - Sony RAW 版本 2（一些较旧型号）
-- **SRF** - Sony RAW 格式（非常旧的型号）
+- **ARW** - Sony Alpha RAW (α series cameras)
+- **SR2** - Sony RAW version 2 (some older models)
+- **SRF** - Sony RAW Format (very old models)
 
 ### Fujifilm
-- **RAF** - Fuji RAW 格式（X 系列和 GFX 相机）
+- **RAF** - Fuji RAW Format (X-series and GFX cameras)
 
 ### Panasonic/Lumix
-- **RW2** - Panasonic RAW 版本 2（GH、G、FZ 系列）
-- **RAW** - Panasonic RAW（较旧型号）
+- **RW2** - Panasonic RAW version 2 (GH, G, FZ series)
+- **RAW** - Panasonic RAW (older models)
 
 ### Olympus
-- **ORF** - Olympus RAW 格式（OM-D、PEN 系列）
+- **ORF** - Olympus RAW Format (OM-D, PEN series)
 
 ### Leica
 - **DNG** - Digital Negative (Adobe standard, used by Leica)
@@ -120,13 +120,13 @@ Our test suite covers these sample formats:
 | RW2 | 15-40 MB | Fast | Compact format |
 | DNG | 20-100 MB | Medium | Varies by source |
 
-## Adding New Format Support
+## 添加新格式支持
 
-LibRaw regularly adds support for new cameras. To update:
+LibRaw 定期添加对新相机的支持。要更新:
 
-1. Download newer LibRaw version
-2. Replace library files in `deps/`
-3. Rebuild the native addon
-4. Test with new format samples
+1. 下载更新的 LibRaw 版本
+2. 替换 `deps/` 中的库文件
+3. 重新构建原生插件
+4. 使用新格式样本进行测试
 
-See the upgrade guide for detailed instructions.
+有关详细说明，请参阅升级指南。
