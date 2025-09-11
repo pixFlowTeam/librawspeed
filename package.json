@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -45,13 +45,20 @@
     "convert:jpeg": "node scripts/batch-jpeg-conversion.js",
     "version:check": "node -e \"console.log('Package:', require('./package.json').version); console.log('Node:', process.version);\"",
     "publish:check": "npm run test && npm run docs:generate",
-    "publish:dry": "npm publish --dry-run"
+    "publish:dry": "npm publish --dry-run",
+    "release": "bumpp",
+    "release:patch": "bumpp patch",
+    "release:minor": "bumpp minor",
+    "release:major": "bumpp major",
+    "release:prerelease": "bumpp prerelease",
+    "release:dry": "bumpp --dry-run"
   },
   "dependencies": {
     "node-addon-api": "^7.1.1",
     "sharp": "^0.33.5"
   },
   "devDependencies": {
+    "bumpp": "^10.2.3",
     "node-gyp": "^10.0.0"
   },
   "engines": {
