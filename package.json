@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.4",
+  "version": "1.0.0",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -95,24 +95,24 @@
       ]
     }
   },
-    "files": [
-      "lib/**/*",
-      "src/**/*",
-      "deps/**/*",
-      "types/**/*",
-      "docs/**/*",
-      "examples/**/*",
-      "scripts/**/*",
-      "binding.gyp",
-      "README.md",
-      "LICENSE",
-      "CHANGELOG.md",
-      "CONTRIBUTING.md",
-      "IMPLEMENTATION_SUMMARY.md",
-      "UPGRADE.md",
-      "PUBLICATION.md",
-      ".bumpprc"
-    ],
+  "files": [
+    "lib/**/*",
+    "src/**/*",
+    "deps/**/*",
+    "types/**/*",
+    "docs/**/*",
+    "examples/**/*",
+    "scripts/**/*",
+    "binding.gyp",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "IMPLEMENTATION_SUMMARY.md",
+    "UPGRADE.md",
+    "PUBLICATION.md",
+    ".bumpprc"
+  ],
   "os": [
     "win32",
     "darwin",
