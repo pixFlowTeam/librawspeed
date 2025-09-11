@@ -9,6 +9,7 @@
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")",
         "deps/LibRaw-Source/LibRaw-0.21.4/include",
+        "deps/LibRaw-Source/LibRaw-0.21.4/libraw",
         "deps/LibRaw-Source/LibRaw-0.21.4/build/win32/include",
         "deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-x64/include",
         "deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-arm64/include",
