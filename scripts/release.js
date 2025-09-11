@@ -10,6 +10,9 @@ const steps = [
   { name: '交叉编译', command: 'npm run cross-compile:all' },
   { name: '验证产物', command: 'npm run cross-compile:verify' },
   { name: '生成文档', command: 'npm run docs:generate' },
+  { name: '提交所有更改', command: 'git add . && git commit -m "chore: 发布新版本 - 包含文档更新"' },
+  { name: '创建标签', command: 'git tag -a v$(node -p "require(\'./package.json\').version") -m "Release v$(node -p "require(\'./package.json\').version")"' },
+  { name: '推送到远程', command: 'git push && git push --tags' },
 ];
 
 try {
