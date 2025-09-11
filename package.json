@@ -15,6 +15,7 @@
     "cross-compile:linux-arm64": "node scripts/cross-compile.js linux arm64",
     "cross-compile:verify": "node scripts/verify-cross-compile.js",
     "cross-compile:summary": "node scripts/verify-cross-compile.js --summary",
+    "check:env": "node scripts/check-environment.js",
     "rebuild": "npm run clean && npm run build",
     "test": "node test/index.js",
     "test:all": "node test/index.js full",

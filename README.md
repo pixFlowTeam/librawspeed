@@ -62,11 +62,53 @@ npm install librawspeed
 ### 🛠️ 构建要求
 
 - **Node.js** 14.0.0 或更高版本
-- **Python** 3.6+（用于 node-gyp）
-- **C++ 构建工具**：
-  - Windows: Visual Studio 2019+ 或 VS Build Tools
-  - macOS: Xcode Command Line Tools
-  - Linux: GCC 8+ 或等效工具
+- **Python** 2.7 或 3.x（用于 node-gyp）
+- **C++ 编译器**：
+  - **Windows**: Visual Studio Build Tools 或 Visual Studio Community
+  - **macOS**: Xcode Command Line Tools 或 Xcode
+  - **Linux**: build-essential 包
+
+**💡 提示**：node-gyp 会自动处理构建工具，无需手动安装 make 等工具
+
+### 🔧 环境检查
+
+安装前可以检查环境是否满足要求：
+
+```bash
+npm run check:env
+```
+
+### ⚠️ 故障排除
+
+如果安装失败，请尝试：
+
+```bash
+# 清理并重新安装
+npm run clean
+npm run rebuild
+
+# 或强制重新构建
+npm install --force
+```
+
+**常见问题：**
+
+1. **Python 未找到**
+   ```bash
+   npm config set python python3
+   ```
+
+2. **编译器未找到**
+   ```bash
+   # Windows
+   npm install --global windows-build-tools
+   
+   # macOS
+   xcode-select --install
+   
+   # Linux
+   sudo apt-get install build-essential
+   ```
 
 ### 🚀 快速验证
 
