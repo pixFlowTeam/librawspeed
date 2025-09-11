@@ -4,7 +4,7 @@
 #include <napi.h>
 #include <string>
 #include <memory>
-#include "libraw.h"
+#include "libraw/libraw.h"
 
 class LibRawWrapper : public Napi::ObjectWrap<LibRawWrapper>
 {
