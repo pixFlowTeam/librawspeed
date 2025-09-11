@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -53,11 +53,11 @@
     "publish:public": "npm publish --access public",
     "publish:beta": "npm publish --tag beta",
     "publish:alpha": "npm publish --tag alpha",
-    "release": "bumpp",
-    "release:patch": "bumpp patch",
-    "release:minor": "bumpp minor",
-    "release:major": "bumpp major",
-    "release:prerelease": "bumpp prerelease",
+    "release": "bumpp --execute \"npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify && npm run docs:generate\"",
+    "release:patch": "bumpp patch --execute \"npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify && npm run docs:generate\"",
+    "release:minor": "bumpp minor --execute \"npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify && npm run docs:generate\"",
+    "release:major": "bumpp major --execute \"npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify && npm run docs:generate\"",
+    "release:prerelease": "bumpp prerelease --execute \"npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify && npm run docs:generate\"",
     "release:dry": "bumpp --dry-run"
   },
   "dependencies": {
@@ -175,19 +175,5 @@
   "bugs": {
     "url": "https://github.com/pixFlowTeam/librawspeed/issues"
   },
-  "homepage": "https://github.com/pixFlowTeam/librawspeed#readme",
-  "bumpp": {
-    "files": [
-      "package.json",
-      "lib/index.d.ts"
-    ],
-    "beforeBump": "npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify",
-    "afterBump": "npm run docs:generate",
-    "beforeRelease": "npm run publish:check",
-    "afterRelease": "echo 'Release completed successfully! Package published to npm with cross-compiled binaries.'",
-    "commitMessage": "chore: release v{{version}}",
-    "tagName": "v{{version}}",
-    "push": true,
-    "publish": "npm publish --access public"
-  }
+  "homepage": "https://github.com/pixFlowTeam/librawspeed#readme"
 }
