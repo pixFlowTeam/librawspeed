@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -175,5 +175,23 @@
   "bugs": {
     "url": "https://github.com/pixFlowTeam/librawspeed/issues"
   },
-  "homepage": "https://github.com/pixFlowTeam/librawspeed#readme"
+  "homepage": "https://github.com/pixFlowTeam/librawspeed#readme",
+  "bumpp": {
+    "files": [
+      "package.json",
+      "lib/index.d.ts"
+    ],
+    "scripts": {
+      "beforeBump": "npm run test && npm run build && npm run cross-compile:all && npm run cross-compile:verify",
+      "afterBump": "npm run docs:generate",
+      "beforeRelease": "npm run publish:check",
+      "afterRelease": "echo 'Release completed successfully! Package published to npm with cross-compiled binaries.'"
+    },
+    "commit": {
+      "message": "chore: release v{{version}}",
+      "tag": "v{{version}}"
+    },
+    "push": true,
+    "publish": "npm publish --access public"
+  }
 }
