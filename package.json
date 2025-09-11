@@ -53,11 +53,7 @@
     "publish:public": "npm publish --access public",
     "publish:beta": "npm publish --tag beta",
     "publish:alpha": "npm publish --tag alpha",
-    "release": "bumpp --execute \"node scripts/release.js\"",
-    "release:patch": "bumpp patch --execute \"node scripts/release.js\"",
-    "release:minor": "bumpp minor --execute \"node scripts/release.js\"",
-    "release:major": "bumpp major --execute \"node scripts/release.js\"",
-    "release:prerelease": "bumpp prerelease --execute \"node scripts/release.js\"",
+    "release": "bumpp --execute \"node scripts/release.js\" && npm publish",
     "release:dry": "bumpp --dry-run"
   },
   "dependencies": {

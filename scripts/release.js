@@ -10,7 +10,6 @@ const steps = [
   { name: '交叉编译', command: 'npm run cross-compile:all' },
   { name: '验证产物', command: 'npm run cross-compile:verify' },
   { name: '生成文档', command: 'npm run docs:generate' },
-  { name: '发布到 npm', command: 'npm publish --access public' }
 ];
 
 try {
