@@ -1,6 +1,6 @@
 {
   "name": "librawspeed",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Node.js Native Addon for LibRaw - Process RAW image files with JavaScript",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
