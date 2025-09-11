@@ -37,7 +37,6 @@
     "test:performance": "node test/performance.test.js",
     "test:samples": "node test/test-samples.js",
     "test:compare": "node test/compare-samples.js",
-    "pretest": "npm run build",
     "prepublishOnly": "npm run test",
     "install": "node-gyp rebuild",
     "clean": "node-gyp clean",

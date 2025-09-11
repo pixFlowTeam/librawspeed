@@ -5,12 +5,12 @@ const { execSync } = require('child_process');
 console.log('🚀 开始发布流程...\n');
 
 const steps = [
-  { name: '构建源码', command: 'npm run build' },
   { name: '运行测试', command: 'npm run test' },
   { name: '交叉编译', command: 'npm run cross-compile:all' },
   { name: '验证产物', command: 'npm run cross-compile:verify' },
   { name: '生成文档', command: 'npm run docs:generate' },
   { name: '暂存文档文件', command: 'git add docs/API.md docs/EXAMPLES.md docs/FORMATS.md' },
+  { name: '提交文档文件', command: 'git commit -m "docs: 更新文档到最新版本"' },
 ];
 
 try {
