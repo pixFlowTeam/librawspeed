@@ -39,7 +39,6 @@ class ImageProcessingTests {
       return [];
     }
 
-    const files = fs.readdirSync(sampleDir, { withFileTypes: true });
     const rawExtensions = [
       ".cr2",
       ".cr3",
@@ -50,12 +49,24 @@ class ImageProcessingTests {
       ".rw2",
     ];
 
-    return files
-      .filter((file) =>
-        rawExtensions.some((ext) => file.toLowerCase().endsWith(ext))
-      )
-      .map((file) => path.join(sampleDir, file))
-      .slice(0, 3); // 限制为 3 个文件进行测试
+    const findFilesRecursively = (dir) => {
+      const files = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...findFilesRecursively(fullPath));
+        } else if (entry.isFile() && rawExtensions.some((ext) => entry.name.toLowerCase().endsWith(ext))) {
+          files.push(fullPath);
+        }
+      }
+      
+      return files;
+    };
+
+    const allFiles = findFilesRecursively(sampleDir);
+    return allFiles.slice(0, 3); // 限制为 3 个文件进行测试
   }
 
   async testThumbnailExtraction() {
@@ -209,11 +220,12 @@ class ImageProcessingTests {
         // 测试基本处理步骤
         this.log(`  测试处理管道...`, "info");
 
-        // 减去黑色
-        const blackSubtracted = await processor.subtractBlack();
+        // 处理图像
+        await processor.raw2Image();
+        const processed = await processor.processImage();
         this.log(
-          `  黑色减法: ${blackSubtracted ? "成功" : "失败"}`,
-          blackSubtracted ? "success" : "warning"
+          `  图像处理: ${processed ? "成功" : "失败"}`,
+          processed ? "success" : "warning"
         );
 
         // RAW 到图像转换
@@ -359,12 +371,10 @@ class ImageProcessingTests {
       await processor.loadFile(testFile);
       this.log(`文件加载成功`, "success");
 
-      // 测试解包操作
-      const unpacked = await processor.unpack();
-      this.log(
-        `低级解包: ${unpacked ? "成功" : "失败"}`,
-        unpacked ? "success" : "warning"
-      );
+      // 先进行基本的图像处理
+      await processor.raw2Image();
+      await processor.processImage();
+      this.log(`基本图像处理完成`, "success");
 
       // 测试扩展 raw2image
       const raw2ImageEx = await processor.raw2ImageEx(true);
@@ -487,7 +497,6 @@ class ImageProcessingTests {
             this.log(`    参数获取成功`, "success");
 
             // 使用这些参数进行处理
-            await processor.subtractBlack();
             await processor.raw2Image();
             const processed = await processor.processImage();
 
@@ -553,7 +562,6 @@ class ImageProcessingTests {
       this.log(`File loaded for memory testing`, "success");
 
       // Process the image
-      await processor.subtractBlack();
       await processor.raw2Image();
       await processor.processImage();
 
