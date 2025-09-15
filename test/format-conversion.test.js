@@ -38,7 +38,6 @@ class FormatConversionTests {
       return [];
     }
 
-    const files = fs.readdirSync(sampleDir, { withFileTypes: true });
     const rawExtensions = [
       ".cr2",
       ".cr3",
@@ -49,12 +48,24 @@ class FormatConversionTests {
       ".rw2",
     ];
 
-    return files
-      .filter((file) =>
-        rawExtensions.some((ext) => file.toLowerCase().endsWith(ext))
-      )
-      .map((file) => path.join(sampleDir, file))
-      .slice(0, 2); // Limit to 2 files for format testing
+    const findFilesRecursively = (dir) => {
+      const files = [];
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...findFilesRecursively(fullPath));
+        } else if (entry.isFile() && rawExtensions.some((ext) => entry.name.toLowerCase().endsWith(ext))) {
+          files.push(fullPath);
+        }
+      }
+      
+      return files;
+    };
+
+    const allFiles = findFilesRecursively(sampleDir);
+    return allFiles.slice(0, 2); // Limit to 2 files for format testing
   }
 
   ensureOutputDir() {
@@ -102,7 +113,6 @@ class FormatConversionTests {
         this.log(`Processing file: ${path.basename(testFile)}`, "test");
 
         await processor.loadFile(testFile);
-        await processor.subtractBlack();
         await processor.raw2Image();
         await processor.processImage();
 
@@ -258,7 +268,6 @@ class FormatConversionTests {
         const currentParams = await processor.getOutputParams();
         this.log(`  Color space set to: ${colorSpace.value}`, "data");
 
-        await processor.subtractBlack();
         await processor.raw2Image();
         await processor.processImage();
 
@@ -348,7 +357,6 @@ class FormatConversionTests {
         };
         await processor.setOutputParams(params);
 
-        await processor.subtractBlack();
         await processor.raw2Image();
         await processor.processImage();
 
@@ -510,7 +518,6 @@ class FormatConversionTests {
         await processor.loadFile(testFile);
         await processor.setOutputParams(config.params);
 
-        await processor.subtractBlack();
         await processor.raw2Image();
         await processor.processImage();
 
