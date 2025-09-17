@@ -1,0 +1,18 @@
+{
+  "C_Cpp.default.compilerPath": "/usr/bin/clang++",
+  "C_Cpp.default.intelliSenseMode": "macos-clang-arm64",
+  "C_Cpp.default.includePath": [
+    "${workspaceFolder}/**",
+    "/opt/homebrew/opt/opencv/include/opencv4",
+    "/opt/homebrew/Cellar/libraw/0.21.4/include",
+    "/opt/homebrew/Cellar/libraw/0.21.4/include/libraw",
+    "/opt/homebrew/opt/little-cms2/include"
+  ],
+  "C_Cpp.default.browse.path": [
+    "${workspaceFolder}",
+    "/opt/homebrew/opt/opencv/include/opencv4",
+    "/opt/homebrew/Cellar/libraw/0.21.4/include",
+    "/opt/homebrew/Cellar/libraw/0.21.4/include/libraw",
+    "/opt/homebrew/opt/little-cms2/include"
+  ]
+}
