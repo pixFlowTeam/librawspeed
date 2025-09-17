@@ -167,6 +167,34 @@ namespace
         return CctTint{cct, duv};
     }
 
+    // 计算 Daylight 近似 xy（Kelvin）
+    static inline void kelvinToXy(double kelvin, double &x, double &y)
+    {
+        xyFromCct_DaylightApprox(kelvin, x, y);
+    }
+
+    // 将 xy（Y=1）转 XYZ
+    static inline void xyToXyz(double x, double y, double &X, double &Y, double &Z)
+    {
+        if (y <= 1e-12)
+        {
+            X = Y = Z = 0.0;
+            return;
+        }
+        Y = 1.0;
+        X = x * (Y / y);
+        Z = (1.0 - x - y) * (Y / y);
+    }
+
+    // 简单把 Tint_UI（正=洋红/负=绿色）映射为 duv（u'v' 上的偏移）
+    // duv = -tint / scale（scale 默认 1000：tint=+10 → duv=-0.01）
+    static inline double uiTintToDuv(double tintUi, double scale)
+    {
+        if (scale <= 1e-9)
+            scale = 1000.0;
+        return -tintUi / scale;
+    }
+
     // 白平衡模式
     enum class WbMode
     {
@@ -327,7 +355,10 @@ namespace
     // 简单用法提示
     static void printUsage(const char *argv0)
     {
-        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--out <output-image>] <path-to-raw>\n";
+        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--out-decoded <img>] [--out-balanced <img>] [--out <img>] <path-to-raw>\n";
+        std::cerr << "  --out-decoded: 导出解码后(应用所选WB), 线性→sRGB 的图像\n";
+        std::cerr << "  --out-balanced: 导出应用灰世界后的图像(原默认)\n";
+        std::cerr << "  --out: 向后兼容，等同 --out-balanced\n";
     }
 
 } // namespace
@@ -389,9 +420,14 @@ int main(int argc, char **argv)
         return 2;
     }
     // 解析参数：支持 --wb、--out
-    std::string outPath;
+    std::string outPath; // 兼容 --out（等同 balanced）
+    std::string outDecoded;
+    std::string outBalanced;
     WbMode wbMode = WbMode::Camera;
     float userMul[4] = {1.f, 1.f, 1.f, 1.f};
+    double optKelvin = 0.0; // 0 表示未设置
+    double optTintUi = 0.0; // UI Tint，正=洋红/负=绿色
+    double optTintScale = 1000.0;
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
@@ -431,7 +467,30 @@ int main(int argc, char **argv)
             }
             continue;
         }
-        if (arg == "--out" && i + 1 < argc)
+        if (arg == "--kelvin" && i + 1 < argc)
+        {
+            optKelvin = std::atof(argv[++i]);
+            continue;
+        }
+        if (arg == "--tint" && i + 1 < argc)
+        {
+            optTintUi = std::atof(argv[++i]);
+            continue;
+        }
+        if (arg == "--tint-scale" && i + 1 < argc)
+        {
+            optTintScale = std::atof(argv[++i]);
+            continue;
+        }
+        if (arg == "--out-decoded" && i + 1 < argc)
+        {
+            outDecoded = argv[++i];
+        }
+        else if (arg == "--out-balanced" && i + 1 < argc)
+        {
+            outBalanced = argv[++i];
+        }
+        else if (arg == "--out" && i + 1 < argc)
         {
             outPath = argv[++i];
         }
@@ -459,11 +518,85 @@ int main(int argc, char **argv)
     const char *rawPath = positional[0].c_str();
 
     LibRaw proc;
-    // 1) 配置 LibRaw：线性输出 + 选择白平衡模式
-    setLibRawForLinearOutputAndWb(proc, wbMode, userMul);
+    // 1) 先配置线性输出
+    proc.imgdata.params.gamm[0] = 1.0f;
+    proc.imgdata.params.gamm[1] = 1.0f;
+    proc.imgdata.params.no_auto_bright = 1;
+    proc.imgdata.params.output_bps = 16;
 
     // 2) 打开 RAW 文件
     int ret = proc.open_file(rawPath);
+    // 2.5) 如果给了 Kelvin/Tint，则将其转换为等效 user_mul
+    if (optKelvin > 0.0)
+    {
+        // 估计拍摄白点：如果相机有 AsShotNeutral，则更准确；这里用 cam_mul 倒数近似
+        double camMulR = proc.imgdata.color.cam_mul[0];
+        double camMulG = (proc.imgdata.color.cam_mul[1] + proc.imgdata.color.cam_mul[3]) * 0.5;
+        double camMulB = proc.imgdata.color.cam_mul[2];
+        double wCamR = (camMulR > 1e-9) ? (1.0 / camMulR) : 1.0;
+        double wCamG = (camMulG > 1e-9) ? (1.0 / camMulG) : 1.0;
+        double wCamB = (camMulB > 1e-9) ? (1.0 / camMulB) : 1.0;
+        // 目标白点 xy（含 Tint 偏移）
+        double xT, yT;
+        kelvinToXy(optKelvin, xT, yT);
+        // 简化：把 Tint_UI 转成 duv，并近似沿 v' 方向偏移（轻量近似）
+        double duv = uiTintToDuv(optTintUi, optTintScale);
+        // 将 xyT 转 XYZ
+        double XT, YT, ZT;
+        xyToXyz(xT, yT, XT, YT, ZT);
+        // 简化求解：在相机 RGB 空间内，对角增益使得加权后 R/G/B 比例接近目标白（以 G 为基准 1）。
+        // 这里用摄像机白点响应 wCam 作为当前白，目标设为等能量 [1,1,1] 近似，再用 Tint 的 duv 作为微调（忽略 CAT）。
+        // 更严谨应使用相机矩阵+Bradford CAT，这里留作后续增强。
+        double targetR = 1.0, targetG = 1.0, targetB = 1.0;
+        // 将 duv 粗略转成 RGB 微调（v' 增加相当于略增 G 减 R/B，这里取极小系数）
+        double gAdjust = 1.0 + (-duv); // duv>0 偏绿，降低 G；与 UI 方向匹配
+        double rAdjust = 1.0 + (duv * 0.5);
+        double bAdjust = 1.0 + (duv * 0.5);
+        targetR *= rAdjust;
+        targetG *= gAdjust;
+        targetB *= bAdjust;
+        // 计算等效 user_mul（让 wCam * mul ≈ target）→ mul ≈ target / wCam
+        userMul[0] = static_cast<float>(targetR / std::max(1e-6, wCamR));
+        userMul[1] = static_cast<float>(targetG / std::max(1e-6, wCamG));
+        userMul[2] = static_cast<float>(targetB / std::max(1e-6, wCamB));
+        userMul[3] = userMul[1];
+        // 归一化到 G=1
+        if (userMul[1] != 0.0f)
+        {
+            float gNorm = userMul[1];
+            userMul[0] /= gNorm;
+            userMul[1] = 1.0f;
+            userMul[2] /= gNorm;
+            userMul[3] /= gNorm;
+        }
+        wbMode = WbMode::User; // 走 user_mul 路径
+    }
+
+    // 设置 WB 参数（camera/auto/user/none）
+    proc.imgdata.params.use_camera_wb = 0;
+    proc.imgdata.params.use_auto_wb = 0;
+    proc.imgdata.params.user_mul[0] = 0.f;
+    proc.imgdata.params.user_mul[1] = 0.f;
+    proc.imgdata.params.user_mul[2] = 0.f;
+    proc.imgdata.params.user_mul[3] = 0.f;
+    if (wbMode == WbMode::Camera)
+        proc.imgdata.params.use_camera_wb = 1;
+    else if (wbMode == WbMode::Auto)
+        proc.imgdata.params.use_auto_wb = 1;
+    else if (wbMode == WbMode::None)
+    {
+        proc.imgdata.params.user_mul[0] = 1.f;
+        proc.imgdata.params.user_mul[1] = 1.f;
+        proc.imgdata.params.user_mul[2] = 1.f;
+        proc.imgdata.params.user_mul[3] = 1.f;
+    }
+    else if (wbMode == WbMode::User)
+    {
+        proc.imgdata.params.user_mul[0] = userMul[0];
+        proc.imgdata.params.user_mul[1] = userMul[1];
+        proc.imgdata.params.user_mul[2] = userMul[2];
+        proc.imgdata.params.user_mul[3] = userMul[3];
+    }
     if (ret != LIBRAW_SUCCESS)
     {
         std::cerr << "LibRaw open_file failed: " << libraw_strerror(ret) << "\n";
@@ -544,18 +677,30 @@ int main(int argc, char **argv)
     std::cout << "estimated_cct_K: " << ct.cctKelvin << "\n";
     std::cout << "estimated_tint_duv: " << ct.duv << "\n";
 
-    // 如果指定了导出路径，则将灰世界平衡后的线性图像编码为 sRGB 并保存
-    if (!outPath.empty())
+    // 导出：解码后（应用 WB）和灰世界后
+    if (!outDecoded.empty())
+    {
+        bool ok = saveLinearBgrAsSrgb8bit(linearF32, outDecoded);
+        if (ok)
+            std::cout << "saved_decoded_image: " << outDecoded << "\n";
+        else
+            std::cerr << "Failed to save image to: " << outDecoded << "\n";
+    }
+    if (!outBalanced.empty())
+    {
+        bool ok = saveLinearBgrAsSrgb8bit(balanced, outBalanced);
+        if (ok)
+            std::cout << "saved_grayworld_image: " << outBalanced << "\n";
+        else
+            std::cerr << "Failed to save image to: " << outBalanced << "\n";
+    }
+    if (!outPath.empty()) // 兼容 --out
     {
         bool ok = saveLinearBgrAsSrgb8bit(balanced, outPath);
         if (ok)
-        {
             std::cout << "saved_grayworld_image: " << outPath << "\n";
-        }
         else
-        {
             std::cerr << "Failed to save image to: " << outPath << "\n";
-        }
     }
 
     proc.recycle();
