@@ -167,18 +167,58 @@ namespace
         return CctTint{cct, duv};
     }
 
-    // 配置 LibRaw：使用相机白平衡 + 线性输出 + 关闭自动提亮
-    static void setLibRawForCameraWbLinearOutput(LibRaw &proc)
+    // 白平衡模式
+    enum class WbMode
     {
-        // 使用相机拍摄时的白平衡（AsShot），禁用自动 WB
-        proc.imgdata.params.use_camera_wb = 1;
-        proc.imgdata.params.use_auto_wb = 0;
-        // 输出线性（gamma=1）
+        Camera,
+        Auto,
+        None,
+        User
+    };
+
+    // 配置 LibRaw：设置线性输出、禁用自动提亮，并根据 wb 模式设置白平衡
+    static void setLibRawForLinearOutputAndWb(LibRaw &proc, WbMode mode, const float userMul[4])
+    {
+        // 线性输出与禁用自动提亮（统计更稳定）
         proc.imgdata.params.gamm[0] = 1.0f;
         proc.imgdata.params.gamm[1] = 1.0f;
-        // 禁用自动提亮，避免更改亮度分布影响统计
         proc.imgdata.params.no_auto_bright = 1;
-        proc.imgdata.params.output_bps = 16; // 16bit 输出，保留更多精度
+        proc.imgdata.params.output_bps = 16;
+
+        // 先清空 user_mul
+        proc.imgdata.params.user_mul[0] = 0.f;
+        proc.imgdata.params.user_mul[1] = 0.f;
+        proc.imgdata.params.user_mul[2] = 0.f;
+        proc.imgdata.params.user_mul[3] = 0.f;
+
+        switch (mode)
+        {
+        case WbMode::Camera:
+            proc.imgdata.params.use_camera_wb = 1;
+            proc.imgdata.params.use_auto_wb = 0;
+            break;
+        case WbMode::Auto:
+            proc.imgdata.params.use_camera_wb = 0;
+            proc.imgdata.params.use_auto_wb = 1;
+            break;
+        case WbMode::None:
+            proc.imgdata.params.use_camera_wb = 0;
+            proc.imgdata.params.use_auto_wb = 0;
+            // 显式设置为无白平衡（单位增益）
+            proc.imgdata.params.user_mul[0] = 1.f;
+            proc.imgdata.params.user_mul[1] = 1.f;
+            proc.imgdata.params.user_mul[2] = 1.f;
+            proc.imgdata.params.user_mul[3] = 1.f;
+            break;
+        case WbMode::User:
+            proc.imgdata.params.use_camera_wb = 0;
+            proc.imgdata.params.use_auto_wb = 0;
+            proc.imgdata.params.user_mul[0] = userMul[0];
+            proc.imgdata.params.user_mul[1] = userMul[1];
+            proc.imgdata.params.user_mul[2] = userMul[2];
+            proc.imgdata.params.user_mul[3] = userMul[3];
+            break;
+        }
     }
 
     // 将 LibRaw 的内存图转换为 OpenCV Mat（保持 3 通道）
@@ -287,7 +327,7 @@ namespace
     // 简单用法提示
     static void printUsage(const char *argv0)
     {
-        std::cerr << "Usage: " << argv0 << " [--out <output-image>] <path-to-raw>\n";
+        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--out <output-image>] <path-to-raw>\n";
     }
 
 } // namespace
@@ -348,12 +388,49 @@ int main(int argc, char **argv)
         printUsage(argv[0]);
         return 2;
     }
-    // 解析参数：支持 --out <path> 可选导出
+    // 解析参数：支持 --wb、--out
     std::string outPath;
+    WbMode wbMode = WbMode::Camera;
+    float userMul[4] = {1.f, 1.f, 1.f, 1.f};
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
         std::string arg = argv[i];
+        if (arg == "--wb" && i + 1 < argc)
+        {
+            std::string val = argv[++i];
+            if (val == "camera")
+                wbMode = WbMode::Camera;
+            else if (val == "auto")
+                wbMode = WbMode::Auto;
+            else if (val == "none")
+                wbMode = WbMode::None;
+            else if (val.rfind("user:", 0) == 0)
+            {
+                wbMode = WbMode::User;
+                std::string nums = val.substr(5);
+                // 解析 R,G,B,G2
+                double r = 1, g1 = 1, b = 1, g2 = 1;
+                if (std::sscanf(nums.c_str(), "%lf,%lf,%lf,%lf", &r, &g1, &b, &g2) == 4)
+                {
+                    userMul[0] = static_cast<float>(r);
+                    userMul[1] = static_cast<float>(g1);
+                    userMul[2] = static_cast<float>(b);
+                    userMul[3] = static_cast<float>(g2);
+                }
+                else
+                {
+                    std::cerr << "Invalid --wb user:R,G,B,G2 format\n";
+                    return 2;
+                }
+            }
+            else
+            {
+                std::cerr << "Unknown --wb value: " << val << "\n";
+                return 2;
+            }
+            continue;
+        }
         if (arg == "--out" && i + 1 < argc)
         {
             outPath = argv[++i];
@@ -382,8 +459,8 @@ int main(int argc, char **argv)
     const char *rawPath = positional[0].c_str();
 
     LibRaw proc;
-    // 1) 配置 LibRaw 为相机白平衡 + 线性输出
-    setLibRawForCameraWbLinearOutput(proc);
+    // 1) 配置 LibRaw：线性输出 + 选择白平衡模式
+    setLibRawForLinearOutputAndWb(proc, wbMode, userMul);
 
     // 2) 打开 RAW 文件
     int ret = proc.open_file(rawPath);
