@@ -86,6 +86,25 @@ namespace
         vPrime = (9.0 * Y) / denom;
     }
 
+    // 由 u'v'（设定 Y=1）近似反推 XYZ
+    static inline void uvPrimeToXyz(double uPrime, double vPrime, double &X, double &Y, double &Z)
+    {
+        if (vPrime <= 1e-12)
+        {
+            X = Y = Z = 0.0;
+            return;
+        }
+        double denom = (6.0 * uPrime - 16.0 * vPrime + 12.0);
+        if (std::fabs(denom) <= 1e-12)
+        {
+            X = Y = Z = 0.0;
+            return;
+        }
+        Y = 1.0;
+        X = (9.0 * uPrime) / (4.0 * vPrime) * Y;
+        Z = (12.0 - 3.0 * uPrime - 20.0 * vPrime) / (4.0 * vPrime) * Y;
+    }
+
     // XYZ 转 xy（用于 McCamy CCT 估计）
     static inline void xyzToXy(double X, double Y, double Z, double &x, double &y)
     {
@@ -193,6 +212,151 @@ namespace
         if (scale <= 1e-9)
             scale = 1000.0;
         return -tintUi / scale;
+    }
+
+    // 从 LibRaw 获取 camRGB→XYZ 3x3（G 双列取平均）
+    static bool getCameraToXyzMatrix(const LibRaw &proc, cv::Matx33d &M)
+    {
+        const libraw_colordata_t &c = proc.imgdata.color;
+        double sumabs = 0.0;
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 3; ++j)
+                sumabs += std::fabs(c.cam_xyz[i][j]);
+        if (sumabs > 1e-9)
+        {
+            cv::Vec3d r(c.cam_xyz[0][0], c.cam_xyz[0][1], c.cam_xyz[0][2]);
+            cv::Vec3d g1(c.cam_xyz[1][0], c.cam_xyz[1][1], c.cam_xyz[1][2]);
+            cv::Vec3d b(c.cam_xyz[2][0], c.cam_xyz[2][1], c.cam_xyz[2][2]);
+            cv::Vec3d g2(c.cam_xyz[3][0], c.cam_xyz[3][1], c.cam_xyz[3][2]);
+            cv::Vec3d g = 0.5 * (g1 + g2);
+            M = cv::Matx33d(r[0], r[1], r[2],
+                            g[0], g[1], g[2],
+                            b[0], b[1], b[2]);
+            return true;
+        }
+        return false;
+    }
+
+    // Bradford CAT 矩阵
+    static inline cv::Matx33d bradfordMatrix()
+    {
+        return cv::Matx33d(0.8951, 0.2664, -0.1614,
+                           -0.7502, 1.7135, 0.0367,
+                           0.0389, -0.0685, 1.0296);
+    }
+    static inline cv::Matx33d bradfordInverse()
+    {
+        return cv::Matx33d(0.9869929, -0.1470543, 0.1599627,
+                           0.4323053, 0.5183603, 0.0492912,
+                           -0.0085287, 0.0400428, 0.9684867);
+    }
+
+    // 由 Kelvin/Tint 严谨求等效 user_mul（R,G,B,G2），G 归一为 1
+    static bool computeUserMulFromKelvinTint(const LibRaw &proc, double kelvin, double tintUi, double tintScale, float userMul[4])
+    {
+        cv::Matx33d M_cam2xyz;
+        if (!getCameraToXyzMatrix(proc, M_cam2xyz))
+            return false;
+
+        // 目标白点 XYZ（含 tint 偏移）
+        double xt, yt;
+        kelvinToXy(kelvin, xt, yt);
+        double Xt, Yt, Zt;
+        xyToXyz(xt, yt, Xt, Yt, Zt);
+        double ut, vt;
+        xyzToUvPrime(Xt, Yt, Zt, ut, vt);
+        double duv = uiTintToDuv(tintUi, tintScale);
+        double ut2 = ut, vt2 = vt + duv;
+        uvPrimeToXyz(ut2, vt2, Xt, Yt, Zt);
+        cv::Vec3d XYZt(Xt, Yt, Zt);
+
+        // 相机对目标白点的响应 v
+        cv::Matx33d M_inv = M_cam2xyz.inv(cv::DECOMP_SVD);
+        cv::Vec3d v = M_inv * XYZt; // [R,G,B]
+        double r = std::max(1e-12, (double)v[0]);
+        double g = std::max(1e-12, (double)v[1]);
+        double b = std::max(1e-12, (double)v[2]);
+
+        // 归一到 G=1：mul=[g/r, 1, g/b, 1]
+        userMul[0] = static_cast<float>(g / r);
+        userMul[1] = 1.0f;
+        userMul[2] = static_cast<float>(g / b);
+        userMul[3] = 1.0f;
+        return true;
+    }
+
+    // 计算 AsShot 的 duv（相机 AsShot 白点相对其 CCT 的垂直偏移，正=偏绿/负=偏洋红）
+    static bool getAsShotDuv(const LibRaw &proc, double &duvAsShot)
+    {
+        cv::Matx33d M_cam2xyz;
+        if (!getCameraToXyzMatrix(proc, M_cam2xyz))
+            return false;
+        double camMulR = proc.imgdata.color.cam_mul[0];
+        double camMulG = (proc.imgdata.color.cam_mul[1] + proc.imgdata.color.cam_mul[3]) * 0.5;
+        double camMulB = proc.imgdata.color.cam_mul[2];
+        cv::Vec3d wCam((camMulR > 1e-9) ? (1.0 / camMulR) : 1.0,
+                       (camMulG > 1e-9) ? (1.0 / camMulG) : 1.0,
+                       (camMulB > 1e-9) ? (1.0 / camMulB) : 1.0);
+        cv::Vec3d XYZs = M_cam2xyz * wCam;
+        double u, v;
+        xyzToUvPrime(XYZs[0], XYZs[1], XYZs[2], u, v);
+        double xs, ys;
+        xyzToXy(XYZs[0], XYZs[1], XYZs[2], xs, ys);
+        double cct = cctFromXy_McCamy(xs, ys);
+        double xr, yr;
+        xyFromCct_DaylightApprox(cct, xr, yr);
+        double Xr, Yr, Zr;
+        xyToXyz(xr, yr, Xr, Yr, Zr);
+        double ur, vr;
+        xyzToUvPrime(Xr, Yr, Zr, ur, vr);
+        duvAsShot = v - vr; // v' 方向偏移
+        return true;
+    }
+
+    // 计算 AsShot 的 CCT（近似）
+    static bool getAsShotCct(const LibRaw &proc, double &cct)
+    {
+        cv::Matx33d M_cam2xyz;
+        if (!getCameraToXyzMatrix(proc, M_cam2xyz))
+            return false;
+        double camMulR = proc.imgdata.color.cam_mul[0];
+        double camMulG = (proc.imgdata.color.cam_mul[1] + proc.imgdata.color.cam_mul[3]) * 0.5;
+        double camMulB = proc.imgdata.color.cam_mul[2];
+        cv::Vec3d wCam((camMulR > 1e-9) ? (1.0 / camMulR) : 1.0,
+                       (camMulG > 1e-9) ? (1.0 / camMulG) : 1.0,
+                       (camMulB > 1e-9) ? (1.0 / camMulB) : 1.0);
+        cv::Vec3d XYZs = M_cam2xyz * wCam;
+        double xs, ys;
+        xyzToXy(XYZs[0], XYZs[1], XYZs[2], xs, ys);
+        cct = cctFromXy_McCamy(xs, ys);
+        return true;
+    }
+
+    // Kelvin + 直接 duv（用于“只改色温，保持 AsShot Tint”）
+    static bool computeUserMulFromKelvinWithDuv(const LibRaw &proc, double kelvin, double duvDirect, float userMul[4])
+    {
+        cv::Matx33d M_cam2xyz;
+        if (!getCameraToXyzMatrix(proc, M_cam2xyz))
+            return false;
+        double xt, yt;
+        kelvinToXy(kelvin, xt, yt);
+        double Xt, Yt, Zt;
+        xyToXyz(xt, yt, Xt, Yt, Zt);
+        double ut, vt;
+        xyzToUvPrime(Xt, Yt, Zt, ut, vt);
+        double ut2 = ut, vt2 = vt + duvDirect; // 保持 Tint 不变
+        uvPrimeToXyz(ut2, vt2, Xt, Yt, Zt);
+        cv::Vec3d XYZt(Xt, Yt, Zt);
+        cv::Matx33d M_inv = M_cam2xyz.inv(cv::DECOMP_SVD);
+        cv::Vec3d v = M_inv * XYZt;
+        double r = std::max(1e-12, (double)v[0]);
+        double g = std::max(1e-12, (double)v[1]);
+        double b = std::max(1e-12, (double)v[2]);
+        userMul[0] = static_cast<float>(g / r);
+        userMul[1] = 1.0f;
+        userMul[2] = static_cast<float>(g / b);
+        userMul[3] = 1.0f;
+        return true;
     }
 
     // 白平衡模式
@@ -355,10 +519,9 @@ namespace
     // 简单用法提示
     static void printUsage(const char *argv0)
     {
-        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--out-decoded <img>] [--out-balanced <img>] [--out <img>] <path-to-raw>\n";
+        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--lock-tint] [--out-decoded <img>] [--out-balanced <img>] <path-to-raw>\n";
         std::cerr << "  --out-decoded: 导出解码后(应用所选WB), 线性→sRGB 的图像\n";
-        std::cerr << "  --out-balanced: 导出应用灰世界后的图像(原默认)\n";
-        std::cerr << "  --out: 向后兼容，等同 --out-balanced\n";
+        std::cerr << "  --out-balanced: 导出应用灰世界后的图像\n";
     }
 
 } // namespace
@@ -420,7 +583,6 @@ int main(int argc, char **argv)
         return 2;
     }
     // 解析参数：支持 --wb、--out
-    std::string outPath; // 兼容 --out（等同 balanced）
     std::string outDecoded;
     std::string outBalanced;
     WbMode wbMode = WbMode::Camera;
@@ -428,6 +590,8 @@ int main(int argc, char **argv)
     double optKelvin = 0.0; // 0 表示未设置
     double optTintUi = 0.0; // UI Tint，正=洋红/负=绿色
     double optTintScale = 1000.0;
+    bool tintProvided = false;
+    bool lockTint = false;
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
@@ -475,6 +639,12 @@ int main(int argc, char **argv)
         if (arg == "--tint" && i + 1 < argc)
         {
             optTintUi = std::atof(argv[++i]);
+            tintProvided = true;
+            continue;
+        }
+        if (arg == "--lock-tint")
+        {
+            lockTint = true;
             continue;
         }
         if (arg == "--tint-scale" && i + 1 < argc)
@@ -489,10 +659,6 @@ int main(int argc, char **argv)
         else if (arg == "--out-balanced" && i + 1 < argc)
         {
             outBalanced = argv[++i];
-        }
-        else if (arg == "--out" && i + 1 < argc)
-        {
-            outPath = argv[++i];
         }
         else if (arg == "--help" || arg == "-h")
         {
@@ -527,49 +693,43 @@ int main(int argc, char **argv)
     // 2) 打开 RAW 文件
     int ret = proc.open_file(rawPath);
     // 2.5) 如果给了 Kelvin/Tint，则将其转换为等效 user_mul
-    if (optKelvin > 0.0)
+    // 组合逻辑：
+    // - Kelvin 仅设置：保持 AsShot Tint（或 lockTint 时 duv=0）
+    // - Tint 仅设置：以 AsShot CCT 为基准，调整 Tint
+    // - Kelvin+Tint：按给定 Kelvin 与 Tint 共同确定白点
+    if (optKelvin > 0.0 || tintProvided)
     {
-        // 估计拍摄白点：如果相机有 AsShotNeutral，则更准确；这里用 cam_mul 倒数近似
-        double camMulR = proc.imgdata.color.cam_mul[0];
-        double camMulG = (proc.imgdata.color.cam_mul[1] + proc.imgdata.color.cam_mul[3]) * 0.5;
-        double camMulB = proc.imgdata.color.cam_mul[2];
-        double wCamR = (camMulR > 1e-9) ? (1.0 / camMulR) : 1.0;
-        double wCamG = (camMulG > 1e-9) ? (1.0 / camMulG) : 1.0;
-        double wCamB = (camMulB > 1e-9) ? (1.0 / camMulB) : 1.0;
-        // 目标白点 xy（含 Tint 偏移）
-        double xT, yT;
-        kelvinToXy(optKelvin, xT, yT);
-        // 简化：把 Tint_UI 转成 duv，并近似沿 v' 方向偏移（轻量近似）
-        double duv = uiTintToDuv(optTintUi, optTintScale);
-        // 将 xyT 转 XYZ
-        double XT, YT, ZT;
-        xyToXyz(xT, yT, XT, YT, ZT);
-        // 简化求解：在相机 RGB 空间内，对角增益使得加权后 R/G/B 比例接近目标白（以 G 为基准 1）。
-        // 这里用摄像机白点响应 wCam 作为当前白，目标设为等能量 [1,1,1] 近似，再用 Tint 的 duv 作为微调（忽略 CAT）。
-        // 更严谨应使用相机矩阵+Bradford CAT，这里留作后续增强。
-        double targetR = 1.0, targetG = 1.0, targetB = 1.0;
-        // 将 duv 粗略转成 RGB 微调（v' 增加相当于略增 G 减 R/B，这里取极小系数）
-        double gAdjust = 1.0 + (-duv); // duv>0 偏绿，降低 G；与 UI 方向匹配
-        double rAdjust = 1.0 + (duv * 0.5);
-        double bAdjust = 1.0 + (duv * 0.5);
-        targetR *= rAdjust;
-        targetG *= gAdjust;
-        targetB *= bAdjust;
-        // 计算等效 user_mul（让 wCam * mul ≈ target）→ mul ≈ target / wCam
-        userMul[0] = static_cast<float>(targetR / std::max(1e-6, wCamR));
-        userMul[1] = static_cast<float>(targetG / std::max(1e-6, wCamG));
-        userMul[2] = static_cast<float>(targetB / std::max(1e-6, wCamB));
-        userMul[3] = userMul[1];
-        // 归一化到 G=1
-        if (userMul[1] != 0.0f)
+        double baseKelvin = optKelvin;
+        double duvDirect = 0.0;
+        bool ok = false;
+
+        if (!tintProvided)
         {
-            float gNorm = userMul[1];
-            userMul[0] /= gNorm;
-            userMul[1] = 1.0f;
-            userMul[2] /= gNorm;
-            userMul[3] /= gNorm;
+            if (lockTint)
+            {
+                duvDirect = 0.0; // 锁定在日光轨迹
+            }
+            else
+            {
+                double duvShot = 0.0;
+                if (getAsShotDuv(proc, duvShot))
+                    duvDirect = duvShot;
+            }
         }
-        wbMode = WbMode::User; // 走 user_mul 路径
+        else
+        {
+            duvDirect = uiTintToDuv(optTintUi, optTintScale);
+        }
+
+        if (baseKelvin <= 0.0)
+        {
+            if (!getAsShotCct(proc, baseKelvin))
+                baseKelvin = 6500.0;
+        }
+
+        ok = computeUserMulFromKelvinWithDuv(proc, baseKelvin, duvDirect, userMul);
+        if (ok)
+            wbMode = WbMode::User;
     }
 
     // 设置 WB 参数（camera/auto/user/none）
@@ -597,6 +757,13 @@ int main(int argc, char **argv)
         proc.imgdata.params.user_mul[2] = userMul[2];
         proc.imgdata.params.user_mul[3] = userMul[3];
     }
+
+    // 打印实际应用的 user_mul（便于验证 K/T 的影响）
+    std::cout << "applied_user_mul: { R: " << proc.imgdata.params.user_mul[0]
+              << ", G: " << proc.imgdata.params.user_mul[1]
+              << ", B: " << proc.imgdata.params.user_mul[2]
+              << ", G2: " << proc.imgdata.params.user_mul[3] << " }\n";
+
     if (ret != LIBRAW_SUCCESS)
     {
         std::cerr << "LibRaw open_file failed: " << libraw_strerror(ret) << "\n";
@@ -693,14 +860,6 @@ int main(int argc, char **argv)
             std::cout << "saved_grayworld_image: " << outBalanced << "\n";
         else
             std::cerr << "Failed to save image to: " << outBalanced << "\n";
-    }
-    if (!outPath.empty()) // 兼容 --out
-    {
-        bool ok = saveLinearBgrAsSrgb8bit(balanced, outPath);
-        if (ok)
-            std::cout << "saved_grayworld_image: " << outPath << "\n";
-        else
-            std::cerr << "Failed to save image to: " << outPath << "\n";
     }
 
     proc.recycle();
