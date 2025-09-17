@@ -520,7 +520,7 @@ namespace
     // 简单用法提示
     static void printUsage(const char *argv0)
     {
-        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--lock-tint] [--ocv-auto none|grayworld|simple] [--out-decoded <img>] [--out-balanced <img>] <path-to-raw>\n";
+        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--lock-tint] [--ocv-auto none|grayworld|simple] [--ocv-kelvin K] [--ocv-tint T] [--out-decoded <img>] [--out-balanced <img>] <path-to-raw>\n";
         std::cerr << "  --out-decoded: 导出解码后(应用所选WB), 线性→sRGB 的图像\n";
         std::cerr << "  --out-balanced: 导出应用灰世界后的图像\n";
     }
@@ -594,6 +594,10 @@ int main(int argc, char **argv)
     bool tintProvided = false;
     bool lockTint = false;
     std::string ocvAuto = "none"; // none|grayworld|simple（仅估计，不应用）
+    double ocvKelvin = 0.0;       // OpenCV 层手动色温
+    double ocvTintUi = 0.0;       // OpenCV 层手动色调（UI，正=洋红/负=绿色）
+    bool ocvTintProvided = false;
+    bool ocvLockTint = false;
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
@@ -649,14 +653,26 @@ int main(int argc, char **argv)
             ocvAuto = argv[++i];
             continue;
         }
-        if (arg == "--tint-scale" && i + 1 < argc)
+        if (arg == "--ocv-kelvin" && i + 1 < argc)
         {
-            optTintScale = std::atof(argv[++i]);
+            ocvKelvin = std::atof(argv[++i]);
+            continue;
+        }
+        if (arg == "--ocv-tint" && i + 1 < argc)
+        {
+            ocvTintUi = std::atof(argv[++i]);
+            ocvTintProvided = true;
             continue;
         }
         if (arg == "--lock-tint")
         {
             lockTint = true;
+            ocvLockTint = true;
+            continue;
+        }
+        if (arg == "--tint-scale" && i + 1 < argc)
+        {
+            optTintScale = std::atof(argv[++i]);
             continue;
         }
         if (arg == "--out-decoded" && i + 1 < argc)
@@ -846,7 +862,37 @@ int main(int argc, char **argv)
         double bMean = std::max(1e-6, (double)m0[0]);
         std::cout << "ocv_auto_simple_gains: { R: " << (gMean / rMean) << ", G: 1, B: " << (gMean / bMean) << " }\n";
     }
-    cv::Mat decodedForExport = linearF32; // 不应用 OCV 自动结果，按需只导出解码图
+    // 8.6) OpenCV 手动 Kelvin/Tint：按目标白点计算 sRGB 对角增益并应用
+    cv::Mat decodedForExport = linearF32; // 默认不改
+    if (ocvKelvin > 0.0 || ocvTintProvided)
+    {
+        double xw, yw;
+        kelvinToXy((ocvKelvin > 0.0) ? ocvKelvin : 6500.0, xw, yw);
+        double Xw, Yw, Zw;
+        xyToXyz(xw, yw, Xw, Yw, Zw);
+        double uw, vw;
+        xyzToUvPrime(Xw, Yw, Zw, uw, vw);
+        double duv = 0.0;
+        if (ocvTintProvided)
+            duv = uiTintToDuv(ocvTintUi, optTintScale);
+        else if (ocvLockTint)
+            duv = 0.0; // 锁定日光轨迹
+        double uw2 = uw, vw2 = vw + duv;
+        uvPrimeToXyz(uw2, vw2, Xw, Yw, Zw);
+        // sRGB 矩阵 Ms，求 d = Ms_inv * XYZ_target
+        cv::Matx33d Ms(0.4124564, 0.3575761, 0.1804375,
+                       0.2126729, 0.7151522, 0.0721750,
+                       0.0193339, 0.1191920, 0.9503041);
+        cv::Matx33d MsInv = Ms.inv(cv::DECOMP_SVD);
+        cv::Vec3d d = MsInv * cv::Vec3d(Xw, Yw, Zw);
+        double gnorm = std::max(1e-12, (double)d[1]);
+        WhiteBalanceGains ocvG;
+        ocvG.greenGain = 1.0;
+        ocvG.redGain = d[0] / gnorm;
+        ocvG.blueGain = d[2] / gnorm;
+        std::cout << "ocv_manual_gains: { R: " << ocvG.redGain << ", G: 1, B: " << ocvG.blueGain << " }\n";
+        decodedForExport = applyWhiteBalanceGains(linearF32, ocvG);
+    }
 
     // 9) 分别统计平衡前与平衡后的平均线性 RGB
     cv::Scalar meanBefore = cv::mean(linearF32);
