@@ -38,6 +38,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/xphoto.hpp>
 
 namespace
 {
@@ -519,7 +520,7 @@ namespace
     // 简单用法提示
     static void printUsage(const char *argv0)
     {
-        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--lock-tint] [--out-decoded <img>] [--out-balanced <img>] <path-to-raw>\n";
+        std::cerr << "Usage: " << argv0 << " [--wb camera|auto|none|user:R,G,B,G2] [--kelvin K] [--tint T] [--tint-scale S] [--lock-tint] [--ocv-auto none|grayworld|simple] [--out-decoded <img>] [--out-balanced <img>] <path-to-raw>\n";
         std::cerr << "  --out-decoded: 导出解码后(应用所选WB), 线性→sRGB 的图像\n";
         std::cerr << "  --out-balanced: 导出应用灰世界后的图像\n";
     }
@@ -592,6 +593,7 @@ int main(int argc, char **argv)
     double optTintScale = 1000.0;
     bool tintProvided = false;
     bool lockTint = false;
+    std::string ocvAuto = "none"; // none|grayworld|simple（仅估计，不应用）
     std::vector<std::string> positional;
     for (int i = 1; i < argc; ++i)
     {
@@ -642,14 +644,19 @@ int main(int argc, char **argv)
             tintProvided = true;
             continue;
         }
-        if (arg == "--lock-tint")
+        if (arg == "--ocv-auto" && i + 1 < argc)
         {
-            lockTint = true;
+            ocvAuto = argv[++i];
             continue;
         }
         if (arg == "--tint-scale" && i + 1 < argc)
         {
             optTintScale = std::atof(argv[++i]);
+            continue;
+        }
+        if (arg == "--lock-tint")
+        {
+            lockTint = true;
             continue;
         }
         if (arg == "--out-decoded" && i + 1 < argc)
@@ -816,6 +823,31 @@ int main(int argc, char **argv)
     // 8) 应用增益用于验证（可选）
     cv::Mat balanced = applyWhiteBalanceGains(linearF32, gw);
 
+    // 8.5) OpenCV 自动白平衡：仅估计参数，不应用
+    if (ocvAuto == "grayworld")
+    {
+        WhiteBalanceGains g2 = computeGrayWorldGains(linearF32);
+        std::cout << "ocv_auto_grayworld_gains: { R: " << g2.redGain << ", G: " << g2.greenGain << ", B: " << g2.blueGain << " }\n";
+    }
+    else if (ocvAuto == "simple")
+    {
+        cv::Mat u8;
+        linearF32.convertTo(u8, CV_8UC3, 255.0);
+        cv::Mat u8wb;
+        cv::Ptr<cv::xphoto::SimpleWB> wb = cv::xphoto::createSimpleWB();
+        wb->setP(0.5f);
+        wb->balanceWhite(u8, u8wb);
+        cv::Mat f32wb;
+        u8wb.convertTo(f32wb, CV_32FC3, 1.0 / 255.0);
+        // 以 G 为基准估计等效增益（均值法）
+        cv::Scalar m0 = cv::mean(linearF32);
+        double rMean = std::max(1e-6, (double)m0[2]);
+        double gMean = std::max(1e-6, (double)m0[1]);
+        double bMean = std::max(1e-6, (double)m0[0]);
+        std::cout << "ocv_auto_simple_gains: { R: " << (gMean / rMean) << ", G: 1, B: " << (gMean / bMean) << " }\n";
+    }
+    cv::Mat decodedForExport = linearF32; // 不应用 OCV 自动结果，按需只导出解码图
+
     // 9) 分别统计平衡前与平衡后的平均线性 RGB
     cv::Scalar meanBefore = cv::mean(linearF32);
     cv::Scalar meanAfter = cv::mean(balanced);
@@ -847,7 +879,7 @@ int main(int argc, char **argv)
     // 导出：解码后（应用 WB）和灰世界后
     if (!outDecoded.empty())
     {
-        bool ok = saveLinearBgrAsSrgb8bit(linearF32, outDecoded);
+        bool ok = saveLinearBgrAsSrgb8bit(decodedForExport.empty() ? linearF32 : decodedForExport, outDecoded);
         if (ok)
             std::cout << "saved_decoded_image: " << outDecoded << "\n";
         else
