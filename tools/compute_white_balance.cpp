@@ -888,8 +888,8 @@ int main(int argc, char **argv)
         double gnorm = std::max(1e-12, (double)d[1]);
         WhiteBalanceGains ocvG;
         ocvG.greenGain = 1.0;
-        ocvG.redGain = d[0] / gnorm;
-        ocvG.blueGain = d[2] / gnorm;
+        ocvG.redGain = gnorm / std::max(1e-12, (double)d[0]);
+        ocvG.blueGain = gnorm / std::max(1e-12, (double)d[2]);
         std::cout << "ocv_manual_gains: { R: " << ocvG.redGain << ", G: 1, B: " << ocvG.blueGain << " }\n";
         decodedForExport = applyWhiteBalanceGains(linearF32, ocvG);
     }
