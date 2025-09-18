@@ -886,31 +886,73 @@ int main(int argc, char **argv)
         double bMean = std::max(1e-6, (double)m0[0]);
         std::cout << "ocv_auto_simple_gains: { R: " << (gMean / rMean) << ", G: 1, B: " << (gMean / bMean) << " }\n";
     }
-    // 8.6) OpenCV 手动 Kelvin/Tint：按目标白点计算 sRGB 对角增益并应用
+    // 8.6) OpenCV 手动 Kelvin/Tint：直接实现视觉效果
     cv::Mat decodedForExport = linearF32; // 默认不改
     if (ocvKelvin > 0.0 || ocvTintProvided)
     {
-        // 用相机矩阵 + Bradford 在相机空间求对角增益，再映射为 sRGB 的 3x3 变换
-        float userMulTmp[4] = {1, 1, 1, 1};
-        double tintUi = ocvTintProvided ? ocvTintUi : 0.0;
-        if (!ocvTintProvided && ocvLockTint)
-            tintUi = 0.0; // 锁在日光轨迹
-        // 使用 CAT 求解相机空间对角增益（Ur,1,Ub）
-        bool ok = computeUserMulFromKelvinTint(proc, (ocvKelvin > 0.0) ? ocvKelvin : 6500.0, tintUi, optTintScale, userMulTmp);
-        if (ok)
+        // 简化实现：直接产生视觉效果，不涉及复杂的色彩科学计算
+        // 用户期望：K值越高->图像越暖（偏黄红），K值越低->图像越冷（偏蓝）
+        double kelvinTarget = (ocvKelvin > 0.0) ? ocvKelvin : 6500.0;
+        double tintValue = ocvTintProvided ? ocvTintUi : 0.0;
+
+        // 基于经验的色温->RGB增益映射
+        double rGain, gGain, bGain;
+
+        if (kelvinTarget <= 6500.0)
         {
-            cv::Matx33d M_cam2xyz;
-            getCameraToXyzMatrix(proc, M_cam2xyz);
-            cv::Matx33d Ms = srgbToXyzMatrix();
-            cv::Matx33d MsInv = xyzToSrgbMatrix();
-            // 使用 D^-1 以匹配滑块直觉（K↑更暖、K↓更冷）
-            double rGain = std::max(1e-12, (double)userMulTmp[0]);
-            double bGain = std::max(1e-12, (double)userMulTmp[2]);
-            cv::Matx33d Dinv(1.0 / rGain, 0, 0, 0, 1, 0, 0, 0, 1.0 / bGain);
-            cv::Matx33d T_rgb = MsInv * M_cam2xyz * Dinv * M_cam2xyz.inv(cv::DECOMP_SVD) * Ms;
-            std::cout << "ocv_manual_camera_mul_inv_applied: { R: " << (1.0 / rGain) << ", G: 1, B: " << (1.0 / bGain) << " }\n";
-            decodedForExport = applyRgb3x3OnBgr(linearF32, T_rgb);
+            // 冷色调范围 (2000K - 6500K)
+            // K值越低，越冷（更蓝）
+            double factor = (6500.0 - kelvinTarget) / 4500.0; // 归一化到[0,1]
+            rGain = 1.0 - factor * 0.4;                       // 减少红色
+            gGain = 1.0 - factor * 0.1;                       // 轻微减少绿色
+            bGain = 1.0 + factor * 0.5;                       // 增加蓝色
         }
+        else
+        {
+            // 暖色调范围 (6500K - 12000K)
+            // K值越高，越暖（更黄红）
+            double factor = (kelvinTarget - 6500.0) / 5500.0; // 归一化到[0,1]
+            factor = std::min(1.0, factor);
+            rGain = 1.0 + factor * 0.4;  // 增加红色
+            gGain = 1.0 - factor * 0.05; // 轻微减少绿色产生橙色
+            bGain = 1.0 - factor * 0.4;  // 减少蓝色
+        }
+
+        // Tint调整：正值偏洋红，负值偏绿
+        if (tintValue != 0.0)
+        {
+            double tintFactor = tintValue / 100.0;
+            gGain *= std::exp(-tintFactor * 0.15); // Tint主要影响绿色通道
+            // 轻微调整红蓝以产生洋红/绿色偏移
+            if (tintValue > 0)
+            {
+                // 偏洋红：轻微增加红蓝
+                rGain *= 1.0 + std::abs(tintFactor) * 0.05;
+                bGain *= 1.0 + std::abs(tintFactor) * 0.05;
+            }
+        }
+
+        // 归一化保持整体亮度
+        double avgGain = (rGain + gGain + bGain) / 3.0;
+        rGain /= avgGain;
+        gGain /= avgGain;
+        bGain /= avgGain;
+
+        std::cout << "ocv_visual_kelvin: " << kelvinTarget << " K\n";
+        if (ocvTintProvided)
+        {
+            std::cout << "ocv_visual_tint: " << tintValue << "\n";
+        }
+        std::cout << "ocv_visual_gains: { R: " << rGain << ", G: " << gGain << ", B: " << bGain << " }\n";
+
+        // 应用增益到图像
+        decodedForExport = linearF32.clone();
+        cv::Mat channels[3];
+        cv::split(decodedForExport, channels);
+        channels[0] *= bGain; // BGR顺序
+        channels[1] *= gGain;
+        channels[2] *= rGain;
+        cv::merge(channels, 3, decodedForExport);
     }
 
     // 9) 分别统计平衡前与平衡后的平均线性 RGB
