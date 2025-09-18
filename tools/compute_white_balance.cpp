@@ -13,6 +13,7 @@
 #include "wb_temperature.h"
 #include "wb_gains.h"
 #include "wb_algorithms.h"
+#include "wb_algorithms_opencv.h"
 
 // 白平衡计算工具 - 重构版
 
@@ -43,6 +44,8 @@ namespace
 
         std::string algorithm = "grayworld";
         wb::algorithms::AlgorithmConfig algo_config;
+        wb::algorithms_opencv::OpenCVAlgorithmConfig opencv_config;
+        bool use_opencv = false;
     };
 
     void configureLibRaw(LibRaw &proc, const ProgramConfig &config)
@@ -226,6 +229,18 @@ namespace
             {
                 config.algorithm = argv[++i];
             }
+            else if (arg == "--use-opencv")
+            {
+                config.use_opencv = true;
+            }
+            else if (arg == "--opencv-p" && i + 1 < argc)
+            {
+                config.opencv_config.p = std::atof(argv[++i]);
+            }
+            else if (arg == "--opencv-saturation" && i + 1 < argc)
+            {
+                config.opencv_config.saturation_threshold = std::atof(argv[++i]);
+            }
             else if (arg == "--out-decoded" && i + 1 < argc)
             {
                 config.output_decoded = argv[++i];
@@ -260,7 +275,10 @@ namespace
         std::cout << "  --wb <mode>           白平衡模式: camera|auto|none|user:R,G,B,G2\n";
         std::cout << "  --kelvin <K>          色温（开尔文）\n";
         std::cout << "  --tint <T>            色调（正值偏洋红，负值偏绿）\n";
-        std::cout << "  --algorithm <name>    算法: grayworld|whitepoint|perfect|simple|combined\n";
+        std::cout << "  --algorithm <name>    算法: grayworld|whitepoint|perfect|simple|combined|learning\n";
+        std::cout << "  --use-opencv          使用 OpenCV 的内置算法（而非自定义实现）\n";
+        std::cout << "  --opencv-p <value>    OpenCV SimpleWB 的百分位参数（默认: 2.0）\n";
+        std::cout << "  --opencv-saturation <value>  OpenCV GrayWorld 的饱和度阈值（默认: 0.98）\n";
         std::cout << "  --out-decoded <path>  保存解码后的图像\n";
         std::cout << "  --out-balanced <path> 保存白平衡后的图像\n";
         std::cout << "  --help, -h            显示帮助信息\n";
@@ -326,35 +344,70 @@ int main(int argc, char **argv)
     }
 
     wb::WhiteBalanceGains gains;
+    cv::Mat balanced_image;
 
-    if (config.algorithm == "grayworld")
+    if (config.use_opencv)
     {
-        gains = wb::algorithms::computeGrayWorld(linear_image, config.algo_config);
-    }
-    else if (config.algorithm == "whitepoint")
-    {
-        gains = wb::algorithms::computeWhitePoint(linear_image, config.algo_config);
-    }
-    else if (config.algorithm == "perfect")
-    {
-        gains = wb::algorithms::computePerfectReflector(linear_image, config.algo_config);
-    }
-    else if (config.algorithm == "simple")
-    {
-        gains = wb::algorithms::computeSimpleWB(linear_image);
-    }
-    else if (config.algorithm == "combined")
-    {
-        gains = wb::algorithms::computeCombined(linear_image, config.algo_config);
+        // 使用 OpenCV 的内置算法
+        std::cout << "使用 OpenCV 内置算法: " << config.algorithm << "\n";
+
+        if (config.algorithm == "grayworld")
+        {
+            gains = wb::algorithms_opencv::computeGrayWorldOpenCV(linear_image, config.opencv_config);
+            balanced_image = wb::applyGains(linear_image, gains);
+        }
+        else if (config.algorithm == "simple")
+        {
+            gains = wb::algorithms_opencv::computeSimpleWBOpenCV(linear_image, config.opencv_config);
+            balanced_image = wb::applyGains(linear_image, gains);
+        }
+        else if (config.algorithm == "learning")
+        {
+            gains = wb::algorithms_opencv::computeLearningBasedWBOpenCV(linear_image);
+            balanced_image = wb::applyGains(linear_image, gains);
+        }
+        else
+        {
+            // 对于其他算法，直接应用 OpenCV 白平衡
+            balanced_image = wb::algorithms_opencv::applyOpenCVWhiteBalance(linear_image, config.algorithm, config.opencv_config);
+            // 计算增益用于显示
+            gains = wb::algorithms_opencv::computeGainsFromBalanced(linear_image, balanced_image);
+        }
     }
     else
     {
-        std::cerr << "未知算法: " << config.algorithm << "\n";
-        processor.recycle();
-        return 1;
-    }
+        // 使用自定义算法
+        std::cout << "使用自定义算法: " << config.algorithm << "\n";
 
-    cv::Mat balanced_image = wb::applyGains(linear_image, gains);
+        if (config.algorithm == "grayworld")
+        {
+            gains = wb::algorithms::computeGrayWorld(linear_image, config.algo_config);
+        }
+        else if (config.algorithm == "whitepoint")
+        {
+            gains = wb::algorithms::computeWhitePoint(linear_image, config.algo_config);
+        }
+        else if (config.algorithm == "perfect")
+        {
+            gains = wb::algorithms::computePerfectReflector(linear_image, config.algo_config);
+        }
+        else if (config.algorithm == "simple")
+        {
+            gains = wb::algorithms::computeSimpleWB(linear_image);
+        }
+        else if (config.algorithm == "combined")
+        {
+            gains = wb::algorithms::computeCombined(linear_image, config.algo_config);
+        }
+        else
+        {
+            std::cerr << "未知算法: " << config.algorithm << "\n";
+            processor.recycle();
+            return 1;
+        }
+
+        balanced_image = wb::applyGains(linear_image, gains);
+    }
 
     // 如果指定了色温或色调，应用额外的调整
     if (config.kelvin > 0.0 || config.tint_provided)
