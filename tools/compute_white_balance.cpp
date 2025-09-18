@@ -87,7 +87,7 @@ namespace
         vPrime = (9.0 * Y) / denom;
     }
 
-    // 由 u'v'（设定 Y=1）近似反推 XYZ
+    // 将 u'v'（设定 Y=1）近似反推 XYZ
     static inline void uvPrimeToXyz(double uPrime, double vPrime, double &X, double &Y, double &Z)
     {
         if (vPrime <= 1e-12)
@@ -104,6 +104,30 @@ namespace
         Y = 1.0;
         X = (9.0 * uPrime) / (4.0 * vPrime) * Y;
         Z = (12.0 - 3.0 * uPrime - 20.0 * vPrime) / (4.0 * vPrime) * Y;
+    }
+
+    // sRGB<->XYZ 矩阵（线性）
+    static inline cv::Matx33d srgbToXyzMatrix()
+    {
+        return cv::Matx33d(0.4124564, 0.3575761, 0.1804375,
+                           0.2126729, 0.7151522, 0.0721750,
+                           0.0193339, 0.1191920, 0.9503041);
+    }
+    static inline cv::Matx33d xyzToSrgbMatrix()
+    {
+        return srgbToXyzMatrix().inv(cv::DECOMP_SVD);
+    }
+
+    // 在 RGB 空间应用 3x3 变换（以 RGB 顺序定义），输入/输出为 BGR 图
+    static cv::Mat applyRgb3x3OnBgr(const cv::Mat &bgrLinear, const cv::Matx33d &T_rgb)
+    {
+        cv::Mat rgb;
+        cv::cvtColor(bgrLinear, rgb, cv::COLOR_BGR2RGB);
+        cv::Mat out;
+        cv::transform(rgb, out, cv::Mat(T_rgb));
+        cv::Mat bgrOut;
+        cv::cvtColor(out, bgrOut, cv::COLOR_RGB2BGR);
+        return bgrOut;
     }
 
     // XYZ 转 xy（用于 McCamy CCT 估计）
@@ -866,32 +890,27 @@ int main(int argc, char **argv)
     cv::Mat decodedForExport = linearF32; // 默认不改
     if (ocvKelvin > 0.0 || ocvTintProvided)
     {
-        double xw, yw;
-        kelvinToXy((ocvKelvin > 0.0) ? ocvKelvin : 6500.0, xw, yw);
-        double Xw, Yw, Zw;
-        xyToXyz(xw, yw, Xw, Yw, Zw);
-        double uw, vw;
-        xyzToUvPrime(Xw, Yw, Zw, uw, vw);
-        double duv = 0.0;
-        if (ocvTintProvided)
-            duv = uiTintToDuv(ocvTintUi, optTintScale);
-        else if (ocvLockTint)
-            duv = 0.0; // 锁定日光轨迹
-        double uw2 = uw, vw2 = vw + duv;
-        uvPrimeToXyz(uw2, vw2, Xw, Yw, Zw);
-        // sRGB 矩阵 Ms，求 d = Ms_inv * XYZ_target
-        cv::Matx33d Ms(0.4124564, 0.3575761, 0.1804375,
-                       0.2126729, 0.7151522, 0.0721750,
-                       0.0193339, 0.1191920, 0.9503041);
-        cv::Matx33d MsInv = Ms.inv(cv::DECOMP_SVD);
-        cv::Vec3d d = MsInv * cv::Vec3d(Xw, Yw, Zw);
-        double gnorm = std::max(1e-12, (double)d[1]);
-        WhiteBalanceGains ocvG;
-        ocvG.greenGain = 1.0;
-        ocvG.redGain = gnorm / std::max(1e-12, (double)d[0]);
-        ocvG.blueGain = gnorm / std::max(1e-12, (double)d[2]);
-        std::cout << "ocv_manual_gains: { R: " << ocvG.redGain << ", G: 1, B: " << ocvG.blueGain << " }\n";
-        decodedForExport = applyWhiteBalanceGains(linearF32, ocvG);
+        // 用相机矩阵 + Bradford 在相机空间求对角增益，再映射为 sRGB 的 3x3 变换
+        float userMulTmp[4] = {1, 1, 1, 1};
+        double tintUi = ocvTintProvided ? ocvTintUi : 0.0;
+        if (!ocvTintProvided && ocvLockTint)
+            tintUi = 0.0; // 锁在日光轨迹
+        // 使用 CAT 求解相机空间对角增益（Ur,1,Ub）
+        bool ok = computeUserMulFromKelvinTint(proc, (ocvKelvin > 0.0) ? ocvKelvin : 6500.0, tintUi, optTintScale, userMulTmp);
+        if (ok)
+        {
+            cv::Matx33d M_cam2xyz;
+            getCameraToXyzMatrix(proc, M_cam2xyz);
+            cv::Matx33d Ms = srgbToXyzMatrix();
+            cv::Matx33d MsInv = xyzToSrgbMatrix();
+            // 使用 D^-1 以匹配滑块直觉（K↑更暖、K↓更冷）
+            double rGain = std::max(1e-12, (double)userMulTmp[0]);
+            double bGain = std::max(1e-12, (double)userMulTmp[2]);
+            cv::Matx33d Dinv(1.0 / rGain, 0, 0, 0, 1, 0, 0, 0, 1.0 / bGain);
+            cv::Matx33d T_rgb = MsInv * M_cam2xyz * Dinv * M_cam2xyz.inv(cv::DECOMP_SVD) * Ms;
+            std::cout << "ocv_manual_camera_mul_inv_applied: { R: " << (1.0 / rGain) << ", G: 1, B: " << (1.0 / bGain) << " }\n";
+            decodedForExport = applyRgb3x3OnBgr(linearF32, T_rgb);
+        }
     }
 
     // 9) 分别统计平衡前与平衡后的平均线性 RGB
