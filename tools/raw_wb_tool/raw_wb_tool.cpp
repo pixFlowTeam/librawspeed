@@ -154,13 +154,13 @@ namespace
         double rScale = std::pow(kRatio, +0.5);
         double bScale = std::pow(kRatio, -0.5);
 
-        // Tint: + 洋红 推高 R/G 降低 B/G；- 绿色 相反
-        double tintScale = 0.02; // 每单位 tint 的线性影响系数
+        // Tint：+ 洋红 同时提高 R/G 与 B/G；- 绿色 同时降低
+        double tintScale = 0.01; // 调小灵敏度
         double t = tint * tintScale;
 
         double r = rScale * (1.0 + t);
         double g = 1.0;
-        double b = bScale * (1.0 - t);
+        double b = bScale * (1.0 + t);
 
         // 归一化以保持灰卡不变（以G为基准）
         double norm = 1.0 / std::max({r, g, b});
