@@ -250,11 +250,10 @@ async function run() {
   const libraw = new LibRaw();
   await libraw.loadFile(input);
 
-  // 读取相机矩阵并输出场景白点的 Kelvin/Duv（基于 cam_mul + cam_xyz）
+  // 通过 N-API 获取物理白点（xy/K/Duv）
   try {
-    const adv = await libraw.getAdvancedMetadata();
-    const { kelvin: kMeta, duv: dMeta, xy: xyMeta } = estimateKelvinDuvFromCamMeta(adv.camMul, adv.camXYZ);
-    console.log(`[meta] K=${kMeta}, Duv=${dMeta.toFixed(4)}, xy=(${xyMeta.x.toFixed(4)},${xyMeta.y.toFixed(4)})`);
+    const wp = await libraw.getWhitepointPhysics();
+    console.log(`[napi] K=${wp.kelvin}, Duv=${wp.duv.toFixed(4)}, xy=(${wp.xy.x.toFixed(4)},${wp.xy.y.toFixed(4)})`);
   } catch (_) {}
 
   // 三种 WB 配置

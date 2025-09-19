@@ -488,6 +488,19 @@
     "xcode_version": "16.0",
     "nodedir": "/Users/fuguoqiang/Library/Caches/node-gyp/22.16.0",
     "python": "/usr/local/bin/python3",
-    "standalone_static_library": 1
+    "standalone_static_library": 1,
+    "global_prefix": "/Users/fuguoqiang/.nvm/versions/node/v22.16.0",
+    "email": "434543162@qq.com",
+    "home": "https://www.npmjs.org",
+    "local_prefix": "/Users/fuguoqiang/Documents/workspace/infra/librawspeed",
+    "globalconfig": "/Users/fuguoqiang/.nvm/versions/node/v22.16.0/etc/npmrc",
+    "access": "public",
+    "userconfig": "/Users/fuguoqiang/.npmrc",
+    "init_module": "/Users/fuguoqiang/.npm-init.js",
+    "npm_version": "10.9.2",
+    "node_gyp": "/Users/fuguoqiang/.nvm/versions/node/v22.16.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+    "cache": "/Users/fuguoqiang/.npm",
+    "user_agent": "npm/10.9.2 node/v22.16.0 darwin arm64 workspaces/false",
+    "prefix": "/Users/fuguoqiang/.nvm/versions/node/v22.16.0"
   }
 }

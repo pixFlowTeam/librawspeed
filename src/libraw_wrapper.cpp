@@ -43,7 +43,7 @@ Napi::Object LibRawWrapper::Init(Napi::Env env, Napi::Object exports)
                                                              InstanceMethod("getMemImageFormat", &LibRawWrapper::GetMemImageFormat), InstanceMethod("copyMemImage", &LibRawWrapper::CopyMemImage),
 
                                                              // 颜色操作
-                                                             InstanceMethod("getColorAt", &LibRawWrapper::GetColorAt),
+                                                             InstanceMethod("getColorAt", &LibRawWrapper::GetColorAt), InstanceMethod("getWhitepointPhysics", &LibRawWrapper::GetWhitepointPhysics),
 
                                                              // 取消支持
                                                              InstanceMethod("setCancelFlag", &LibRawWrapper::SetCancelFlag), InstanceMethod("clearCancelFlag", &LibRawWrapper::ClearCancelFlag),
@@ -1156,6 +1156,91 @@ Napi::Value LibRawWrapper::GetColorAt(const Napi::CallbackInfo &info)
 
     int color = processor->COLOR(row, col);
     return Napi::Number::New(env, color);
+}
+
+// ============== 颜色物理白点 ==============
+
+Napi::Value LibRawWrapper::GetWhitepointPhysics(const Napi::CallbackInfo &info)
+{
+    Napi::Env env = info.Env();
+    if (!CheckLoaded(env))
+        return env.Null();
+
+    // 基于 cam_mul 与 cam_xyz 估算场景白点（与 tools/inspect_whitepoint 保持一致口径）
+    const float *cam_mul = processor->imgdata.color.cam_mul;
+    const float(*cam_xyz)[3] = processor->imgdata.color.cam_xyz;
+
+    double mR = cam_mul[0] > 1e-6 ? cam_mul[0] : 1.0;
+    double mG = cam_mul[1] > 1e-6 ? cam_mul[1] : 1.0;
+    double mB = cam_mul[2] > 1e-6 ? cam_mul[2] : 1.0;
+    double r = 1.0 / mR, g = 1.0 / mG, b = 1.0 / mB;
+    double s = r + g + b;
+    r /= s;
+    g /= s;
+    b /= s;
+
+    double X = r * cam_xyz[0][0] + g * cam_xyz[1][0] + b * cam_xyz[2][0];
+    double Y = r * cam_xyz[0][1] + g * cam_xyz[1][1] + b * cam_xyz[2][1];
+    double Z = r * cam_xyz[0][2] + g * cam_xyz[1][2] + b * cam_xyz[2][2];
+    double sum = X + Y + Z;
+    double x = sum > 0 ? X / sum : 0.3127;
+    double y = sum > 0 ? Y / sum : 0.3290;
+
+    auto xyToCCT = [](double x, double y)
+    {
+        const double xe = 0.3320, ye = 0.1858;
+        double n = (x - xe) / (y - ye);
+        double cct = -449 * n * n * n + 3525 * n * n - 6823.3 * n + 5520.33;
+        if (cct < 1000)
+            cct = 1000;
+        if (cct > 40000)
+            cct = 40000;
+        return cct;
+    };
+    auto xyToUv = [](double x, double y)
+    {
+        double denom = (-2 * x) + (12 * y) + 3;
+        double u = (4 * x) / denom;
+        double v = (6 * y) / denom;
+        return std::pair<double, double>(u, v);
+    };
+    auto cctToXy = [](double T)
+    {
+        double x;
+        if (T >= 1667 && T <= 4000)
+            x = -0.2661239e9 / (T * T * T) - 0.2343580e6 / (T * T) + 0.8776956e3 / T + 0.179910;
+        else
+            x = -3.0258469e9 / (T * T * T) + 2.1070379e6 / (T * T) + 0.2226347e3 / T + 0.240390;
+        double y;
+        if (T >= 1667 && T <= 2222)
+            y = -1.1063814 * x * x * x - 1.34811020 * x * x + 2.18555832 * x - 0.20219683;
+        else if (T > 2222 && T <= 4000)
+            y = -0.9549476 * x * x * x - 1.37418593 * x * x + 2.09137015 * x - 0.16748867;
+        else
+            y = 3.0817580 * x * x * x - 5.87338670 * x * x + 3.75112997 * x - 0.37001483;
+        return std::pair<double, double>(x, y);
+    };
+
+    double cct = xyToCCT(x, y);
+    auto uv = xyToUv(x, y);
+    auto bbxy = cctToXy(cct);
+    auto uvbb = xyToUv(bbxy.first, bbxy.second);
+    double du = uv.first - uvbb.first;
+    double dv = uv.second - uvbb.second;
+    double duv = std::sqrt(du * du + dv * dv);
+    if (uv.second < uvbb.second)
+        duv = std::abs(duv);
+    else
+        duv = -std::abs(duv);
+
+    Napi::Object res = Napi::Object::New(env);
+    Napi::Object xyObj = Napi::Object::New(env);
+    xyObj.Set("x", Napi::Number::New(env, x));
+    xyObj.Set("y", Napi::Number::New(env, y));
+    res.Set("xy", xyObj);
+    res.Set("kelvin", Napi::Number::New(env, std::round(cct)));
+    res.Set("duv", Napi::Number::New(env, duv));
+    return res;
 }
 
 // ============== 取消支持 ==============

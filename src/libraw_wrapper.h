@@ -82,6 +82,9 @@ private:
     // 颜色操作
     Napi::Value GetColorAt(const Napi::CallbackInfo &info);
 
+    // 物理白点（lcms/数学计算）：返回基于 cam_mul+cam_xyz 的场景白点 xy、Kelvin、Duv
+    Napi::Value GetWhitepointPhysics(const Napi::CallbackInfo &info);
+
     // 取消支持
     Napi::Value SetCancelFlag(const Napi::CallbackInfo &info);
     Napi::Value ClearCancelFlag(const Napi::CallbackInfo &info);
