@@ -50,12 +50,12 @@ make clean  # 清理编译文件
 - `--mode <模式>`：
   - `camera`（默认）：使用相机记录的白平衡
   - `auto`：LibRaw 自动白平衡
-  - `manual`：手动指定色温和色调
+  - `manual`：手动指定色温和 Duv
   - `xy`：手动指定 xy 色度坐标
 
 #### 手动白平衡参数
 - `--kelvin <值>`：目标色温（2000-25000K）
-- `--tint <值>`：色调偏移（-150 到 +150）
+- `--duv <值>`：Duv 色调偏移（-0.05 到 +0.05；正=绿色，负=洋红）
 - `--xy <x> <y>`：目标 xy 色度坐标
 
 #### CAT 算法选择
@@ -79,7 +79,7 @@ make clean  # 清理编译文件
 
 #### 2. 手动设置色温
 ```bash
-./run.sh --kelvin 5500 --tint 10 --out daylight.jpg photo.ARW
+./run.sh --kelvin 5500 --duv 0.003 --out daylight.jpg photo.ARW
 ```
 
 #### 3. 使用不同的 CAT 算法

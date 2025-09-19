@@ -17,9 +17,9 @@
  *    - SPD 通过 CIE 标准观察者函数积分得到 XYZ 值，进而计算 xy 色度
  *    - 公式：从色温 K 计算 xy 坐标（使用 Robertson 或 McCamy 近似）
  *
- * 3. 色调（Tint）的含义：
- *    - 色调表示偏离黑体轨迹（Planckian locus）的程度
- *    - 在 CIE 1960 UCS (u,v) 图上，色调沿着垂直于黑体轨迹的方向
+ * 3. 色调偏移（Duv）的含义：
+ *    - Duv 表示到黑体轨迹（Planckian locus）的带符号垂直距离
+ *    - 在 CIE 1960 UCS (u,v) 图上，Duv 沿着垂直于黑体轨迹的方向
  *    - 正值 = 洋红偏移（向上），负值 = 绿色偏移（向下）
  *    - Duv（Delta uv）是标准度量，表示到黑体轨迹的距离
  *
@@ -42,9 +42,9 @@
  *    - 归一化后的比例代表了实际捕获的白点
  *    - 通过色彩矩阵转换到 XYZ，得到源白点坐标
  *
- * 6. 色温/色调到白点的转换：
+ * 6. 色温/Duv 到白点的转换：
  *    - 色温 K → xy 坐标（黑体轨迹上的点）
- *    - 色调 Tint → Duv 偏移量
+ *    - 直接使用 Duv 偏移量
  *    - 最终白点 = 黑体轨迹点 + 垂直偏移
  *
  * ========== 实现优势 ==========
@@ -111,14 +111,14 @@ namespace WhitePointWB
         {
             CAMERA_WB,     // 使用相机记录的白平衡
             AUTO_WB,       // LibRaw 自动白平衡
-            MANUAL_KELVIN, // 手动指定色温和色调
+            MANUAL_KELVIN, // 手动指定色温和 Duv
             MANUAL_XY,     // 手动指定 xy 色度坐标
             NEUTRAL_PICK   // 从图像中选择中性点
         } mode = CAMERA_WB;
 
         // 手动白平衡参数
         double target_kelvin = ILLUMINANT_D65; // 目标色温
-        double target_tint = 0.0;              // 目标色调（Duv）
+        double target_duv = 0.0;               // 目标 Duv（正=绿色，负=洋红）
         ChromaticityXY target_xy;              // 目标 xy 坐标
 
         // CAT 算法选择
@@ -447,7 +447,7 @@ namespace WhitePointWB
             {
             case WhiteBalanceConfig::MANUAL_KELVIN:
                 // 直接使用传入的 Duv 作为色调偏移（正=绿色，负=洋红）
-                return applyDuvToKelvin(config_.target_kelvin, config_.target_tint);
+                return applyDuvToKelvin(config_.target_kelvin, config_.target_duv);
 
             case WhiteBalanceConfig::MANUAL_XY:
                 return config_.target_xy;
@@ -657,7 +657,7 @@ int main(int argc, char *argv[])
         }
         else if (arg == "--duv" && i + 1 < argc)
         {
-            config.target_tint = std::atof(argv[++i]);
+            config.target_duv = std::atof(argv[++i]);
         }
         else if (arg == "--xy" && i + 1 < argc)
         {

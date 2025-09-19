@@ -21,16 +21,14 @@ namespace ColorTemp
      * 2) Duv（Delta uv）
      *    - 在 CIE 1960 UCS (u,v) 空间中，该点到黑体轨迹的“垂直距离”，带符号。
      *    - 行业口径（本库采用）：Duv > 0 表示偏绿色，Duv < 0 表示偏洋红。
-     *    - 这是“色调（Tint）”的物理量度，与 CCT 正交。
+     *    - 这是“色调偏移”的物理量度，与 CCT 正交。
      *
-     * 3) Tint（UI 标度）
-     *    - 是引擎/相机相关的 UI 标度，非标准物理量。不同相机/引擎其数值并不完全可比。
-     *    - 本库采用行业口径：Duv>0=偏绿、Duv<0=偏洋红，并使用工程近似 Tint ≈ -1000·Duv（Tint>0=洋红）。
-     *      系数 1000 便于数值直观（Duv 的千分位对应 Tint 的个位），如需对齐特定引擎可调整为 Tint = a·Duv + b。
+     * 3) UI 标度（如需）
+     *    - 某些软件会提供自定义的 UI 标度（非物理量）。本库不内置该标度，仅暴露 Kelvin 与 Duv；
      *
      * 4) 场景白点 vs 目标白点
      *    - 场景白点（Scene Illuminant）：相机拍摄时光源的白点（由 RAW 的白平衡系数 cam_mul 推导）。
-     *    - 目标白点（Target White Point）：渲染时希望图像呈现的白点（UI 上的 Temp/Tint 所代表的目标）。
+     *    - 目标白点（Target White Point）：渲染时希望图像呈现的白点（UI 上的 K/Duv 参数所代表的目标）。
      *    - 白平衡的本质是“把图像从源白点适应到目标白点”（CAT）。
      *
      * 5) 本库的核心流程
@@ -39,8 +37,8 @@ namespace ColorTemp
      *    - 编码：线性 sRGB → sRGB OETF（或其他输出空间）。
      *
      * 6) 与 Lightroom/Capture One 的数值差异
-     *    - 两者 Temp/Tint 是各自引擎/配置相关标度。观感可一致，但数值不必然一致。
-     *    - 若需与 LR 完全“数值对齐”，需加载相机 Profile、做双光源插值与少量标定拟合，超出本库默认职责，但可作为可选模块。
+     *    - 他家 UI 标度是各自引擎/配置相关的数值，观感可一致，但数值不必然一致。
+     *    - 若需对齐他家读数，可在外部加载相机 Profile、做双光源插值与少量标定拟合（可选模块），本库核心保持物理 K/Duv。
      */
 
     // ========== ColorXYZ 方法实现 ==========
@@ -188,8 +186,6 @@ namespace ColorTemp
         return uvToXY(u, v);
     }
 
-    // Tint 映射已移除，直接使用 Duv
-
     ChromaticityXY getStandardIlluminant(const char *illuminant)
     {
         if (std::strcmp(illuminant, "A") == 0)
@@ -274,8 +270,6 @@ namespace ColorTemp
         return info;
     }
 
-    // 已移除 Lightroom 风格函数
-
     ChromaticityXY estimateWhitePointXYFromCamMulAndMatrix(const float cam_mul[4], const float cam_xyz[4][3])
     {
         // 读取并校正系数
@@ -350,12 +344,12 @@ namespace ColorTemp
     }
 
     void calculateRGBGains(double source_kelvin, double target_kelvin,
-                           double source_tint, double target_tint,
+                           double source_duv, double target_duv,
                            float &r_gain, float &g_gain, float &b_gain)
     {
         // 获取源和目标白点
-        ChromaticityXY source_xy = applyDuvToKelvin(source_kelvin, source_tint);
-        ChromaticityXY target_xy = applyDuvToKelvin(target_kelvin, target_tint);
+        ChromaticityXY source_xy = applyDuvToKelvin(source_kelvin, source_duv);
+        ChromaticityXY target_xy = applyDuvToKelvin(target_kelvin, target_duv);
 
         // 简化的 RGB 增益计算
         // 这是一个近似方法，精确计算需要完整的色彩矩阵
@@ -370,13 +364,13 @@ namespace ColorTemp
         b_gain = static_cast<float>(source_rb / target_rb);
 
         // 应用色调调整
-        double tint_diff = target_tint - source_tint;
-        if (std::abs(tint_diff) > EPSILON)
+        double duv_diff = target_duv - source_duv;
+        if (std::abs(duv_diff) > EPSILON)
         {
             // 色调主要影响 R 和 B 的相对关系
-            float tint_factor = static_cast<float>(1.0 + tint_diff * 0.01);
-            r_gain *= tint_factor;
-            b_gain *= tint_factor;
+            float duv_factor = static_cast<float>(1.0 + duv_diff * 0.01);
+            r_gain *= duv_factor;
+            b_gain *= duv_factor;
         }
 
         // 归一化，保持亮度

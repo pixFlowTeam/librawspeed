@@ -2,7 +2,7 @@
  * @file color_temperature.h
  * @brief 色温转换和白点计算工具库
  *
- * 提供色温、xy色度坐标、白点、色调(Tint/Duv)之间的相互转换
+ * 提供色温、xy色度坐标、白点、Duv（色调偏移）之间的相互转换
  *
  * @author Fuguo Qiang
  * @date 2025
@@ -60,12 +60,12 @@ namespace ColorTemp
     };
 
     /**
-     * @brief 色温和色调信息
+     * @brief 色温与 Duv 信息
      */
     struct ColorTemperatureInfo
     {
         double kelvin;     // 色温（K）
-        double duv;        // 色调偏移（Duv）
+        double duv;        // Duv 色调偏移（正=绿色，负=洋红）
         ChromaticityXY xy; // xy 色度坐标
 
         // 场景照明色温（Lightroom 风格）
@@ -110,35 +110,16 @@ namespace ColorTemp
     double calculateDuv(const ChromaticityXY &xy);
 
     /**
-     * @brief 应用色调偏移到色温对应的白点
+     * @brief 将 Duv 偏移应用到色温对应的白点
      *
      * 在垂直于黑体轨迹的方向上偏移
      *
      * @param kelvin 基础色温
-     * @param duv 色调偏移（正=洋红，负=绿色）
+     * @param duv Duv 偏移（正=绿色，负=洋红）
      * @return 调整后的 xy 坐标
      */
     // 将 Duv 偏移应用到指定色温对应的白点
     ChromaticityXY applyDuvToKelvin(double kelvin, double duv);
-
-    /**
-     * @brief 从 Lightroom 风格的 Tint 值转换到 Duv
-     *
-     * Lightroom: -150 到 +150
-     * Duv: 约 -0.05 到 +0.05
-     *
-     * @param tint Lightroom 风格的色调值
-     * @return 标准 Duv 值
-     */
-    // 已移除：Tint 映射改为直接使用 Duv
-
-    /**
-     * @brief 从 Duv 转换到 Lightroom 风格的 Tint 值
-     *
-     * @param duv 标准 Duv 值
-     * @return Lightroom 风格的色调值
-     */
-    // 已移除：Tint 映射改为直接使用 Duv
 
     /**
      * @brief 获取标准光源的白点
@@ -160,8 +141,6 @@ namespace ColorTemp
      */
     ColorTemperatureInfo estimateFromMultipliers(float r_mul, float g_mul, float b_mul);
 
-    // 已移除 Lightroom 风格接口，统一使用物理 Kelvin 与 Duv
-
     /**
      * @brief 使用相机白平衡系数与色彩矩阵估算场景白点 xy
      *
@@ -170,20 +149,20 @@ namespace ColorTemp
     ChromaticityXY estimateWhitePointXYFromCamMulAndMatrix(const float cam_mul[4], const float cam_xyz[4][3]);
 
     /**
-     * @brief 计算从源白点到目标白点的 RGB 增益
+     * @brief 计算从源白点到目标白点的 RGB 增益（基于 Kelvin + Duv）
      *
-     * 用于简单的通道缩放白平衡
+     * 用于简单的通道缩放白平衡（近似）。
      *
      * @param source_kelvin 源色温
      * @param target_kelvin 目标色温
-     * @param source_tint 源色调（可选）
-     * @param target_tint 目标色调（可选）
+     * @param source_duv 源 Duv（正=绿色，负=洋红）
+     * @param target_duv 目标 Duv（正=绿色，负=洋红）
      * @param[out] r_gain 红色通道增益
      * @param[out] g_gain 绿色通道增益
      * @param[out] b_gain 蓝色通道增益
      */
     void calculateRGBGains(double source_kelvin, double target_kelvin,
-                           double source_tint, double target_tint,
+                           double source_duv, double target_duv,
                            float &r_gain, float &g_gain, float &b_gain);
 
     // ========== 辅助函数 ==========

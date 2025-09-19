@@ -9,11 +9,8 @@
  * 该工具用于“检查 RAW 的场景白点”并给出“建议目标白点（默认 D65）”。
  *
  * - 场景白点（Scene）：根据 libraw 的 cam_mul（白平衡乘数）与 cam_xyz（相机矩阵）推导，代表拍摄光源（物理）。
- * - 目标白点（Target）：我们建议对齐到 D65；UI 的 Temp/Tint 表示的是“目标白点”。
- * - CCT（K）与 Duv：K 沿黑体轨迹，Duv 垂直轨迹（正=洋红，负=绿色），二者正交。
- * - Tint（LR 风格）：UI 标度，非标准物理量。默认近似 Tint ≈ Duv×3000；若需和 LR 数值更一致，可做相机级拟合映射。
- *
- * 注意：Capture One/Lightroom 的 Temp/Tint 数值标度不同，观感可一致但数值不等价。
+ * - 目标白点（Target）：建议对齐到 D65（也可自定义）。
+ * - CCT（K）与 Duv：K 沿黑体轨迹，Duv 垂直轨迹（行业口径：正=绿色，负=洋红），二者正交。
  */
 
 #include "color_temperature.h"
@@ -158,7 +155,7 @@ int main(int argc, char **argv)
         std::cout << std::setprecision(4);
         std::cout << "    \"duv\": " << target_duv << "\n";
         std::cout << "  },\n";
-        // 不再输出 UI 标度（Tint），仅保留物理量
+        // 仅保留物理量（Kelvin/Duv），不输出 UI 标度
         std::cout << "}\n";
     }
     else
@@ -182,7 +179,6 @@ int main(int argc, char **argv)
         std::cout << "色温(K): " << source_kelvin << "\n";
         std::cout << std::setprecision(4);
         std::cout << "Duv: " << source_duv << "\n";
-        // 不再打印 Tint（UI 标度）
         std::cout << "\n";
 
         std::cout << "--- 建议目标白点 (Target, 默认D65) ---\n";
@@ -192,7 +188,6 @@ int main(int argc, char **argv)
         std::cout << "色温(K): " << target_kelvin << "\n";
         std::cout << std::setprecision(4);
         std::cout << "Duv: " << target_duv << "\n";
-        // 不再打印 Tint（UI 标度）
         if (cfg.verbose)
         {
             const char *desc = ColorTemp::getTemperatureDescription(source_kelvin);
