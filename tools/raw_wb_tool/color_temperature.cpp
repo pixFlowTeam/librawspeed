@@ -19,14 +19,14 @@ namespace ColorTemp
      *    - 我们的 kelvinToXY/xyToKelvin 实现用于在黑体轨迹附近进行近似换算。
      *
      * 2) Duv（Delta uv）
-     *    - 在 CIE 1960 UCS (u,v) 空间中，该点到黑体轨迹的“垂直距离”，带符号：
-     *      正值表示位于轨迹上方（这里约定为偏洋红），负值位于下方（偏绿色）。
+     *    - 在 CIE 1960 UCS (u,v) 空间中，该点到黑体轨迹的“垂直距离”，带符号。
+     *    - 行业口径（本库采用）：Duv > 0 表示偏绿色，Duv < 0 表示偏洋红。
      *    - 这是“色调（Tint）”的物理量度，与 CCT 正交。
      *
-     * 3) Tint（Lightroom 风格）
+     * 3) Tint（UI 标度）
      *    - 是引擎/相机相关的 UI 标度，非标准物理量。不同相机/引擎其数值并不完全可比。
-     *    - 常用经验换算：Tint ≈ Duv × 3000（线性近似，便于落入 -150..+150 的可用范围）。
-     *      若要严格对齐 LR，可对每机型拟合 Tint = a·Duv + b（并对 Temp 另行拟合），本库暂保留此作为可选扩展。
+     *    - 本库采用行业口径：Duv>0=偏绿、Duv<0=偏洋红，并使用工程近似 Tint ≈ -1000·Duv（Tint>0=洋红）。
+     *      系数 1000 便于数值直观（Duv 的千分位对应 Tint 的个位），如需对齐特定引擎可调整为 Tint = a·Duv + b。
      *
      * 4) 场景白点 vs 目标白点
      *    - 场景白点（Scene Illuminant）：相机拍摄时光源的白点（由 RAW 的白平衡系数 cam_mul 推导）。
@@ -143,15 +143,16 @@ namespace ColorTemp
         double duv = std::sqrt((u_actual - u_bb) * (u_actual - u_bb) +
                                (v_actual - v_bb) * (v_actual - v_bb));
 
-        // 确定符号（使用叉积判断点在轨迹的哪一侧）
-        // 简化：v_actual > v_bb 表示在上方（洋红侧）
-        if (v_actual < v_bb)
+        // 确定符号（使用相对 v 位置判断点在轨迹的哪一侧）
+        // 简化：v_actual > v_bb 表示在上方（通常更偏洋红）。
+        // 行业口径：Duv > 0 = 偏绿，Duv < 0 = 偏洋红。
+        if (v_actual > v_bb)
             duv = -duv;
 
         return duv;
     }
 
-    ChromaticityXY applyTintToKelvin(double kelvin, double duv)
+    ChromaticityXY applyDuvToKelvin(double kelvin, double duv)
     {
         ChromaticityXY base = kelvinToXY(kelvin);
 
@@ -187,18 +188,7 @@ namespace ColorTemp
         return uvToXY(u, v);
     }
 
-    double tintToDuv(double tint)
-    {
-        // Lightroom 的 Tint 范围约为 -150 到 +150
-        // 映射到 Duv 约 -0.05 到 +0.05
-        return tint / 3000.0;
-    }
-
-    double duvToTint(double duv)
-    {
-        // Duv 转换回 Lightroom Tint
-        return duv * 3000.0;
-    }
+    // Tint 映射已移除，直接使用 Duv
 
     ChromaticityXY getStandardIlluminant(const char *illuminant)
     {
@@ -284,138 +274,7 @@ namespace ColorTemp
         return info;
     }
 
-    LightroomWB getLightroomWBFromCameraMul(const float cam_mul[4])
-    {
-        LightroomWB result;
-
-        // 使用前三个通道（R, G, B），忽略 G2
-        float coeffs[3];
-        coeffs[0] = cam_mul[0]; // R
-        coeffs[1] = cam_mul[1]; // G
-        coeffs[2] = cam_mul[2]; // B
-
-        // 确保系数有效
-        for (int i = 0; i < 3; i++)
-        {
-            if (coeffs[i] <= 0)
-                coeffs[i] = 1.0f;
-        }
-
-        // 归一化到绿色通道
-        float norm = coeffs[1];
-        for (int i = 0; i < 3; i++)
-        {
-            coeffs[i] /= norm;
-        }
-
-        // 使用与 raw_wb_whitepoint.cpp 相同的算法
-        // 系数的倒数表示实际捕获的相对强度
-        float r_factor = 1.0f / coeffs[0];
-        float g_factor = 1.0f / coeffs[1];
-        float b_factor = 1.0f / coeffs[2];
-
-        // 使用 R/G 和 B/G 比例估算色温
-        double rg_ratio = r_factor / g_factor;
-        double bg_ratio = b_factor / g_factor;
-
-        // 经验公式：从 R/G, B/G 比例估算色温
-        double estimated_kelvin = ILLUMINANT_D65;
-
-        if (bg_ratio > 0 && rg_ratio > 0)
-        {
-            // 使用对数关系估算色温（与raw_wb_whitepoint完全一致）
-            double log_ratio = std::log(bg_ratio / rg_ratio);
-            estimated_kelvin = ILLUMINANT_D65 * std::exp(log_ratio * 0.3);
-            estimated_kelvin = std::max(2000.0, std::min(12000.0, estimated_kelvin));
-        }
-
-        // 将估算的色温转换到xy坐标
-        ChromaticityXY white_point = kelvinToXY(estimated_kelvin);
-
-        // 从xy坐标重新计算色温（确保一致性）
-        result.temperature = xyToKelvin(white_point);
-
-        // 计算色调（基于绿色通道的偏离）
-        // 绿色通道强（rb_avg < 1） = 场景偏绿 = 负Tint
-        // 绿色通道弱（rb_avg > 1） = 场景偏洋红 = 正Tint
-        double rb_avg = (coeffs[0] + coeffs[2]) / 2.0;
-        double green_factor = 1.0 - rb_avg;
-
-        // 转换到Lightroom Tint范围
-        result.tint = green_factor * 100.0;
-        result.tint = std::max(-150.0, std::min(150.0, result.tint));
-
-        return result;
-    }
-
-    LightroomWB getLightroomWBFromCameraMulWithMatrix(const float cam_mul[4], const float cam_xyz[4][3])
-    {
-        LightroomWB result;
-
-        // 使用前三个通道（R, G, B）
-        float coeffs[3];
-        coeffs[0] = cam_mul[0]; // R
-        coeffs[1] = cam_mul[1]; // G
-        coeffs[2] = cam_mul[2]; // B
-
-        // 确保系数有效
-        for (int i = 0; i < 3; i++)
-        {
-            if (coeffs[i] <= 0)
-                coeffs[i] = 1.0f;
-        }
-
-        // 归一化到绿色通道
-        float norm = coeffs[1];
-        for (int i = 0; i < 3; i++)
-        {
-            coeffs[i] /= norm;
-        }
-
-        // 计算场景的RGB相对强度（系数的倒数）
-        float scene_rgb[3];
-        scene_rgb[0] = 1.0f / coeffs[0];
-        scene_rgb[1] = 1.0f / coeffs[1];
-        scene_rgb[2] = 1.0f / coeffs[2];
-
-        // 使用相机的色彩矩阵转换到XYZ
-        // cam_xyz是4x3矩阵，前3行对应RGB通道
-        double X = 0, Y = 0, Z = 0;
-        for (int i = 0; i < 3; i++)
-        {
-            X += cam_xyz[i][0] * scene_rgb[i];
-            Y += cam_xyz[i][1] * scene_rgb[i];
-            Z += cam_xyz[i][2] * scene_rgb[i];
-        }
-
-        // 归一化XYZ（使Y=1作为参考）
-        if (Y > EPSILON)
-        {
-            X /= Y;
-            Z /= Y;
-            Y = 1.0;
-        }
-
-        // 转换到xy色度坐标
-        double xyz_sum = X + Y + Z;
-        ChromaticityXY white_point;
-        if (xyz_sum > EPSILON)
-        {
-            white_point.x = X / xyz_sum;
-            white_point.y = Y / xyz_sum;
-        }
-        else
-        {
-            white_point = getStandardIlluminant("D65");
-        }
-
-        // 计算色温和色调
-        result.temperature = xyToKelvin(white_point);
-        double duv = calculateDuv(white_point);
-        result.tint = duvToTint(duv);
-
-        return result;
-    }
+    // 已移除 Lightroom 风格函数
 
     ChromaticityXY estimateWhitePointXYFromCamMulAndMatrix(const float cam_mul[4], const float cam_xyz[4][3])
     {
@@ -495,8 +354,8 @@ namespace ColorTemp
                            float &r_gain, float &g_gain, float &b_gain)
     {
         // 获取源和目标白点
-        ChromaticityXY source_xy = applyTintToKelvin(source_kelvin, source_tint);
-        ChromaticityXY target_xy = applyTintToKelvin(target_kelvin, target_tint);
+        ChromaticityXY source_xy = applyDuvToKelvin(source_kelvin, source_tint);
+        ChromaticityXY target_xy = applyDuvToKelvin(target_kelvin, target_tint);
 
         // 简化的 RGB 增益计算
         // 这是一个近似方法，精确计算需要完整的色彩矩阵

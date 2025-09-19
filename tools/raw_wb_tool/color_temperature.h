@@ -118,7 +118,8 @@ namespace ColorTemp
      * @param duv 色调偏移（正=洋红，负=绿色）
      * @return 调整后的 xy 坐标
      */
-    ChromaticityXY applyTintToKelvin(double kelvin, double duv);
+    // 将 Duv 偏移应用到指定色温对应的白点
+    ChromaticityXY applyDuvToKelvin(double kelvin, double duv);
 
     /**
      * @brief 从 Lightroom 风格的 Tint 值转换到 Duv
@@ -129,7 +130,7 @@ namespace ColorTemp
      * @param tint Lightroom 风格的色调值
      * @return 标准 Duv 值
      */
-    double tintToDuv(double tint);
+    // 已移除：Tint 映射改为直接使用 Duv
 
     /**
      * @brief 从 Duv 转换到 Lightroom 风格的 Tint 值
@@ -137,7 +138,7 @@ namespace ColorTemp
      * @param duv 标准 Duv 值
      * @return Lightroom 风格的色调值
      */
-    double duvToTint(double duv);
+    // 已移除：Tint 映射改为直接使用 Duv
 
     /**
      * @brief 获取标准光源的白点
@@ -159,32 +160,7 @@ namespace ColorTemp
      */
     ColorTemperatureInfo estimateFromMultipliers(float r_mul, float g_mul, float b_mul);
 
-    /**
-     * @brief 从 LibRaw 获取 Lightroom 风格的白平衡值
-     *
-     * 获取对应 Lightroom 显示的色温和色调值
-     * 使用相机记录的白平衡系数进行计算
-     *
-     * @param cam_mul 相机白平衡系数数组 [R, G, B, G2]
-     * @return Lightroom 风格的色温(K)和色调(Tint)
-     */
-    struct LightroomWB
-    {
-        double temperature; // Lightroom 色温 (K)
-        double tint;        // Lightroom 色调 (-150 到 +150)
-    };
-    LightroomWB getLightroomWBFromCameraMul(const float cam_mul[4]);
-
-    /**
-     * @brief 从 LibRaw 获取 Lightroom 白平衡值（使用相机色彩矩阵）
-     *
-     * 更精确的版本，使用相机的色彩矩阵进行转换
-     *
-     * @param cam_mul 相机白平衡系数数组 [R, G, B, G2]
-     * @param cam_xyz 相机到XYZ的色彩矩阵 [4][3]
-     * @return Lightroom 风格的色温(K)和色调(Tint)
-     */
-    LightroomWB getLightroomWBFromCameraMulWithMatrix(const float cam_mul[4], const float cam_xyz[4][3]);
+    // 已移除 Lightroom 风格接口，统一使用物理 Kelvin 与 Duv
 
     /**
      * @brief 使用相机白平衡系数与色彩矩阵估算场景白点 xy

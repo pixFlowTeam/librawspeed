@@ -120,17 +120,7 @@ int main(int argc, char **argv)
     double target_kelvin = ColorTemp::xyToKelvin(target_xy);
     double target_duv = ColorTemp::calculateDuv(target_xy);
 
-    // Lightroom 风格（近似）：Temp=K, Tint≈duv*3000
-    double lr_scene_temp = source_kelvin;
-    double lr_scene_tint = ColorTemp::duvToTint(source_duv);
-    double lr_target_temp = target_kelvin;
-    double lr_target_tint = ColorTemp::duvToTint(target_duv);
-    // 统一一位小数显示，并以同一精度计算增量
-    auto round1 = [](double v)
-    { return std::round(v * 10.0) / 10.0; };
-    double lr_scene_tint_d1 = round1(lr_scene_tint);
-    double lr_target_tint_d1 = round1(lr_target_tint);
-    double lr_delta_tint_d1 = lr_target_tint_d1 - lr_scene_tint_d1;
+    // 仅使用物理量
 
     if (cfg.output_json)
     {
@@ -168,14 +158,7 @@ int main(int argc, char **argv)
         std::cout << std::setprecision(4);
         std::cout << "    \"duv\": " << target_duv << "\n";
         std::cout << "  },\n";
-        std::cout << std::setprecision(0);
-        std::cout << "  \"lightroom\": {\n";
-        std::cout << "    \"scene\": { \"temp\": " << lr_scene_temp << ", ";
-        std::cout << std::fixed << std::setprecision(1) << "\"tint\": " << lr_scene_tint_d1 << " },\n";
-        std::cout << std::setprecision(0) << "    \"target\": { \"temp\": " << lr_target_temp << ", ";
-        std::cout << std::fixed << std::setprecision(1) << "\"tint\": " << lr_target_tint_d1 << " },\n";
-        std::cout << "    \"delta\": { \"delta_tint\": " << lr_delta_tint_d1 << " }\n";
-        std::cout << "  }\n";
+        // 不再输出 UI 标度（Tint），仅保留物理量
         std::cout << "}\n";
     }
     else
@@ -199,9 +182,8 @@ int main(int argc, char **argv)
         std::cout << "色温(K): " << source_kelvin << "\n";
         std::cout << std::setprecision(4);
         std::cout << "Duv: " << source_duv << "\n";
-        std::cout << std::setprecision(0);
-        std::cout << "LR Temp/Tint: " << lr_scene_temp << ", ";
-        std::cout << std::fixed << std::setprecision(1) << lr_scene_tint_d1 << "\n\n";
+        // 不再打印 Tint（UI 标度）
+        std::cout << "\n";
 
         std::cout << "--- 建议目标白点 (Target, 默认D65) ---\n";
         std::cout << std::fixed << std::setprecision(4);
@@ -210,10 +192,7 @@ int main(int argc, char **argv)
         std::cout << "色温(K): " << target_kelvin << "\n";
         std::cout << std::setprecision(4);
         std::cout << "Duv: " << target_duv << "\n";
-        std::cout << std::setprecision(0);
-        std::cout << "LR Temp/Tint: " << lr_target_temp << ", ";
-        std::cout << std::fixed << std::setprecision(1) << lr_target_tint_d1 << "\n";
-        std::cout << "LR Tint Delta: " << lr_delta_tint_d1 << "\n";
+        // 不再打印 Tint（UI 标度）
         if (cfg.verbose)
         {
             const char *desc = ColorTemp::getTemperatureDescription(source_kelvin);

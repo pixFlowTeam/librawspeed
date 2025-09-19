@@ -446,8 +446,8 @@ namespace WhitePointWB
             switch (config_.mode)
             {
             case WhiteBalanceConfig::MANUAL_KELVIN:
-                // 界面传入的是 LR 风格 Tint，这里转换为物理 Duv 再生成目标白点
-                return applyTintToKelvin(config_.target_kelvin, tintToDuv(config_.target_tint));
+                // 直接使用传入的 Duv 作为色调偏移（正=绿色，负=洋红）
+                return applyDuvToKelvin(config_.target_kelvin, config_.target_tint);
 
             case WhiteBalanceConfig::MANUAL_XY:
                 return config_.target_xy;
@@ -602,7 +602,7 @@ void printUsage(const char *prog)
     std::cout << "                        kelvin  - 指定色温和色调\n";
     std::cout << "                        xy      - 指定 CIE xy 坐标\n";
     std::cout << "  --kelvin <K>          目标色温（2000-12000K）\n";
-    std::cout << "  --tint <tint>        色调（LR Tint 标度，约 -150 到 +150）\n";
+    std::cout << "  --duv <duv>          Duv 色调偏移（-0.05 到 +0.05；正=绿色）\n";
     std::cout << "  --xy <x,y>            目标白点 xy 坐标\n";
     std::cout << "  --cat <method>        CAT 方法: bradford|cat02|vonkries\n";
     std::cout << "  --quality <1-100>     JPEG 质量（默认 95）\n";
@@ -610,7 +610,7 @@ void printUsage(const char *prog)
     std::cout << "  --verbose             详细输出\n";
     std::cout << "  --help                显示帮助\n\n";
     std::cout << "示例:\n";
-    std::cout << "  " << prog << " --mode kelvin --kelvin 5500 --tint -0.01 input.raw\n";
+    std::cout << "  " << prog << " --mode kelvin --kelvin 5500 --duv -0.01 input.raw\n";
     std::cout << "  " << prog << " --mode xy --xy 0.3127,0.3290 input.raw\n\n";
 }
 
@@ -655,7 +655,7 @@ int main(int argc, char *argv[])
         {
             config.target_kelvin = std::atof(argv[++i]);
         }
-        else if (arg == "--tint" && i + 1 < argc)
+        else if (arg == "--duv" && i + 1 < argc)
         {
             config.target_tint = std::atof(argv[++i]);
         }
