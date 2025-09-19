@@ -77,7 +77,7 @@ ehthumbs.db
 Thumbs.db
 
 # Build artifacts
-build/
+# build/
 dist/
 
 # LibRaw archives (keep source in deps/)

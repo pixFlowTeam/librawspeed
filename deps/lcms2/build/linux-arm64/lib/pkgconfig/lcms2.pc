@@ -1,0 +1,11 @@
+prefix=/Users/fuguoqiang/Documents/workspace/infra/librawspeed/deps/lcms2/build/linux-arm64
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: lcms2
+Description: LCMS Color Management Library
+Version: 2.17
+Libs: -L${libdir} -llcms2 
+Libs.private: -lm -lpthread
+Cflags: -I${includedir}

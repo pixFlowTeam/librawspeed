@@ -1,0 +1,12 @@
+prefix=/Users/fuguoqiang/Desktop/librawspeed/deps/LibRaw-Source/LibRaw-0.21.4/build/darwin-x64
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: libraw
+Description: Raw image decoder library (non-thread-safe)
+Requires: 
+Version: 0.21.4
+Libs: -L${libdir} -lraw -lstdc++
+Libs.private: 
+Cflags: -I${includedir}/libraw -I${includedir}
