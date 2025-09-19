@@ -94,6 +94,11 @@ namespace WhitePointWB
 
     /**
      * @brief 白平衡配置
+     *
+     * 说明：
+     * - 本工具在 RAW→线性RGB 后，不使用 LibRaw 的白平衡，转而使用 LCMS 基于白点的 CAT 从“源白点→目标白点”。
+     * - 避免“双重白平衡”：估计源白点时不调用 dcraw_process()；真正渲染时 use_camera_wb/use_auto_wb 均为 0。
+     * - 输入输出约定：CMS 侧使用 RGB 顺序（TYPE_RGB_FLT），保存前再转回 OpenCV 的 BGR 写出。
      */
     struct WhiteBalanceConfig
     {
@@ -146,48 +151,10 @@ namespace WhitePointWB
      */
     ChromaticityXY estimateWhitePointFromCoefficients(LibRaw &processor)
     {
-        // 获取白平衡系数
-        float coeffs[4];
-        for (int i = 0; i < 4; ++i)
-        {
-            coeffs[i] = processor.imgdata.color.pre_mul[i];
-            if (coeffs[i] <= 0)
-                coeffs[i] = 1.0f;
-        }
-
-        // 归一化到绿色通道
-        float norm = coeffs[1]; // 使用 G1 作为参考
-        for (int i = 0; i < 4; ++i)
-        {
-            coeffs[i] /= norm;
-        }
-
-        // 系数的倒数表示实际捕获的相对强度
-        // 假设完美白平衡后应该是 D65
-        // 那么实际白点偏离 D65 的程度由系数决定
-        float r_factor = 1.0f / coeffs[0];
-        float g_factor = 1.0f / coeffs[1];
-        float b_factor = 1.0f / coeffs[2];
-
-        // 简化模型：使用 R/G 和 B/G 比例估算色温
-        // R/G 比例高 -> 暖色（低色温）
-        // B/G 比例高 -> 冷色（高色温）
-        double rg_ratio = r_factor / g_factor;
-        double bg_ratio = b_factor / g_factor;
-
-        // 经验公式：从 R/G, B/G 比例估算色温
-        // 这是一个简化的逆向映射
-        double estimated_kelvin = ILLUMINANT_D65;
-
-        if (bg_ratio > 0 && rg_ratio > 0)
-        {
-            // 使用对数关系估算色温
-            double log_ratio = std::log(bg_ratio / rg_ratio);
-            estimated_kelvin = ILLUMINANT_D65 * std::exp(log_ratio * 0.3);
-            estimated_kelvin = std::max(2000.0, std::min(12000.0, estimated_kelvin));
-        }
-
-        return kelvinToXY(estimated_kelvin);
+        // 使用相机系数与相机矩阵，直接估算场景白点（更物理）
+        const float *cam_mul = processor.imgdata.color.cam_mul;
+        const float(*cam_xyz)[3] = processor.imgdata.color.cam_xyz;
+        return estimateWhitePointXYFromCamMulAndMatrix(cam_mul, cam_xyz);
     }
 
     // ========== 色彩适应变换（CAT）==========
@@ -350,7 +317,8 @@ namespace WhitePointWB
                           << source_xy.x << ", " << source_xy.y << ")\n";
                 std::cout << "   物理色温: " << std::fixed << std::setprecision(0)
                           << source_kelvin << "K\n";
-                std::cout << "   场景照明色温（Lightroom）: " << source_kelvin << "K\n";
+                double source_duv = calculateDuv(source_xy);
+                std::cout << "   Duv: " << std::fixed << std::setprecision(4) << source_duv << "\n";
                 std::cout << "   " << (source_kelvin < 4000 ? "🔥 暖光场景" : source_kelvin < 6000 ? "☀️ 中性光"
                                                                                                    : "❄️ 冷光场景")
                           << "\n\n";
@@ -368,7 +336,7 @@ namespace WhitePointWB
                 std::cout << "   目标色温: " << std::fixed << std::setprecision(0)
                           << target_kelvin << "K\n";
 
-                if (std::abs(target_duv) > 0.001)
+                if (std::abs(target_duv) > 0.0001)
                 {
                     std::cout << "   色调(Duv): " << std::fixed << std::setprecision(4)
                               << target_duv;
@@ -460,15 +428,11 @@ namespace WhitePointWB
             switch (config_.mode)
             {
             case WhiteBalanceConfig::CAMERA_WB:
-                // 使用相机记录的白平衡
-                processor_->imgdata.params.use_camera_wb = 1;
-                processor_->dcraw_process();
+                // 基于相机记录的白平衡系数与相机矩阵估算白点
                 return estimateWhitePointFromCoefficients(*processor_);
 
             case WhiteBalanceConfig::AUTO_WB:
-                // 使用 LibRaw 自动白平衡
-                processor_->imgdata.params.use_auto_wb = 1;
-                processor_->dcraw_process();
+                // 简化：当前不在估计阶段调用自动 WB 处理，退化为使用相机白平衡估计
                 return estimateWhitePointFromCoefficients(*processor_);
 
             default:
@@ -482,7 +446,8 @@ namespace WhitePointWB
             switch (config_.mode)
             {
             case WhiteBalanceConfig::MANUAL_KELVIN:
-                return applyTintToKelvin(config_.target_kelvin, config_.target_tint);
+                // 界面传入的是 LR 风格 Tint，这里转换为物理 Duv 再生成目标白点
+                return applyTintToKelvin(config_.target_kelvin, tintToDuv(config_.target_tint));
 
             case WhiteBalanceConfig::MANUAL_XY:
                 return config_.target_xy;
@@ -526,16 +491,15 @@ namespace WhitePointWB
             if (img->bits == 16)
             {
                 cv::Mat temp(img->height, img->width, CV_16UC3, img->data);
-                cv::Mat bgr;
-                cv::cvtColor(temp, bgr, cv::COLOR_RGB2BGR);
-                bgr.convertTo(linear, CV_32FC3, 1.0 / 65535.0);
+                // 保持为 RGB 顺序，方便直接传给 LCMS（TYPE_RGB_FLT）
+                cv::Mat rgb = temp.clone();
+                rgb.convertTo(linear, CV_32FC3, 1.0 / 65535.0);
             }
             else
             {
                 cv::Mat temp(img->height, img->width, CV_8UC3, img->data);
-                cv::Mat bgr;
-                cv::cvtColor(temp, bgr, cv::COLOR_RGB2BGR);
-                bgr.convertTo(linear, CV_32FC3, 1.0 / 255.0);
+                cv::Mat rgb = temp.clone();
+                rgb.convertTo(linear, CV_32FC3, 1.0 / 255.0);
             }
 
             LibRaw::dcraw_clear_mem(img);
@@ -544,30 +508,42 @@ namespace WhitePointWB
 
         cv::Mat applyGammaEncoding(const cv::Mat &linear_rgb)
         {
-            // 创建 sRGB 配置文件并应用色调映射
-            cmsHPROFILE linear_profile = cmsCreate_sRGBProfile();
+            // 将线性 sRGB（原色为 sRGB，TRC=1.0）编码为标准 sRGB OETF
+            cmsCIExyYTRIPLE srgb_primaries;
+            srgb_primaries.Red.x = 0.6400;
+            srgb_primaries.Red.y = 0.3300;
+            srgb_primaries.Red.Y = 1.0;
+            srgb_primaries.Green.x = 0.3000;
+            srgb_primaries.Green.y = 0.6000;
+            srgb_primaries.Green.Y = 1.0;
+            srgb_primaries.Blue.x = 0.1500;
+            srgb_primaries.Blue.y = 0.0600;
+            srgb_primaries.Blue.Y = 1.0;
+
+            // 使用 D65 白点（与 sRGB 一致）
+            cmsCIExyY d65;
+            d65.x = 0.31271;
+            d65.y = 0.32902;
+            d65.Y = 1.0;
+
+            cmsToneCurve *linear_curve = cmsBuildGamma(nullptr, 1.0);
+            // 避免与函数参数名 linear_rgb 冲突，使用不同变量名
+            cmsToneCurve *linear_trc[3] = {linear_curve, linear_curve, linear_curve};
+
+            cmsHPROFILE linear_srgb_profile = cmsCreateRGBProfile(&d65, &srgb_primaries, linear_trc);
             cmsHPROFILE srgb_profile = cmsCreate_sRGBProfile();
 
-            // 修改线性配置文件的 TRC
-            cmsToneCurve *linear_curve = cmsBuildGamma(nullptr, 1.0);
-            cmsWriteTag(linear_profile, cmsSigRedTRCTag, linear_curve);
-            cmsWriteTag(linear_profile, cmsSigGreenTRCTag, linear_curve);
-            cmsWriteTag(linear_profile, cmsSigBlueTRCTag, linear_curve);
-
-            // 创建变换
             cmsHTRANSFORM gamma_transform = cmsCreateTransform(
-                linear_profile, TYPE_RGB_FLT,
+                linear_srgb_profile, TYPE_RGB_FLT,
                 srgb_profile, TYPE_RGB_FLT,
                 INTENT_PERCEPTUAL, 0);
 
             cv::Mat encoded = applyWhitePointTransform(linear_rgb, gamma_transform);
 
-            // 清理
             cmsDeleteTransform(gamma_transform);
             cmsFreeToneCurve(linear_curve);
-            cmsCloseProfile(linear_profile);
+            cmsCloseProfile(linear_srgb_profile);
             cmsCloseProfile(srgb_profile);
-
             return encoded;
         }
 
@@ -578,13 +554,15 @@ namespace WhitePointWB
             cv::min(srgb, 1.0, clipped);
             cv::max(clipped, 0.0, clipped);
 
-            // 转换到 8 位
-            cv::Mat output_u8;
-            clipped.convertTo(output_u8, CV_8UC3, 255.0);
+            // 转换到 8 位，并从 RGB 转回 BGR 以匹配 OpenCV 保存
+            cv::Mat rgb_u8;
+            clipped.convertTo(rgb_u8, CV_8UC3, 255.0);
+            cv::Mat bgr_u8;
+            cv::cvtColor(rgb_u8, bgr_u8, cv::COLOR_RGB2BGR);
 
             // 保存 JPEG
             std::vector<int> jpeg_params = {cv::IMWRITE_JPEG_QUALITY, config_.jpeg_quality};
-            bool success = cv::imwrite(config_.output_path, output_u8, jpeg_params);
+            bool success = cv::imwrite(config_.output_path, bgr_u8, jpeg_params);
 
             if (!success)
             {
@@ -624,7 +602,7 @@ void printUsage(const char *prog)
     std::cout << "                        kelvin  - 指定色温和色调\n";
     std::cout << "                        xy      - 指定 CIE xy 坐标\n";
     std::cout << "  --kelvin <K>          目标色温（2000-12000K）\n";
-    std::cout << "  --tint <duv>          色调偏移（-0.05 到 +0.05）\n";
+    std::cout << "  --tint <tint>        色调（LR Tint 标度，约 -150 到 +150）\n";
     std::cout << "  --xy <x,y>            目标白点 xy 坐标\n";
     std::cout << "  --cat <method>        CAT 方法: bradford|cat02|vonkries\n";
     std::cout << "  --quality <1-100>     JPEG 质量（默认 95）\n";

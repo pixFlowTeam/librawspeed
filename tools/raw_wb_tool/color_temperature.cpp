@@ -11,6 +11,37 @@
 
 namespace ColorTemp
 {
+    /*
+     * ========================= 白平衡与白点相关概念速记 =========================
+     *
+     * 1) 相关色温 CCT (Correlated Color Temperature)
+     *    - 表示在 CIE 色度图上某点到黑体辐射轨迹的“沿轨迹方向”的投影所对应的温度（K）。
+     *    - 我们的 kelvinToXY/xyToKelvin 实现用于在黑体轨迹附近进行近似换算。
+     *
+     * 2) Duv（Delta uv）
+     *    - 在 CIE 1960 UCS (u,v) 空间中，该点到黑体轨迹的“垂直距离”，带符号：
+     *      正值表示位于轨迹上方（这里约定为偏洋红），负值位于下方（偏绿色）。
+     *    - 这是“色调（Tint）”的物理量度，与 CCT 正交。
+     *
+     * 3) Tint（Lightroom 风格）
+     *    - 是引擎/相机相关的 UI 标度，非标准物理量。不同相机/引擎其数值并不完全可比。
+     *    - 常用经验换算：Tint ≈ Duv × 3000（线性近似，便于落入 -150..+150 的可用范围）。
+     *      若要严格对齐 LR，可对每机型拟合 Tint = a·Duv + b（并对 Temp 另行拟合），本库暂保留此作为可选扩展。
+     *
+     * 4) 场景白点 vs 目标白点
+     *    - 场景白点（Scene Illuminant）：相机拍摄时光源的白点（由 RAW 的白平衡系数 cam_mul 推导）。
+     *    - 目标白点（Target White Point）：渲染时希望图像呈现的白点（UI 上的 Temp/Tint 所代表的目标）。
+     *    - 白平衡的本质是“把图像从源白点适应到目标白点”（CAT）。
+     *
+     * 5) 本库的核心流程
+     *    - 估计场景白点：使用 cam_mul 的倒数作为场景 RGB 相对强度，并用相机矩阵 cam_xyz 将其映射至 XYZ 再归一得到 xy。
+     *    - 色彩适应（CAT）：用 Bradford（或 CAT02 等）在线性空间中从源白点变换到目标白点。
+     *    - 编码：线性 sRGB → sRGB OETF（或其他输出空间）。
+     *
+     * 6) 与 Lightroom/Capture One 的数值差异
+     *    - 两者 Temp/Tint 是各自引擎/配置相关标度。观感可一致，但数值不必然一致。
+     *    - 若需与 LR 完全“数值对齐”，需加载相机 Profile、做双光源插值与少量标定拟合，超出本库默认职责，但可作为可选模块。
+     */
 
     // ========== ColorXYZ 方法实现 ==========
 
@@ -386,6 +417,79 @@ namespace ColorTemp
         return result;
     }
 
+    ChromaticityXY estimateWhitePointXYFromCamMulAndMatrix(const float cam_mul[4], const float cam_xyz[4][3])
+    {
+        // 读取并校正系数
+        // 取两路绿色的平均作为 G
+        float g1 = cam_mul[1] > 0.0f ? cam_mul[1] : 1.0f;
+        float g2 = cam_mul[3] > 0.0f ? cam_mul[3] : g1;
+        float g_avg = (g1 + g2) * 0.5f;
+        float coeffs[3] = {cam_mul[0], g_avg, cam_mul[2]};
+        for (int i = 0; i < 3; ++i)
+        {
+            if (coeffs[i] <= 0.0f)
+            {
+                coeffs[i] = 1.0f;
+            }
+        }
+
+        // 归一化到绿色通道
+        float green_norm = coeffs[1];
+        if (green_norm <= 0.0f)
+        {
+            green_norm = 1.0f;
+        }
+        for (int i = 0; i < 3; ++i)
+        {
+            coeffs[i] /= green_norm;
+        }
+
+        // 系数的倒数代表场景 RGB 相对强度
+        double scene_rgb[3];
+        scene_rgb[0] = 1.0 / static_cast<double>(coeffs[0]);
+        scene_rgb[1] = 1.0 / static_cast<double>(coeffs[1]);
+        scene_rgb[2] = 1.0 / static_cast<double>(coeffs[2]);
+
+        // 使用相机矩阵将场景 RGB 转到 XYZ（使用矩阵前 3 行）
+        double X = 0.0, Y = 0.0, Z = 0.0;
+        for (int i = 0; i < 3; ++i)
+        {
+            X += static_cast<double>(cam_xyz[i][0]) * scene_rgb[i];
+            Y += static_cast<double>(cam_xyz[i][1]) * scene_rgb[i];
+            Z += static_cast<double>(cam_xyz[i][2]) * scene_rgb[i];
+        }
+
+        // 物理上 XYZ 不应为负，做最小裁剪
+        X = std::max(X, EPSILON);
+        Y = std::max(Y, EPSILON);
+        Z = std::max(Z, EPSILON);
+
+        // 归一化使 Y=1，然后转换到 xy
+        if (Y > EPSILON)
+        {
+            X /= Y;
+            Z /= Y;
+            Y = 1.0;
+        }
+
+        double sum = X + Y + Z;
+        if (sum <= EPSILON)
+        {
+            return getStandardIlluminant("D65");
+        }
+
+        ChromaticityXY xy;
+        xy.x = X / sum;
+        xy.y = Y / sum;
+        // 若不在合理范围，回退到接近的黑体点
+        if (!isValidWhitePoint(xy))
+        {
+            double cct = std::max(2000.0, std::min(12000.0, xyToKelvin(xy)));
+            return kelvinToXY(cct);
+        }
+        return xy;
+    }
+
     void calculateRGBGains(double source_kelvin, double target_kelvin,
                            double source_tint, double target_tint,
                            float &r_gain, float &g_gain, float &b_gain)
@@ -452,43 +556,39 @@ namespace ColorTemp
     {
         if (kelvin < 2500)
         {
-            return "🕯️ 烛光（极暖）";
+            return "🕯️ 烛光/火焰（极暖）";
         }
-        else if (kelvin < 3000)
+        else if (kelvin < 3200)
         {
             return "💡 钨丝灯（暖）";
         }
-        else if (kelvin < 3500)
+        else if (kelvin < 4000)
         {
-            return "🏠 室内暖光";
+            return "🏠 室内暖白/卤素";
         }
-        else if (kelvin < 4500)
+        else if (kelvin < 5000)
         {
-            return "🌅 日出/日落";
+            return "💡 冷白/荧光";
         }
         else if (kelvin < 5500)
         {
-            return "☀️ 早晨/傍晚阳光";
+            return "📷 日光 D50–D55";
         }
         else if (kelvin < 6500)
         {
-            return "🌞 正午日光";
+            return "🌞 日光 D65/正午";
         }
         else if (kelvin < 7500)
         {
-            return "☁️ 阴天";
+            return "☁️ 阴天 D75（偏冷）";
         }
         else if (kelvin < 9000)
         {
-            return "🌫️ 薄雾";
-        }
-        else if (kelvin < 11000)
-        {
-            return "🏔️ 高山/雪地";
+            return "🌫️ 阴影/蓝调（较冷）";
         }
         else
         {
-            return "🔵 极冷蓝光";
+            return "🔵 雪地/高山/蓝时刻（极冷）";
         }
     }
 

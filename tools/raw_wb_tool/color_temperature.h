@@ -187,6 +187,13 @@ namespace ColorTemp
     LightroomWB getLightroomWBFromCameraMulWithMatrix(const float cam_mul[4], const float cam_xyz[4][3]);
 
     /**
+     * @brief 使用相机白平衡系数与色彩矩阵估算场景白点 xy
+     *
+     * 将系数倒数视为场景 RGB 相对能量，经 cam_xyz 转到 XYZ，再归一得到 xy
+     */
+    ChromaticityXY estimateWhitePointXYFromCamMulAndMatrix(const float cam_mul[4], const float cam_xyz[4][3]);
+
+    /**
      * @brief 计算从源白点到目标白点的 RGB 增益
      *
      * 用于简单的通道缩放白平衡
