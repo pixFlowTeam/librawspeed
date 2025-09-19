@@ -1,29 +1,155 @@
-# raw_wb_tool
+# RAW 白点白平衡工具 📸
 
-基于 LibRaw + littleCMS + OpenCV 的命令行工具：
+基于白点（White Point）和色彩适应变换（CAT）的 RAW 文件白平衡处理工具。
 
-- 读取 RAW 并解码为线性 RGB（由 LibRaw 完成，禁用 gamma 和自动增亮）
-- 在线性空间中无损地应用色温(K)与色调(Tint)增益（Lightroom 风格）
-- 可切换 LibRaw 白平衡模式：camera / auto / none / user
-- 使用 littleCMS 将线性 RGB 映射到 sRGB，并应用 sRGB OETF 输出 JPEG
-- 输出步骤备注（可选）并打印估算的 CCT 与 duv
+## 📁 文件结构
 
-构建：
-
-```bash
-make -C tools/raw_wb_tool | cat
+```
+raw_wb_tool/
+├── raw_wb_whitepoint.cpp    # 主程序：白点白平衡处理
+├── color_temperature.h       # 色温转换库头文件
+├── color_temperature.cpp     # 色温转换库实现
+├── WHITE_POINT_THEORY.md    # 白点白平衡理论文档
+├── Makefile                 # 编译配置
+├── run.sh                   # 便捷运行脚本
+├── build/                   # 编译输出目录
+│   ├── raw_wb_whitepoint   # 可执行文件
+│   └── *.o                 # 目标文件
+└── output/                  # 图像输出目录
 ```
 
-示例：
+## 🛠️ 编译
 
+### 依赖库
+- LibRaw（RAW 文件处理）
+- LittleCMS2（色彩管理）
+- OpenCV 4（图像处理）
+
+### 编译命令
 ```bash
-tools/build/tools/raw_wb_tool /path/to/RAW.NEF --out /tmp/out.jpg --wb camera --kelvin 6500 --tint +10 --quality 92 --notes
+make        # 编译工具
+make clean  # 清理编译文件
 ```
 
-原理说明：
+## 📸 使用方法
 
-- 无损调节：在 LibRaw 输出的线性 RGB 空间中对通道做比例缩放，相当于改变白点，不引入量化损失。
-- K/Tint 到增益：以 6500K 作为参考，近似地对 R/B 通道使用 K 的幂律缩放，Tint 沿 u'v' 方向正交于黑体轨迹，对 R/G 与 B/G 相反方向调整；随后归一化保持灰卡不变。
-- 色彩管理：利用 littleCMS 建立线性 RGB 到 sRGB 的变换，并再应用 sRGB OETF（显示伽马）以输出 JPEG。
+### 快速运行（使用脚本）
+```bash
+./run.sh [选项] <输入RAW文件>
+# 脚本会自动检查并编译程序
+```
 
+### 直接运行
+```bash
+./build/raw_wb_whitepoint [选项] <输入RAW文件>
+```
 
+### 选项参数
+
+#### 白平衡模式
+- `--mode <模式>`：
+  - `camera`（默认）：使用相机记录的白平衡
+  - `auto`：LibRaw 自动白平衡
+  - `manual`：手动指定色温和色调
+  - `xy`：手动指定 xy 色度坐标
+
+#### 手动白平衡参数
+- `--kelvin <值>`：目标色温（2000-25000K）
+- `--tint <值>`：色调偏移（-150 到 +150）
+- `--xy <x> <y>`：目标 xy 色度坐标
+
+#### CAT 算法选择
+- `--cat <算法>`：
+  - `bradford`（默认）：Bradford Transform（推荐）
+  - `cat02`：CAT02（CIECAM02 的一部分）
+  - `vonkries`：von Kries（简单但不够准确）
+
+#### 输出设置
+- `--out <路径>`：输出文件路径（默认：输出目录）
+- `--quality <值>`：JPEG 质量（1-100，默认95）
+- `--linear`：保存线性 RGB（16位 TIFF）
+- `--verbose`：显示详细信息
+
+### 使用示例
+
+#### 1. 使用相机白平衡（默认）
+```bash
+./run.sh photo.ARW
+```
+
+#### 2. 手动设置色温
+```bash
+./run.sh --kelvin 5500 --tint 10 --out daylight.jpg photo.ARW
+```
+
+#### 3. 使用不同的 CAT 算法
+```bash
+./run.sh --cat cat02 --kelvin 6500 photo.ARW
+```
+
+#### 4. 显示详细信息
+```bash
+./run.sh --verbose --mode camera photo.ARW
+```
+
+输出示例：
+```
+========== 白平衡信息 ==========
+📷 源白点（相机捕获）:
+   xy坐标: (0.3019, 0.3119)
+   物理色温: 7357K
+   场景照明色温（Lightroom）: 7357K
+   ❄️ 冷光场景
+
+🎯 目标白点（补偿后）:
+   xy坐标: (0.3134, 0.3236)
+   目标色温: 6505K
+
+💡 补偿说明:
+   场景偏冷(7357K) → 加暖色补偿 → 目标(6505K)
+==================================
+```
+
+## 🔬 白点白平衡原理
+
+### 核心概念
+
+1. **白点（White Point）**：在特定光源下，白色物体在色度图上的坐标
+2. **色彩适应变换（CAT）**：模拟人眼适应不同光源的数学模型
+3. **色温（CCT）**：用开尔文（K）表示的光源颜色
+
+### 处理流程
+
+```
+输入RAW → 解码 → 确定源白点 → 选择目标白点 → CAT变换 → 输出图像
+```
+
+### 优势
+- ✅ 基于色彩科学理论
+- ✅ 保持色彩关系
+- ✅ 多种 CAT 算法可选
+- ✅ 精确的色温控制
+
+### 劣势
+- ⚠️ 计算复杂度较高
+- ⚠️ 需要准确的源白点估算
+- ⚠️ 极端情况可能产生色偏
+
+## 📊 色温参考
+
+| 色温范围 | 光源类型 | 描述 |
+|---------|---------|------|
+| 2000-3000K | 🕯️ 烛光/钨丝灯 | 暖黄色 |
+| 3000-4000K | 🌅 日出/日落 | 暖白色 |
+| 4000-5000K | 💡 荧光灯 | 中性白 |
+| 5000-6500K | ☀️ 日光 | 纯白色 |
+| 6500-8000K | ☁️ 阴天 | 冷白色 |
+| 8000K+ | 🏔️ 雪地/高山 | 蓝白色 |
+
+## 📝 技术细节
+
+详见 [WHITE_POINT_THEORY.md](WHITE_POINT_THEORY.md) 了解完整的理论背景和实现细节。
+
+## 🤝 许可
+
+MIT License
