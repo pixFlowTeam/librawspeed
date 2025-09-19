@@ -3,7 +3,7 @@
  * Provides type-safe access to LibRaw functionality for RAW image processing
  */
 
-declare module 'libraw' {
+declare module "libraw" {
   export interface LibRawMetadata {
     /** Camera manufacturer */
     make?: string;
@@ -48,6 +48,8 @@ declare module 'libraw' {
     is_foveon: number;
     /** Color transformation matrix (4x3) */
     colorMatrix: number[][];
+    /** Camera to XYZ matrix (4x3) */
+    camXYZ?: number[][];
     /** Camera white balance multipliers */
     camMul: number[];
     /** Preprocessing multipliers */
@@ -132,6 +134,10 @@ declare module 'libraw' {
     output_bps?: number;
     /** Manual white balance multipliers [R, G, B, G2] */
     user_mul?: [number, number, number, number];
+    /** Use camera white balance */
+    use_camera_wb?: boolean;
+    /** Use auto white balance */
+    use_auto_wb?: boolean;
     /** Disable automatic brightness adjustment */
     no_auto_bright?: boolean;
     /** Highlight recovery mode (0-9) */
@@ -169,7 +175,7 @@ declare module 'libraw' {
     /** Use mozjpeg encoder for better compression */
     mozjpeg?: boolean;
     /** Chroma subsampling ('4:4:4', '4:2:0') - Note: 4:2:2 maps to 4:4:4 */
-    chromaSubsampling?: '4:4:4' | '4:2:2' | '4:2:0';
+    chromaSubsampling?: "4:4:4" | "4:2:2" | "4:2:0";
     /** Enable trellis quantisation */
     trellisQuantisation?: boolean;
     /** Optimize scan order */
@@ -179,7 +185,7 @@ declare module 'libraw' {
     /** Optimize Huffman coding */
     optimizeCoding?: boolean;
     /** Output color space */
-    colorSpace?: 'srgb' | 'rec2020' | 'p3' | 'cmyk';
+    colorSpace?: "srgb" | "rec2020" | "p3" | "cmyk";
     /** Enable fast mode for better performance */
     fastMode?: boolean;
     /** Encoding effort (1=fastest, 9=slowest) */
@@ -248,7 +254,7 @@ declare module 'libraw' {
     /** Target height (maintains aspect ratio if width not specified) */
     height?: number;
     /** Output color space */
-    colorSpace?: 'srgb' | 'rec2020' | 'p3' | 'cmyk';
+    colorSpace?: "srgb" | "rec2020" | "p3" | "cmyk";
     /** Enable fast mode for better performance */
     fastMode?: boolean;
   }
@@ -262,7 +268,7 @@ declare module 'libraw' {
 
   export interface LibRawTIFFOptions extends LibRawImageConversionOptions {
     /** TIFF compression type */
-    compression?: 'none' | 'lzw' | 'jpeg' | 'zip';
+    compression?: "none" | "lzw" | "jpeg" | "zip";
     /** JPEG quality when using JPEG compression */
     quality?: number;
     /** Create pyramidal TIFF */
@@ -364,7 +370,7 @@ declare module 'libraw' {
         height: number;
         area: number;
       };
-      category: 'high-resolution' | 'medium-resolution' | 'low-resolution';
+      category: "high-resolution" | "medium-resolution" | "low-resolution";
       camera: {
         make?: string;
         model?: string;
@@ -569,13 +575,19 @@ declare module 'libraw' {
      * @param outputDir Output directory for JPEG files
      * @param options JPEG conversion options
      */
-    batchConvertToJPEG(inputPaths: string[], outputDir: string, options?: LibRawJPEGOptions): Promise<LibRawBatchResult>;
+    batchConvertToJPEG(
+      inputPaths: string[],
+      outputDir: string,
+      options?: LibRawJPEGOptions
+    ): Promise<LibRawBatchResult>;
 
     /**
      * Get optimal JPEG conversion settings based on image analysis
      * @param analysisOptions Options for image analysis
      */
-    getOptimalJPEGSettings(analysisOptions?: { usage?: 'web' | 'print' | 'archive' }): Promise<LibRawOptimalSettings>;
+    getOptimalJPEGSettings(analysisOptions?: {
+      usage?: "web" | "print" | "archive";
+    }): Promise<LibRawOptimalSettings>;
 
     /**
      * High-performance JPEG conversion with minimal processing for speed
@@ -589,27 +601,33 @@ declare module 'libraw' {
      * @param baseOutputPath Base output path (without extension)
      * @param options Multi-size options
      */
-    convertToJPEGMultiSize(baseOutputPath: string, options?: {
-      sizes?: Array<{
-        name: string;
-        width?: number;
-        height?: number;
-        quality?: number;
-        progressive?: boolean;
-        mozjpeg?: boolean;
-        chromaSubsampling?: string;
-        effort?: number;
-      }>;
-    }): Promise<{
+    convertToJPEGMultiSize(
+      baseOutputPath: string,
+      options?: {
+        sizes?: Array<{
+          name: string;
+          width?: number;
+          height?: number;
+          quality?: number;
+          progressive?: boolean;
+          mozjpeg?: boolean;
+          chromaSubsampling?: string;
+          effort?: number;
+        }>;
+      }
+    ): Promise<{
       success: boolean;
-      sizes: Record<string, {
-        name: string;
-        outputPath: string;
-        dimensions: { width: number; height: number };
-        fileSize: number;
-        processingTime: number;
-        config: any;
-      }>;
+      sizes: Record<
+        string,
+        {
+          name: string;
+          outputPath: string;
+          dimensions: { width: number; height: number };
+          fileSize: number;
+          processingTime: number;
+          config: any;
+        }
+      >;
       originalDimensions: { width: number; height: number };
       totalProcessingTime: number;
       averageTimePerSize: string;

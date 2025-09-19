@@ -292,6 +292,19 @@ Napi::Value LibRawWrapper::GetAdvancedMetadata(const Napi::CallbackInfo &info)
     }
     metadata.Set("colorMatrix", colorMatrix);
 
+    // 相机到 XYZ 矩阵（cam_xyz 4x3）
+    Napi::Array camXYZ = Napi::Array::New(env);
+    for (int i = 0; i < 4; i++)
+    {
+        Napi::Array row = Napi::Array::New(env);
+        for (int j = 0; j < 3; j++)
+        {
+            row.Set(j, Napi::Number::New(env, processor->imgdata.color.cam_xyz[i][j]));
+        }
+        camXYZ.Set(i, row);
+    }
+    metadata.Set("camXYZ", camXYZ);
+
     // 白平衡
     Napi::Array camMul = Napi::Array::New(env);
     for (int i = 0; i < 4; i++)
@@ -719,6 +732,25 @@ Napi::Value LibRawWrapper::SetOutputParams(const Napi::CallbackInfo &info)
         }
     }
 
+    // 使用相机/自动白平衡（可选）
+    if (params.Has("use_camera_wb") && params.Get("use_camera_wb").IsBoolean())
+    {
+        processor->imgdata.params.use_camera_wb = params.Get("use_camera_wb").As<Napi::Boolean>().Value() ? 1 : 0;
+    }
+    if (params.Has("use_auto_wb") && params.Get("use_auto_wb").IsBoolean())
+    {
+        processor->imgdata.params.use_auto_wb = params.Get("use_auto_wb").As<Napi::Boolean>().Value() ? 1 : 0;
+    }
+
+    // 互斥处理：如显式设置 use_camera_wb 或 use_auto_wb，则清零 user_mul 以避免冲突
+    if (processor->imgdata.params.use_camera_wb || processor->imgdata.params.use_auto_wb)
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            processor->imgdata.params.user_mul[i] = 0.0f;
+        }
+    }
+
     // 自动亮度
     if (params.Has("no_auto_bright") && params.Get("no_auto_bright").IsBoolean())
     {
@@ -760,6 +792,8 @@ Napi::Value LibRawWrapper::GetOutputParams(const Napi::CallbackInfo &info)
     params.Set("no_auto_bright", Napi::Boolean::New(env, processor->imgdata.params.no_auto_bright));
     params.Set("highlight", Napi::Number::New(env, processor->imgdata.params.highlight));
     params.Set("output_tiff", Napi::Boolean::New(env, processor->imgdata.params.output_tiff));
+    params.Set("use_camera_wb", Napi::Boolean::New(env, processor->imgdata.params.use_camera_wb));
+    params.Set("use_auto_wb", Napi::Boolean::New(env, processor->imgdata.params.use_auto_wb));
 
     // 用户乘数
     Napi::Array userMul = Napi::Array::New(env);
